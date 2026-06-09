@@ -8,7 +8,7 @@ DO $$ BEGIN
 END $$;
 
 CREATE TABLE IF NOT EXISTS eventsync_app."user" (
-    id              UUID                             NOT NULL    PRIMARY KEY,
+    id              UUID    DEFAULT gen_random_uuid()  NOT NULL    PRIMARY KEY,
     first_name      VARCHAR(50)                      NOT NULL,
     last_name       VARCHAR(50)                      NOT NULL,
     email           VARCHAR(50)                      NOT NULL    UNIQUE,

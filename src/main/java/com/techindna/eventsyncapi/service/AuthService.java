@@ -78,13 +78,15 @@ public class AuthService {
         dataValidator.validateName("firstName", request.getFirstName(), true);
         dataValidator.validateName("lastName", request.getLastName(), true);
 
-        User participant = userRepository.findByEmail(request.getEmail())
-                .orElseGet(() -> userRepository.insertParticipant(
-                        request.getFirstName(), request.getLastName(), request.getEmail()
-                ));
+        ParticipantRefDto ref = userRepository.findRefByEmailAndNames(
+                request.getEmail(), request.getFirstName(), request.getLastName()
+        ).orElseGet(() -> userRepository.insertParticipant(
+                request.getFirstName(), request.getLastName(), request.getEmail()
+        ));
+
+        User participant = userMapper.toUser(ref);
 
         String token = tokenProvider.generateAccessToken(participant);
-        ParticipantRefDto ref = userMapper.toParticipantRef(participant);
 
         return AuthParticipantResponseDto.builder()
                 .token(token)

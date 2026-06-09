@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
+import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -369,19 +370,17 @@ class AuthServiceTest {
         @Test
         @DisplayName("creates new participant when email does not exist")
         void newEmail_createsParticipantAndReturnsToken() {
-            User createdUser = User.builder()
+            ParticipantRefDto createdRef = ParticipantRefDto.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
-                    .role(Role.PARTICIPANT)
-                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findByEmail(validParticipantRequest.getEmail()))
+            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
                     .thenReturn(Optional.empty());
             when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
-                    .thenReturn(createdUser);
+                    .thenReturn(createdRef);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -395,25 +394,23 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getLastName()).isEqualTo("Doe");
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
+            verify(userRepository).findRefByEmailAndNames(anyString(), anyString(), anyString());
             verify(userRepository).insertParticipant(anyString(), anyString(), anyString());
-            verify(userRepository, times(1)).findByEmail(validParticipantRequest.getEmail());
         }
 
         @Test
         @DisplayName("returns existing participant when email already registered")
         void existingParticipant_returnsToken() {
-            User existing = User.builder()
+            ParticipantRefDto existingRef = ParticipantRefDto.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
-                    .role(Role.PARTICIPANT)
-                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findByEmail(validParticipantRequest.getEmail()))
-                    .thenReturn(Optional.of(existing));
-            when(tokenProvider.generateAccessToken(existing))
+            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
+                    .thenReturn(Optional.of(existingRef));
+            when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
             AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
@@ -471,19 +468,17 @@ class AuthServiceTest {
         void hyphenatedName_accepts() {
             validParticipantRequest.setLastName("Jean-Pierre");
 
-            User createdUser = User.builder()
+            ParticipantRefDto createdRef = ParticipantRefDto.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Jean-Pierre")
                     .email("john.doe@example.com")
-                    .role(Role.PARTICIPANT)
-                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findByEmail(validParticipantRequest.getEmail()))
+            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
                     .thenReturn(Optional.empty());
             when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
-                    .thenReturn(createdUser);
+                    .thenReturn(createdRef);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 

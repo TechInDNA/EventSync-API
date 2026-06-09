@@ -1,8 +1,8 @@
 package com.techindna.eventsyncapi.repository;
 
+import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
 import com.techindna.eventsyncapi.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,13 +15,25 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
 
-    @Modifying
+    @Query("""
+            SELECT new com.techindna.eventsyncapi.dto.auth.ParticipantRefDto(
+                u.id, u.firstName, u.lastName, u.email
+            )
+            FROM User u
+            WHERE u.email = :email
+            AND u.firstName = :firstName
+            AND u.lastName = :lastName
+            """)
+    Optional<ParticipantRefDto> findRefByEmailAndNames(@Param("email") String email,
+                                                       @Param("firstName") String firstName,
+                                                       @Param("lastName") String lastName);
+
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role)
             VALUES (:firstName, :lastName, :email, 'PARTICIPANT')
-            RETURNING id, first_name, last_name, email
+            RETURNING id, first_name AS "firstName", last_name AS "lastName", email
             """, nativeQuery = true)
-    User insertParticipant(@Param("firstName") String firstName,
-                           @Param("lastName") String lastName,
-                           @Param("email") String email);
+    ParticipantRefDto insertParticipant(@Param("firstName") String firstName,
+                                        @Param("lastName") String lastName,
+                                        @Param("email") String email);
 }

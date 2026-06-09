@@ -31,6 +31,16 @@ public class UserMapper {
                 .build();
     }
 
+    public User toUser(ParticipantRefDto ref) {
+        return User.builder()
+                .id(ref.getId())
+                .firstName(ref.getFirstName())
+                .lastName(ref.getLastName())
+                .email(ref.getEmail())
+                .role(Role.PARTICIPANT)
+                .build();
+    }
+
     public ParticipantRefDto toParticipantRef(User user) {
         return ParticipantRefDto.builder()
                 .id(user.getId())
