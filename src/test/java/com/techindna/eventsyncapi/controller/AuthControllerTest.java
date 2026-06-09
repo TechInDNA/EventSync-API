@@ -4,7 +4,6 @@ import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.entity.enums.Role;
-import com.techindna.eventsyncapi.exception.BadRequestException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.TooManyRequestException;
 import com.techindna.eventsyncapi.exception.UnauthorizedException;
