@@ -27,7 +27,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role)
             VALUES (:firstName, :lastName, :email, 'PARTICIPANT')
-            RETURNING *
+            RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
             """, nativeQuery = true)
     User insertParticipant(@Param("firstName") String firstName,
                            @Param("lastName") String lastName,
