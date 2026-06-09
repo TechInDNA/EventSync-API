@@ -4,7 +4,6 @@ import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
-import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -370,17 +369,19 @@ class AuthServiceTest {
         @Test
         @DisplayName("creates new participant when email does not exist")
         void newEmail_createsParticipantAndReturnsToken() {
-            ParticipantRefDto createdRef = ParticipantRefDto.builder()
+            User createdUser = User.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
                     .thenReturn(Optional.empty());
             when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
-                    .thenReturn(createdRef);
+                    .thenReturn(createdUser);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -394,22 +395,24 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getLastName()).isEqualTo("Doe");
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
-            verify(userRepository).findRefByEmailAndNames(anyString(), anyString(), anyString());
+            verify(userRepository).findByEmailAndNames(anyString(), anyString(), anyString());
             verify(userRepository).insertParticipant(anyString(), anyString(), anyString());
         }
 
         @Test
         @DisplayName("returns existing participant when email already registered")
         void existingParticipant_returnsToken() {
-            ParticipantRefDto existingRef = ParticipantRefDto.builder()
+            User existing = User.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
-                    .thenReturn(Optional.of(existingRef));
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
+                    .thenReturn(Optional.of(existing));
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -454,31 +457,23 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("throws UnprocessableEntityException when name contains numbers")
-        void nameWithNumbers_throwsUnprocessableEntity() {
-            validParticipantRequest.setFirstName("John123");
-
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
-                    .isInstanceOf(UnprocessableEntityException.class)
-                    .hasMessageContaining("Invalid input for firstName");
-        }
-
-        @Test
-        @DisplayName("accepts hyphenated name like Jean-Pierre")
+        @DisplayName("accepts hyphenated name")
         void hyphenatedName_accepts() {
             validParticipantRequest.setLastName("Jean-Pierre");
 
-            ParticipantRefDto createdRef = ParticipantRefDto.builder()
+            User createdUser = User.builder()
                     .id(PARTICIPANT_ID)
                     .firstName("John")
                     .lastName("Jean-Pierre")
                     .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
                     .build();
 
-            when(userRepository.findRefByEmailAndNames(anyString(), anyString(), anyString()))
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
                     .thenReturn(Optional.empty());
             when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
-                    .thenReturn(createdRef);
+                    .thenReturn(createdUser);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -486,6 +481,16 @@ class AuthServiceTest {
 
             assertThat(response).isNotNull();
             assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when name contains numbers")
+        void nameWithNumbers_throwsUnprocessableEntity() {
+            validParticipantRequest.setFirstName("John123");
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessageContaining("Invalid input for firstName");
         }
 
         @Test
