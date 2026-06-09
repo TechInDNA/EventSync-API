@@ -14,13 +14,13 @@ public class DataValidator {
 
     public void checkNullData(String fieldName, String data){
         if (data == null || data.isEmpty() || data.isBlank()){
-            throw new BadRequestException(String.format("The field %s is required and cannot be blank.", fieldName));
+            throw new UnprocessableEntityException(String.format("The field %s is required and cannot be blank.", fieldName));
         }
     }
 
     protected void lengthValidation(String fieldName, int limit, String data){
         if (data != null && data.length() > limit){
-            throw new BadRequestException(String.format("The length of %s field cannot exceed %d.", fieldName, limit));
+            throw new UnprocessableEntityException(String.format("The length of %s field cannot exceed %d.", fieldName, limit));
         }
     }
 
