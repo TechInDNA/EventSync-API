@@ -44,6 +44,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '422':
           $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
   /auth/participant:
     post:
       summary: Identify or register a participant without authentication
@@ -1695,3 +1697,14 @@ components:
             status: 422
             error: Unprocessable Entity
             message: At least one required field is missing or invalid
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 429
+            error: Too Many Requests
+            message: Too many requests. Please try again later.
