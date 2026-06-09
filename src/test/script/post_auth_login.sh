@@ -5,7 +5,7 @@ echo ""
 
 echo "==========  VALID LOGIN (200)  =========="
 echo "--- Test 1: Valid admin login (should return 200 + JWT cookie) ---"
-curlie -k -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com", "password": "test"}' http://localhost:8080/auth/login
+curlie -k -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com", "password": "admin123"}' http://localhost:8080/auth/login
 
 echo ""
 echo "==========  UNAUTHORIZED (401)  =========="
@@ -46,4 +46,4 @@ curlie -k -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com
 
 echo ""
 echo "--- Test 9: 6th attempt — IP already blocked (should return 401) ---"
-curlie -k -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com", "password": "wrong"}' http://localhost:8080/auth/login
+curlie -k -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com", "password": "admin123"}' http://localhost:8080/auth/login

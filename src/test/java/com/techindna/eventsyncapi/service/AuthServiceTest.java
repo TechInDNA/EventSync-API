@@ -169,12 +169,12 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("throws BadRequestException when email is null")
-        void nullEmail_throwsBadRequest() {
+        @DisplayName("throws UnprocessableEntityException when email is null")
+        void nullEmail_throwsUnprocessableEntity() {
             validRequest.setEmail(null);
 
             assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
-                    .isInstanceOf(BadRequestException.class)
+                    .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessage("The field email is required and cannot be blank.");
         }
 
