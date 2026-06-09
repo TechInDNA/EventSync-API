@@ -369,13 +369,18 @@ class AuthServiceTest {
         @Test
         @DisplayName("creates new participant when email does not exist")
         void newEmail_createsParticipantAndReturnsToken() {
+            User createdUser = User.builder()
+                    .id(PARTICIPANT_ID)
+                    .firstName("John")
+                    .lastName("Doe")
+                    .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
             when(userRepository.findByEmail(validParticipantRequest.getEmail()))
-                    .thenReturn(Optional.empty());
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                User saved = invocation.getArgument(0);
-                saved.setId(PARTICIPANT_ID);
-                return saved;
-            });
+                    .thenReturn(Optional.empty(), Optional.of(createdUser));
+            doNothing().when(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -389,11 +394,8 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getLastName()).isEqualTo("Doe");
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
-            ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-            verify(userRepository).save(captor.capture());
-            User savedUser = captor.getValue();
-            assertThat(savedUser.getRole()).isEqualTo(Role.PARTICIPANT);
-            assertThat(savedUser.getPassword()).isNull();
+            verify(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
+            verify(userRepository, times(2)).findByEmail(validParticipantRequest.getEmail());
         }
 
         @Test
@@ -420,7 +422,7 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getId()).isEqualTo(PARTICIPANT_ID);
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
-            verify(userRepository, never()).save(any());
+            verify(userRepository, never()).insertParticipant(any());
         }
 
         @Test
@@ -468,13 +470,18 @@ class AuthServiceTest {
         void hyphenatedName_accepts() {
             validParticipantRequest.setLastName("Jean-Pierre");
 
+            User createdUser = User.builder()
+                    .id(PARTICIPANT_ID)
+                    .firstName("John")
+                    .lastName("Jean-Pierre")
+                    .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
             when(userRepository.findByEmail(validParticipantRequest.getEmail()))
-                    .thenReturn(Optional.empty());
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                User saved = invocation.getArgument(0);
-                saved.setId(PARTICIPANT_ID);
-                return saved;
-            });
+                    .thenReturn(Optional.empty(), Optional.of(createdUser));
+            doNothing().when(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
