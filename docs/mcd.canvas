@@ -1,0 +1,37 @@
+{
+	"nodes":[
+		{"id":"4b7d350c75056011","type":"text","text":"## USER\n- `id` `uuid` `pk`\n- `first_name` `varchar(50)` `not null`\n- `last_name` `varchar(50)` `not null`\n- `email` `varchar(50)` `unique` `not null`\n- `password` `varchar(100)`\n- `bio` `text`\n- `created_at` `timestamp` `default now()`\n- `profile_picture` `varchar(255)`\n-  `role` `enum (admin, speaker, participant)`","x":-1240,"y":288,"width":520,"height":360,"color":"#069171"},
+		{"id":"eafca8f9aa854a0b","type":"text","text":"## CONTAIN","x":-1059,"y":920,"width":158,"height":50},
+		{"id":"6577fdecb7b10953","type":"text","text":"## EXTERNAL_LINKS\n\n- `id` `uuid` `pk`\n- `name` `varchar(50)`\n- `url` `varchar(50)` `unique`\n- `user_id` `fk` `references` user(id)","x":-1149,"y":1160,"width":339,"height":220,"color":"#069171"},
+		{"id":"0a1ffc360198b9b3","type":"text","text":"## ROOMS\n- `id` `uuid` `pk`\n- `name` `varchar(50)` `unique` `not null`","x":-1239,"y":-2240,"width":400,"height":136,"color":"#069171"},
+		{"id":"fcc4393bb7f959f8","type":"text","text":"## CONTAIN","x":-1114,"y":-1920,"width":153,"height":62},
+		{"id":"e8113c9c28fefbe1","type":"text","text":"## CONTAIN","x":-420,"y":-1494,"width":158,"height":50},
+		{"id":"f2c5fd3c1b68a5e0","type":"text","text":"## MANAGE\n\n- `id` `pk` `not null`\n-  `event_id` `fk` `references` event(id)\n- `user_id` `fk` `references` user(id)","x":140,"y":372,"width":520,"height":193},
+		{"id":"9aa1b615c87ee93f","type":"text","text":"## CONTAIN","x":-2599,"y":-1506,"width":153,"height":62},
+		{"id":"f84025695f85f577","type":"text","text":"## QUESTION\n\n- `id` `uuid` `pk`\n- `title` `varchar(50)` `not null`\n- `content` `text` `not null`\n- `created_at` `datetime` `default now()`\n-  `session_id` `fk` `references` session(id)\n-  `user_id` `fk` `references` user(id)\n-  `anonymous` `boolean` `default false`","x":-2723,"y":-633,"width":400,"height":273,"color":"#069171"},
+		{"id":"51ec4f6ea0a19454","type":"text","text":"## UPVOTE\n\n- `id` `uuid` `not null`\n- `user_id` `fk` `not null` `references` user(id)\n- `question_id` `fk` `not null` `references` question(id)\n- `created_at` `timestamp` `not null` `default now()`","x":-2765,"y":358,"width":484,"height":220},
+		{"id":"382c0b00f25387cc","type":"text","text":"## PARTICIPATE\n\n- `id` `uuid` `not null`\n- `user_id` `fk` `not null` `references` user(id)\n- `session_id` `fk` `not null` `references` session(id)\n- `at` `timestamp` `default now()`  not null`","x":-540,"y":-606,"width":484,"height":220},
+		{"id":"55b599f261ccf307","type":"text","text":"## INTERVENE\n\n- `id` `uuid` `not null`\n- `speaker_id` `fk` `not null` `references` user(id)\n- `session_id` `fk` `not null` `references` session(id)\n- `start_time` `timestamp` `not null`\n- `end_time` `timestamp` `not null`","x":-1820,"y":-606,"width":484,"height":220},
+		{"id":"121695b295bd389e","type":"text","text":"## EVENTS\n- `id` `uuid` `pk`\n- `title` `unique` `varchar(50)` `not null`\n- `description` `text` `not null`\n- `start_date` `timestamp` `not null`\n- `end_date` `timestamp` `not null`\n- `location` `varchar(50)` `not null`\n-  `created_at` `timestamp` `default now()` `not null`","x":140,"y":-1604,"width":520,"height":271,"color":"#069171"},
+		{"id":"805cf399d01a20f0","type":"text","text":"## SESSIONS\n- `id` `uuid` `pk`\n- `title` `varchar(50)` `unique` `not null`\n- `description` `text` `not null`\n- `start_date` `datetime` `not null`\n- `end_date` `datetime` `not null`\n- `room_id` `fk` `references` room(id)\n- `capacity` `int` `not null`\n-  `event_id` `uuid` `fk` `references` event(id)","x":-1297,"y":-1619,"width":520,"height":302,"color":"#069171"},
+		{"id":"a1c9fa6eb3b14adc","type":"text","text":"## BLACKLISTED_IP\n\n- `id` `uuid` `not null`\n- `ip_address` `varchar(20)` `unique not null`\n- `created_at` `timestamp` `not null` `default` `now()` \n- `failed_attempts` `int` `not null` `default 1`","x":-1160,"y":-606,"width":484,"height":220}
+	],
+	"edges":[
+		{"id":"467610ec40730ae7","fromNode":"f2c5fd3c1b68a5e0","fromSide":"top","toNode":"121695b295bd389e","toSide":"bottom","toEnd":"none","label":"1,N"},
+		{"id":"5be322df028d3da0","fromNode":"805cf399d01a20f0","fromSide":"right","toNode":"e8113c9c28fefbe1","toSide":"left","toEnd":"none","label":"1,1"},
+		{"id":"aa9243f3c7651555","fromNode":"e8113c9c28fefbe1","fromSide":"right","toNode":"121695b295bd389e","toSide":"left","toEnd":"none","label":"1,N"},
+		{"id":"28a0a2abd4380d0b","fromNode":"805cf399d01a20f0","fromSide":"top","toNode":"fcc4393bb7f959f8","toSide":"bottom","toEnd":"none","label":"1,1"},
+		{"id":"2dbe5f283c0de2d2","fromNode":"fcc4393bb7f959f8","fromSide":"top","toNode":"0a1ffc360198b9b3","toSide":"bottom","toEnd":"none","label":"1,1"},
+		{"id":"1a750ee692df788b","fromNode":"4b7d350c75056011","fromSide":"right","toNode":"f2c5fd3c1b68a5e0","toSide":"left","toEnd":"none","label":"0,N"},
+		{"id":"2706d47aaeb4c528","fromNode":"4b7d350c75056011","fromSide":"top","toNode":"55b599f261ccf307","toSide":"bottom","toEnd":"none","label":"1,N"},
+		{"id":"8b52a82c060038e5","fromNode":"55b599f261ccf307","fromSide":"top","toNode":"805cf399d01a20f0","toSide":"bottom","toEnd":"none","label":"1,N"},
+		{"id":"9e518273d8c356e0","fromNode":"9aa1b615c87ee93f","fromSide":"right","toNode":"805cf399d01a20f0","toSide":"left","toEnd":"none","label":"0,N"},
+		{"id":"24d738d85aa4b936","fromNode":"f84025695f85f577","fromSide":"top","toNode":"9aa1b615c87ee93f","toSide":"bottom","toEnd":"none","label":"1,1"},
+		{"id":"974e16a240bf345d","fromNode":"805cf399d01a20f0","fromSide":"bottom","toNode":"382c0b00f25387cc","toSide":"top","toEnd":"none","label":"0,N"},
+		{"id":"232075ad38775e52","fromNode":"382c0b00f25387cc","fromSide":"bottom","toNode":"4b7d350c75056011","toSide":"top","toEnd":"none","label":"0,N"},
+		{"id":"aaa38395465b2b93","fromNode":"4b7d350c75056011","fromSide":"bottom","toNode":"eafca8f9aa854a0b","toSide":"top","toEnd":"none","label":"0,N"},
+		{"id":"dec3a1cfe9eaf73e","fromNode":"eafca8f9aa854a0b","fromSide":"bottom","toNode":"6577fdecb7b10953","toSide":"top","toEnd":"none","label":"1,1"},
+		{"id":"827555ac9a348891","fromNode":"4b7d350c75056011","fromSide":"left","toNode":"51ec4f6ea0a19454","toSide":"right","toEnd":"none","label":"0,N"},
+		{"id":"098d573c47e551b4","fromNode":"f84025695f85f577","fromSide":"bottom","toNode":"51ec4f6ea0a19454","toSide":"top","toEnd":"none","label":"0,N"}
+	]
+}

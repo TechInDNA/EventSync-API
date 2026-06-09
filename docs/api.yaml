@@ -1,0 +1,1697 @@
+openapi: 3.0.3
+info:
+  title: EventSync API
+  description: API for event management and real-time participant engagement
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate an administrator
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /auth/participant:
+    post:
+      summary: Identify or register a participant without authentication
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Participant identified or created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  participant:
+                    $ref: '#/components/schemas/ParticipantRef'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /events:
+    get:
+      summary: List all events
+      tags:
+        - Events
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: title
+          in: query
+          schema:
+            type: string
+          description: Filter by event title
+        - name: location
+          in: query
+          schema:
+            type: string
+          description: Filter by location
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Create a new event
+      tags:
+        - Events
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /events/{id}:
+    get:
+      summary: Get event details
+      tags:
+        - Events
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de l'événement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    put:
+      summary: Update an event
+      tags:
+        - Events
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '200':
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete an event
+      tags:
+        - Events
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Event deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /sessions:
+    get:
+      summary: List all sessions
+      tags:
+        - Sessions
+      parameters:
+        - name: room
+          in: query
+          schema:
+            type: string
+          description: Filter by room name
+        - name: speaker
+          in: query
+          schema:
+            type: string
+          description: Filter by speaker name (matches first or last name)
+        - name: live
+          in: query
+          schema:
+            type: boolean
+          description: Filter sessions currently live
+        - name: event
+          in: query
+          schema:
+            type: string
+          description: Filter by event title
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Create a new session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionInput'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /sessions/{id}:
+    get:
+      summary: Get session details
+      tags:
+        - Sessions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de la session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    put:
+      summary: Update a session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionUpdateInput'
+      responses:
+        '200':
+          description: Session updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete a session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Session deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /sessions/{sessionId}/speaker/{speakerId}:
+    post:
+      summary: Add a speaker to a session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: speakerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionSpeakerInput'
+      responses:
+        '201':
+          description: Speaker linked to session
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    put:
+      summary: Update a speaker link in a session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: speakerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionSpeakerInput'
+      responses:
+        '200':
+          description: Speaker link updated
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Remove a speaker from a session
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: speakerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Speaker removed from session
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /sessions/{id}/questions:
+    get:
+      summary: List questions of a session
+      tags:
+        - Questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the session
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [upvotes, createdAt]
+            default: upvotes
+          description: Sort order (upvotes descending, or createdAt ascending)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionList'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Ask a question on a session
+      tags:
+        - Questions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionInput'
+      responses:
+        '201':
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /sessions/{id}/questions/{qid}/upvote:
+    get:
+      summary: Get number of upvotes for a question
+      tags:
+        - Questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the session
+        - name: qid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the question
+      responses:
+        '200':
+          description: Number of upvotes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Number of upvotes
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Upvote a question
+      tags:
+        - Questions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the session
+        - name: qid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the question
+      responses:
+        '200':
+          description: Question upvotée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of upvotes
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /rooms:
+    get:
+      summary: List all rooms
+      tags:
+        - Rooms
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Create a new room
+      tags:
+        - Rooms
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomInput'
+      responses:
+        '201':
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /rooms/{id}:
+    put:
+      summary: Update a room
+      tags:
+        - Rooms
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomInput'
+      responses:
+        '200':
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete a room
+      tags:
+        - Rooms
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Room deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /speakers:
+    get:
+      summary: List all speakers
+      tags:
+        - Speakers
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter by speaker first name or last name
+      responses:
+        '200':
+          description: List of speakers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    post:
+      summary: Create a new speaker
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeakerInput'
+      responses:
+        '201':
+          description: Speaker created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Speaker'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /speakers/{id}:
+    get:
+      summary: Get speaker details
+      tags:
+        - Speakers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de l'intervenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    put:
+      summary: Update a speaker
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeakerUpdateInput'
+      responses:
+        '200':
+          description: Speaker updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerUpdateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete a speaker
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Speaker deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /speakers/{id}/external-link:
+    post:
+      summary: Add an external link to a speaker
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkInput'
+      responses:
+        '201':
+          description: External link added
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkInput'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete an external link from a speaker by external link ID
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: externalLinkId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: External link deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    put:
+      summary: Update a speaker external link by URL name
+      tags:
+        - Speakers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: urlName
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkInput'
+      responses:
+        '200':
+          description: External link updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkInput'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    # ────────────────── Shared error ──────────────────
+    Error:
+      type: object
+      required:
+        - status
+        - error
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field affected by the error
+              message:
+                type: string
+                description: Error description for this field
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+            - admin
+            - speaker
+            - participant
+    EventRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+    EventRefInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    SessionRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        isLive:
+          type: boolean
+          description: True if the event is currently happening
+          example: false
+    EventList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    EventDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        isLive:
+          type: boolean
+          description: True if the event is currently happening
+          example: false
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionForEvent'
+    EventInput:
+      type: object
+      required:
+        - title
+        - description
+        - startDate
+        - endDate
+        - location
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        room:
+          $ref: '#/components/schemas/Room'
+        capacity:
+          type: integer
+        event:
+          $ref: '#/components/schemas/EventRef'
+        speakers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpeakerRef'
+        isLive:
+          type: boolean
+          description: True if the session is live
+    SessionForSpeaker:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        room:
+          $ref: '#/components/schemas/Room'
+        capacity:
+          type: integer
+        event:
+          $ref: '#/components/schemas/EventRef'
+        isLive:
+          type: boolean
+          description: True if the session is live
+    SessionForEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        room:
+          $ref: '#/components/schemas/Room'
+        capacity:
+          type: integer
+        isLive:
+          type: boolean
+          description: True if the session is live
+    SessionDetail:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Session'
+        - type: object
+          properties:
+            speakers:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpeakerRef'
+            questions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Question'
+    SessionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    SessionInput:
+      type: object
+      required:
+        - title
+        - description
+        - startDate
+        - endDate
+        - roomName
+        - eventTitle
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        roomName:
+          type: string
+        capacity:
+          type: integer
+        eventTitle:
+          type: string
+    SessionUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        roomId:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    RoomList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    RoomInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    RoomRefInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    Speaker:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        externalLinks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              url:
+                type: string
+                format: uri
+    SpeakerDetail:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Speaker'
+        - type: object
+          properties:
+            sessions:
+              type: array
+              items:
+                $ref: '#/components/schemas/SessionForSpeaker'
+    SpeakerRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+    SpeakerRefInput:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    ParticipantInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+    Participant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+    ParticipantRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+    SpeakerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Speaker'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    SpeakerInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+        externalLinks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              url:
+                type: string
+                format: uri
+    SpeakerUpdateInput:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+    SpeakerUpdateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        profilePicture:
+          type: string
+          format: uri
+        bio:
+          type: string
+    ExternalLinkInput:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        participant:
+          $ref: '#/components/schemas/ParticipantRef'
+        upvotes:
+          type: integer
+        isAnonymous:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    QuestionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
+    SessionSpeakerInput:
+      type: object
+      required:
+        - startTime
+        - endTime
+      properties:
+        startTime:
+          type: string
+          format: time
+          description: Start time of the speaker's intervention (time with time zone)
+        endTime:
+          type: string
+          format: time
+          description: End time of the speaker's intervention (time with time zone)
+    SessionRefDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        room:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+    SessionSpeaker:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        speaker:
+          $ref: '#/components/schemas/SpeakerRef'
+        session:
+          $ref: '#/components/schemas/SessionRefDetail'
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+    QuestionInput:
+      type: object
+      required:
+        - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        participantId:
+          type: string
+          format: uuid
+        isAnonymous:
+          type: boolean
+          default: false
+
+  responses:
+    BadRequest:
+      description: Malformed request or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 400
+            error: Bad Request
+            message: The request body contains invalid data or a parameter is malformed
+
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 401
+            error: Unauthorized
+            message: Authentication is required or the provided credentials are invalid
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 404
+            error: Not Found
+            message: The requested resource was not found
+
+    Conflict:
+      description: Resource conflict (e.g. duplicate, state conflict)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 409
+            error: Conflict
+            message: The request could not be completed due to a conflict with the current state of the resource
+
+    Unprocessable:
+      description: Semantically invalid data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 422
+            error: Unprocessable Entity
+            message: At least one required field is missing or invalid
