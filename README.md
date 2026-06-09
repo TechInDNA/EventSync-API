@@ -32,19 +32,31 @@ psql "$DATABASE_URL" -f src/main/resources/db/001_create_users.sql
 
 ```bash
 ./gradlew build -x test
-./gradlew test
-./gradlew bootRun          # → http://localhost:8080
+./gradlew test                 # 25 tests
+./gradlew bootRun              # → http://localhost:8080
+```
+
+### 4. Test the login endpoint
+
+```bash
+src/main/java/com/techindna/eventsyncapi/script/post_auth_login.sh
 ```
 
 ## Endpoints
 
 | Endpoint | Description |
 |---|---|
-| `POST /api/auth/login`       | Authenticate admin |
-| `POST /api/auth/participant` | Identify/register participant |
-| `POST /api/auth/register`    | Create admin account |
+| `POST /auth/login` | Authenticate admin (returns JWT cookie + token body) |
 
 > See `docs/api.yaml` for full spec.
+
+## Architecture
+
+**Validation:** null/blank checks via `@NotBlank` on the DTO. Format validation delegated to `DataValidator` in the service layer — keeps validation logic testable and exception messages precise.
+
+**Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
+
+**Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity.
 
 ---
 
