@@ -4,9 +4,11 @@ import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.entity.enums.Role;
+import com.techindna.eventsyncapi.exception.BadRequestException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.TooManyRequestException;
 import com.techindna.eventsyncapi.exception.UnauthorizedException;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -127,10 +129,14 @@ class AuthControllerTest {
         request.setEmail("not-an-email");
         request.setPassword("password123");
 
+        when(authService.login(any(AuthLoginRequestDto.class), any(), any()))
+                .thenThrow(new UnprocessableEntityException("Invalid email format: 'not-an-email'"));
+
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
-                .andExpect(status().isUnprocessableContent());
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.status").value(422));
     }
 
     @Test

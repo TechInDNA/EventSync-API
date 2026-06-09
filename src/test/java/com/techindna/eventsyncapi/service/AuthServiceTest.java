@@ -5,12 +5,15 @@ import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
+import com.techindna.eventsyncapi.exception.BadRequestException;
 import com.techindna.eventsyncapi.exception.TooManyRequestException;
 import com.techindna.eventsyncapi.exception.UnauthorizedException;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.UserMapper;
 import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.config.TokenProvider;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +37,7 @@ class AuthServiceTest {
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final DataValidator dataValidator;
     private final AuthService authService;
 
     private static final UUID ADMIN_ID = UUID.fromString("3f553f56-792c-4c80-9ea9-b259ef1247a9");
@@ -50,7 +54,9 @@ class AuthServiceTest {
         this.tokenProvider = mock(TokenProvider.class);
         this.passwordEncoder = mock(PasswordEncoder.class);
         this.userMapper = new UserMapper();
+        this.dataValidator = new DataValidator();
         this.authService = new AuthService(
+                dataValidator,
                 userRepository,
                 blacklistedIpRepository,
                 tokenProvider,
@@ -150,6 +156,26 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
                     .isInstanceOf(UnauthorizedException.class)
                     .hasMessageContaining("Invalid credentials");
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when email format is invalid")
+        void invalidEmailFormat_throwsUnprocessableEntity() {
+            validRequest.setEmail("not-an-email");
+
+            assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessageContaining("Invalid email format");
+        }
+
+        @Test
+        @DisplayName("throws BadRequestException when email is null")
+        void nullEmail_throwsBadRequest() {
+            validRequest.setEmail(null);
+
+            assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessage("The field email is required and cannot be blank.");
         }
 
         @Test
