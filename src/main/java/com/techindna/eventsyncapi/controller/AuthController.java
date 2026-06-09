@@ -2,11 +2,14 @@ package com.techindna.eventsyncapi.controller;
 
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
 import com.techindna.eventsyncapi.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,5 +45,12 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(response);
+    }
+
+    @PostMapping("/participant")
+    public ResponseEntity<AuthParticipantResponseDto> participate(
+            @RequestBody AuthParticipantRequestDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.participate(request));
     }
 }

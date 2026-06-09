@@ -3,6 +3,9 @@ package com.techindna.eventsyncapi.controller;
 import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
+import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
 import com.techindna.eventsyncapi.entity.enums.Role;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.TooManyRequestException;
@@ -17,6 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,7 +34,8 @@ class AuthControllerTest {
     private final AuthService authService;
 
     private static final UUID ADMIN_ID = UUID.fromString("3f553f56-792c-4c80-9ea9-b259ef1247a9");
-    private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.test";
+    private static final UUID PARTICIPANT_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static final String VALID_TOKEN = "eyJhbG...test";
 
     AuthControllerTest() {
         authService = mock(AuthService.class);
@@ -102,6 +107,10 @@ class AuthControllerTest {
 
     @Test
     void login_withEmptyBody_returns422() throws Exception {
+        var emptyRequest = new AuthLoginRequestDto();
+        when(authService.login(eq(emptyRequest), any(), any()))
+                .thenThrow(new UnprocessableEntityException("The field email is required and cannot be blank."));
+
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -115,6 +124,9 @@ class AuthControllerTest {
         var request = new AuthLoginRequestDto();
         request.setEmail("");
         request.setPassword("password123");
+
+        when(authService.login(eq(request), any(), any()))
+                .thenThrow(new UnprocessableEntityException("The field email is required and cannot be blank."));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -143,6 +155,9 @@ class AuthControllerTest {
         var request = new AuthLoginRequestDto();
         request.setEmail("admin@eventsync.com");
         request.setPassword("");
+
+        when(authService.login(eq(request), any(), any()))
+                .thenThrow(new UnprocessableEntityException("The field password is required and cannot be blank."));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -213,10 +228,93 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status").value(429));
     }
 
+    @Test
+    void participate_withValidData_returns200AndToken() throws Exception {
+        var request = validParticipantRequest();
+        var participantRef = ParticipantRefDto.builder()
+                .id(PARTICIPANT_ID)
+                .firstName("John")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .build();
+        var response = AuthParticipantResponseDto.builder()
+                .token(VALID_TOKEN)
+                .participant(participantRef)
+                .build();
+
+        when(authService.participate(any(AuthParticipantRequestDto.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(post("/auth/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(VALID_TOKEN))
+                .andExpect(jsonPath("$.participant.id").value(PARTICIPANT_ID.toString()))
+                .andExpect(jsonPath("$.participant.firstName").value("John"))
+                .andExpect(jsonPath("$.participant.lastName").value("Doe"))
+                .andExpect(jsonPath("$.participant.email").value("john.doe@example.com"));
+    }
+
+    @Test
+    void participate_withEmptyBody_returns422() throws Exception {
+        var emptyRequest = new AuthParticipantRequestDto();
+        when(authService.participate(eq(emptyRequest)))
+                .thenThrow(new UnprocessableEntityException("The field firstName is required and cannot be blank."));
+
+        mockMvc.perform(post("/auth/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Entity"));
+    }
+
+    @Test
+    void participate_withBlankFields_returns422() throws Exception {
+        var request = new AuthParticipantRequestDto();
+        request.setFirstName("");
+        request.setLastName("");
+        request.setEmail("");
+
+        when(authService.participate(eq(request)))
+                .thenThrow(new UnprocessableEntityException("The field firstName is required and cannot be blank."));
+
+        mockMvc.perform(post("/auth/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isUnprocessableContent());
+    }
+
+    @Test
+    void participate_withInvalidEmail_returns422() throws Exception {
+        var request = new AuthParticipantRequestDto();
+        request.setFirstName("John");
+        request.setLastName("Doe");
+        request.setEmail("not-an-email");
+
+        when(authService.participate(any(AuthParticipantRequestDto.class)))
+                .thenThrow(new UnprocessableEntityException("Invalid email format: 'not-an-email'"));
+
+        mockMvc.perform(post("/auth/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.status").value(422));
+    }
+
     private AuthLoginRequestDto validRequest() {
         var dto = new AuthLoginRequestDto();
         dto.setEmail("admin@eventsync.com");
         dto.setPassword("admin123");
+        return dto;
+    }
+
+    private AuthParticipantRequestDto validParticipantRequest() {
+        var dto = new AuthParticipantRequestDto();
+        dto.setFirstName("John");
+        dto.setLastName("Doe");
+        dto.setEmail("john.doe@example.com");
         return dto;
     }
 
