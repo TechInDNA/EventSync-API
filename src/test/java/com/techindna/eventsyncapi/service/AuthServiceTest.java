@@ -379,7 +379,7 @@ class AuthServiceTest {
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
-            AuthParticipantResponseDto response = authService.participate(validParticipantRequest);
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
 
             assertThat(response).isNotNull();
             assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
@@ -413,7 +413,7 @@ class AuthServiceTest {
             when(tokenProvider.generateAccessToken(existing))
                     .thenReturn(PARTICIPANT_TOKEN);
 
-            AuthParticipantResponseDto response = authService.participate(validParticipantRequest);
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
 
             assertThat(response).isNotNull();
             assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
@@ -428,7 +428,7 @@ class AuthServiceTest {
         void invalidEmail_throwsUnprocessableEntity() {
             validParticipantRequest.setEmail("not-an-email");
 
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest))
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessageContaining("Invalid email format");
         }
@@ -438,7 +438,7 @@ class AuthServiceTest {
         void nullFirstName_throwsUnprocessableEntity() {
             validParticipantRequest.setFirstName(null);
 
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest))
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessage("The field firstName is required and cannot be blank.");
         }
@@ -448,7 +448,7 @@ class AuthServiceTest {
         void nullLastName_throwsUnprocessableEntity() {
             validParticipantRequest.setLastName(null);
 
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest))
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessage("The field lastName is required and cannot be blank.");
         }
@@ -458,7 +458,7 @@ class AuthServiceTest {
         void nameWithNumbers_throwsUnprocessableEntity() {
             validParticipantRequest.setFirstName("John123");
 
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest))
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessageContaining("Invalid input for firstName");
         }
@@ -478,7 +478,7 @@ class AuthServiceTest {
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
-            AuthParticipantResponseDto response = authService.participate(validParticipantRequest);
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
 
             assertThat(response).isNotNull();
             assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
@@ -489,7 +489,7 @@ class AuthServiceTest {
         void nameTooLong_throwsUnprocessableEntity() {
             validParticipantRequest.setLastName("A" + "a".repeat(50));
 
-            assertThatThrownBy(() -> authService.participate(validParticipantRequest))
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessageContaining("cannot exceed");
         }

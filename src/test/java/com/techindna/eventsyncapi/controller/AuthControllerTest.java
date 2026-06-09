@@ -242,7 +242,7 @@ class AuthControllerTest {
                 .participant(participantRef)
                 .build();
 
-        when(authService.participate(any(AuthParticipantRequestDto.class)))
+        when(authService.participate(any(AuthParticipantRequestDto.class), any()))
                 .thenReturn(response);
 
         mockMvc.perform(post("/auth/participant")
@@ -257,9 +257,24 @@ class AuthControllerTest {
     }
 
     @Test
+    void participate_withBlockedIp_returns401() throws Exception {
+        var request = validParticipantRequest();
+
+        when(authService.participate(any(AuthParticipantRequestDto.class), any()))
+                .thenThrow(new UnauthorizedException(
+                        "You are not authorized to access this resource due to malicious behavior."
+                ));
+
+        mockMvc.perform(post("/auth/participant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void participate_withEmptyBody_returns422() throws Exception {
         var emptyRequest = new AuthParticipantRequestDto();
-        when(authService.participate(eq(emptyRequest)))
+        when(authService.participate(eq(emptyRequest), any()))
                 .thenThrow(new UnprocessableEntityException("The field firstName is required and cannot be blank."));
 
         mockMvc.perform(post("/auth/participant")
@@ -277,7 +292,7 @@ class AuthControllerTest {
         request.setLastName("");
         request.setEmail("");
 
-        when(authService.participate(eq(request)))
+        when(authService.participate(eq(request), any()))
                 .thenThrow(new UnprocessableEntityException("The field firstName is required and cannot be blank."));
 
         mockMvc.perform(post("/auth/participant")
@@ -293,7 +308,7 @@ class AuthControllerTest {
         request.setLastName("Doe");
         request.setEmail("not-an-email");
 
-        when(authService.participate(any(AuthParticipantRequestDto.class)))
+        when(authService.participate(any(AuthParticipantRequestDto.class), any()))
                 .thenThrow(new UnprocessableEntityException("Invalid email format: 'not-an-email'"));
 
         mockMvc.perform(post("/auth/participant")

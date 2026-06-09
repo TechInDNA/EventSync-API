@@ -71,7 +71,9 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthParticipantResponseDto participate(AuthParticipantRequestDto request) {
+    public AuthParticipantResponseDto participate(AuthParticipantRequestDto request, String ipAddress) {
+        checkBlacklist(ipAddress);
+
         dataValidator.validateEmail(request.getEmail());
         dataValidator.validateName("firstName", request.getFirstName(), true);
         dataValidator.validateName("lastName", request.getLastName(), true);

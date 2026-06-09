@@ -49,8 +49,10 @@ public class AuthController {
 
     @PostMapping("/participant")
     public ResponseEntity<AuthParticipantResponseDto> participate(
-            @RequestBody AuthParticipantRequestDto request
+            @RequestBody AuthParticipantRequestDto request,
+            HttpServletRequest servletRequest
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(authService.participate(request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(authService.participate(request, servletRequest.getRemoteAddr()));
     }
 }
