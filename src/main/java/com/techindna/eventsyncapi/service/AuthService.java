@@ -11,6 +11,7 @@ import com.techindna.eventsyncapi.exception.UnauthorizedException;
 import com.techindna.eventsyncapi.mapper.UserMapper;
 import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import com.techindna.eventsyncapi.config.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,8 @@ public class AuthService {
 
     private static final int MAX_ATTEMPT_LIMIT = 5;
 
+    private final DataValidator dataValidator;
+
     private final UserRepository userRepository;
     private final BlacklistedIpRepository blacklistedIpRepository;
     private final TokenProvider tokenProvider;
@@ -34,6 +37,8 @@ public class AuthService {
     @Transactional(noRollbackFor = {UnauthorizedException.class, TooManyRequestException.class})
     public AuthLoginResponseDto login(AuthLoginRequestDto request, String ipAddress, String userAgent) {
         checkBlacklist(ipAddress);
+
+        dataValidator.validateEmail(request.getEmail());
 
         User admin = userRepository.findByEmail(request.getEmail())
                 .filter(u -> u.getRole() == Role.ADMIN)
