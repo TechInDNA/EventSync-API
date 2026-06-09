@@ -19,13 +19,14 @@ CREATE TABLE IF NOT EXISTS eventsync_app."user" (
     created_at      TIMESTAMP                        NOT NULL    DEFAULT NOW()
 );
 
-COMMENT ON TABLE     eventsync_app."user"                IS 'Utilisateurs de la plateforme';
-COMMENT ON COLUMN    eventsync_app."user".id             IS 'Identifiant unique UUID';
-COMMENT ON COLUMN    eventsync_app."user".first_name     IS 'Prénom';
-COMMENT ON COLUMN    eventsync_app."user".last_name      IS 'Nom de famille';
-COMMENT ON COLUMN    eventsync_app."user".email          IS 'Adresse email (unique)';
-COMMENT ON COLUMN    eventsync_app."user".password       IS 'Mot de passe hashé';
-COMMENT ON COLUMN    eventsync_app."user".bio            IS 'Biographie / présentation';
-COMMENT ON COLUMN    eventsync_app."user".profile_picture IS 'URL ou chemin de la photo de profil';
-COMMENT ON COLUMN    eventsync_app."user".role           IS 'Rôle: ADMIN, SPEAKER ou PARTICIPANT';
-COMMENT ON COLUMN    eventsync_app."user".created_at     IS 'Date de création du compte';
+-- Seed: admin user (password: admin123)
+INSERT INTO eventsync_app."user" (id, first_name, last_name, email, password, role, created_at)
+VALUES (
+    '3f553f56-792c-4c80-9ea9-b259ef1247a9',
+    'Admin',
+    'User',
+    'admin@eventsync.com',
+    '$argon2id$v=19$m=16384,t=2,p=1$dizuhrMYICNif5ZLchCBrw$FfApSuvcBfHNWUbyVG/HXItFbpVS0EpErUxQdNIrldg',
+    'ADMIN',
+    NOW()
+) ON CONFLICT (email) DO NOTHING;
