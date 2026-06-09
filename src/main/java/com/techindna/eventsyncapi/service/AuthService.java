@@ -1,8 +1,11 @@
 package com.techindna.eventsyncapi.service;
 
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
-import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
+import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
+import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -64,6 +67,29 @@ public class AuthService {
         return AuthLoginResponseDto.builder()
                 .token(token)
                 .user(userDto)
+                .build();
+    }
+
+    @Transactional
+    public AuthParticipantResponseDto participate(AuthParticipantRequestDto request, String ipAddress) {
+        checkBlacklist(ipAddress);
+
+        dataValidator.validateEmail(request.getEmail());
+        dataValidator.validateName("firstName", request.getFirstName(), true);
+        dataValidator.validateName("lastName", request.getLastName(), true);
+
+        User participant = userRepository.findByEmailAndNames(
+                request.getEmail(), request.getFirstName(), request.getLastName()
+        ).orElseGet(() -> userRepository.insertParticipant(
+                request.getFirstName(), request.getLastName(), request.getEmail()
+        ));
+
+        String token = tokenProvider.generateAccessToken(participant);
+        ParticipantRefDto ref = userMapper.toParticipantRef(participant);
+
+        return AuthParticipantResponseDto.builder()
+                .token(token)
+                .participant(ref)
                 .build();
     }
 

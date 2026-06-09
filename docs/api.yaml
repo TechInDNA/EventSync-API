@@ -81,6 +81,8 @@ paths:
                     type: string
                   participant:
                     $ref: '#/components/schemas/ParticipantRef'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '422':
           $ref: '#/components/responses/Unprocessable'
   /events:

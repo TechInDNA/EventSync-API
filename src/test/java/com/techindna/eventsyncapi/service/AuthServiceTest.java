@@ -2,6 +2,8 @@ package com.techindna.eventsyncapi.service;
 
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
+import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -344,6 +346,161 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
                     .isInstanceOf(UnauthorizedException.class)
                     .hasMessageContaining("malicious behavior");
+        }
+    }
+
+    @Nested
+    @DisplayName("Participant registration / identification")
+    class ParticipantRegistration {
+
+        private static final UUID PARTICIPANT_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+        private static final String PARTICIPANT_TOKEN = "eyJhbG...participant-token";
+
+        private AuthParticipantRequestDto validParticipantRequest;
+
+        @BeforeEach
+        void setUp() {
+            validParticipantRequest = new AuthParticipantRequestDto();
+            validParticipantRequest.setFirstName("John");
+            validParticipantRequest.setLastName("Doe");
+            validParticipantRequest.setEmail("john.doe@example.com");
+        }
+
+        @Test
+        @DisplayName("creates new participant when email does not exist")
+        void newEmail_createsParticipantAndReturnsToken() {
+            User createdUser = User.builder()
+                    .id(PARTICIPANT_ID)
+                    .firstName("John")
+                    .lastName("Doe")
+                    .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
+                    .thenReturn(Optional.empty());
+            when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
+                    .thenReturn(createdUser);
+            when(tokenProvider.generateAccessToken(any(User.class)))
+                    .thenReturn(PARTICIPANT_TOKEN);
+
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
+            assertThat(response.getParticipant()).isNotNull();
+            assertThat(response.getParticipant().getId()).isEqualTo(PARTICIPANT_ID);
+            assertThat(response.getParticipant().getFirstName()).isEqualTo("John");
+            assertThat(response.getParticipant().getLastName()).isEqualTo("Doe");
+            assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
+
+            verify(userRepository).findByEmailAndNames(anyString(), anyString(), anyString());
+            verify(userRepository).insertParticipant(anyString(), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("returns existing participant when email already registered")
+        void existingParticipant_returnsToken() {
+            User existing = User.builder()
+                    .id(PARTICIPANT_ID)
+                    .firstName("John")
+                    .lastName("Doe")
+                    .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
+                    .thenReturn(Optional.of(existing));
+            when(tokenProvider.generateAccessToken(any(User.class)))
+                    .thenReturn(PARTICIPANT_TOKEN);
+
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
+            assertThat(response.getParticipant().getId()).isEqualTo(PARTICIPANT_ID);
+            assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
+
+            verify(userRepository, never()).insertParticipant(anyString(), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when email format is invalid")
+        void invalidEmail_throwsUnprocessableEntity() {
+            validParticipantRequest.setEmail("not-an-email");
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessageContaining("Invalid email format");
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when firstName is null")
+        void nullFirstName_throwsUnprocessableEntity() {
+            validParticipantRequest.setFirstName(null);
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessage("The field firstName is required and cannot be blank.");
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when lastName is null")
+        void nullLastName_throwsUnprocessableEntity() {
+            validParticipantRequest.setLastName(null);
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessage("The field lastName is required and cannot be blank.");
+        }
+
+        @Test
+        @DisplayName("accepts hyphenated name")
+        void hyphenatedName_accepts() {
+            validParticipantRequest.setLastName("Jean-Pierre");
+
+            User createdUser = User.builder()
+                    .id(PARTICIPANT_ID)
+                    .firstName("John")
+                    .lastName("Jean-Pierre")
+                    .email("john.doe@example.com")
+                    .role(Role.PARTICIPANT)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            when(userRepository.findByEmailAndNames(anyString(), anyString(), anyString()))
+                    .thenReturn(Optional.empty());
+            when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
+                    .thenReturn(createdUser);
+            when(tokenProvider.generateAccessToken(any(User.class)))
+                    .thenReturn(PARTICIPANT_TOKEN);
+
+            AuthParticipantResponseDto response = authService.participate(validParticipantRequest, TEST_IP);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getToken()).isEqualTo(PARTICIPANT_TOKEN);
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when name contains numbers")
+        void nameWithNumbers_throwsUnprocessableEntity() {
+            validParticipantRequest.setFirstName("John123");
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessageContaining("Invalid input for firstName");
+        }
+
+        @Test
+        @DisplayName("throws UnprocessableEntityException when name length exceeds 50")
+        void nameTooLong_throwsUnprocessableEntity() {
+            validParticipantRequest.setLastName("A" + "a".repeat(50));
+
+            assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
+                    .isInstanceOf(UnprocessableEntityException.class)
+                    .hasMessageContaining("cannot exceed");
         }
     }
 }
