@@ -1,6 +1,5 @@
 package com.techindna.eventsyncapi.repository;
 
-import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,7 +18,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role)
-            VALUES (:#{#request.firstName}, :#{#request.lastName}, :#{#request.email}, 'PARTICIPANT')
+            VALUES (:firstName, :lastName, :email, 'PARTICIPANT')
+            RETURNING id, first_name, last_name, email
             """, nativeQuery = true)
-    void insertParticipant(@Param("request") AuthParticipantRequestDto request);
+    User insertParticipant(@Param("firstName") String firstName,
+                           @Param("lastName") String lastName,
+                           @Param("email") String email);
 }

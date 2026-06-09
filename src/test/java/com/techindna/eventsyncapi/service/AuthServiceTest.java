@@ -379,8 +379,9 @@ class AuthServiceTest {
                     .build();
 
             when(userRepository.findByEmail(validParticipantRequest.getEmail()))
-                    .thenReturn(Optional.empty(), Optional.of(createdUser));
-            doNothing().when(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
+                    .thenReturn(Optional.empty());
+            when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
+                    .thenReturn(createdUser);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 
@@ -394,8 +395,8 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getLastName()).isEqualTo("Doe");
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
-            verify(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
-            verify(userRepository, times(2)).findByEmail(validParticipantRequest.getEmail());
+            verify(userRepository).insertParticipant(anyString(), anyString(), anyString());
+            verify(userRepository, times(1)).findByEmail(validParticipantRequest.getEmail());
         }
 
         @Test
@@ -422,7 +423,7 @@ class AuthServiceTest {
             assertThat(response.getParticipant().getId()).isEqualTo(PARTICIPANT_ID);
             assertThat(response.getParticipant().getEmail()).isEqualTo("john.doe@example.com");
 
-            verify(userRepository, never()).insertParticipant(any());
+            verify(userRepository, never()).insertParticipant(anyString(), anyString(), anyString());
         }
 
         @Test
@@ -480,8 +481,9 @@ class AuthServiceTest {
                     .build();
 
             when(userRepository.findByEmail(validParticipantRequest.getEmail()))
-                    .thenReturn(Optional.empty(), Optional.of(createdUser));
-            doNothing().when(userRepository).insertParticipant(any(AuthParticipantRequestDto.class));
+                    .thenReturn(Optional.empty());
+            when(userRepository.insertParticipant(anyString(), anyString(), anyString()))
+                    .thenReturn(createdUser);
             when(tokenProvider.generateAccessToken(any(User.class)))
                     .thenReturn(PARTICIPANT_TOKEN);
 

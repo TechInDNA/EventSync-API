@@ -79,11 +79,9 @@ public class AuthService {
         dataValidator.validateName("lastName", request.getLastName(), true);
 
         User participant = userRepository.findByEmail(request.getEmail())
-                .orElseGet(() -> {
-                    userRepository.insertParticipant(request);
-                    return userRepository.findByEmail(request.getEmail())
-                            .orElseThrow(() -> new RuntimeException("Failed to create participant"));
-                });
+                .orElseGet(() -> userRepository.insertParticipant(
+                        request.getFirstName(), request.getLastName(), request.getEmail()
+                ));
 
         String token = tokenProvider.generateAccessToken(participant);
         ParticipantRefDto ref = userMapper.toParticipantRef(participant);
