@@ -27,10 +27,10 @@ public class RoomController {
     public ResponseEntity<RoomListResponseDto> getAllRooms(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String searchByName,
+            @RequestParam(required = false) String name,
             HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size, searchByName, request.getRemoteAddr()));
+        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size, name, request.getRemoteAddr()));
     }
 
     @PostMapping
