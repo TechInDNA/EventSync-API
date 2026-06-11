@@ -61,10 +61,10 @@ public class SecurityConfig {
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, authException) ->
-                    ErrorResponse.send(response, HttpStatus.UNAUTHORIZED, "Authentication required")
+                    ErrorResponse.send(response, HttpStatus.UNAUTHORIZED, "Authentication required.")
                 )
                 .accessDeniedHandler((request, response, accessDeniedException) ->
-                    ErrorResponse.send(response, HttpStatus.FORBIDDEN, accessDeniedException.getMessage())
+                    ErrorResponse.send(response, HttpStatus.FORBIDDEN, "Insufficient privileges.")
                 )
             );
         return http.build();
