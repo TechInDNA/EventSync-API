@@ -104,10 +104,4 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(body, status);
     }
-
-    public record ErrorResponse(
-            int status,
-            String error,
-            String message
-    ) {}
 }
