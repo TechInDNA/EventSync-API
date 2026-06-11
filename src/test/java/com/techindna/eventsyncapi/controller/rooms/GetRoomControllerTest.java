@@ -16,7 +16,6 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -123,13 +122,15 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(roomService.getAllRooms(anyInt(), anyInt(), any(), nullable(String.class))).thenReturn(response);
+        when(roomService.getAllRooms(anyInt(), anyInt(), eq("Main"), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
-                        .param("name", "Main")
+                        .param("searchByName", "Main")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].name").value("Main Hall"))
                 .andExpect(jsonPath("$.meta.total").value(1));
+
+        verify(roomService).getAllRooms(eq(1), eq(10), eq("Main"), nullable(String.class));
     }
 }

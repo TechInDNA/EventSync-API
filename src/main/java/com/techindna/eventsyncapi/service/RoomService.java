@@ -25,7 +25,7 @@ public class RoomService {
     private final AuthService authService;
 
     @Transactional(readOnly = true)
-    public RoomListResponseDto getAllRooms(int page, int size, String name, String ipAddress) {
+    public RoomListResponseDto getAllRooms(int page, int size, String searchByName, String ipAddress) {
         if (page < 1) page = 1;
         if (size < 1) size = 10;
 
@@ -33,13 +33,10 @@ public class RoomService {
 
         authService.checkBlacklist(ipAddress);
 
-        if (name != null && !name.isBlank()) {
-            dataValidator.validateName("search", name, true);
-        }
+        String searchTerm = searchByName != null ? searchByName : "";
 
-        String searchName = (name != null && !name.isBlank()) ? name : "";
-        long total = roomRepository.countByNameContaining(searchName);
-        List<Room> rooms = roomRepository.findByNameContaining(searchName, size, offset);
+        long total = roomRepository.countByNameContaining(searchTerm);
+        List<Room> rooms = roomRepository.findByNameContaining(searchTerm, size, offset);
 
         return roomMapper.toListResponseDto(rooms, total, page, size);
     }
