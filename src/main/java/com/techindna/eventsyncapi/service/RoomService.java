@@ -61,4 +61,10 @@ public class RoomService {
                         )
         );
     }
+
+    @Transactional
+    public void deleteRoom(UUID id) {
+        roomRepository.deleteRoomById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id)));
+    }
 }
