@@ -125,7 +125,7 @@ class GetRoomControllerTest {
         when(roomService.getAllRooms(anyInt(), anyInt(), eq("Main"), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
-                        .param("searchByName", "Main")
+                        .param("name", "Main")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].name").value("Main Hall"))
