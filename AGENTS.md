@@ -20,50 +20,81 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── TokenProvider.java
 │   └── JwtAuthenticationFilter.java
 ├── controller/
-│   └── AuthController.java
+│   ├── AuthController.java
+│   └── RoomController.java
 ├── dto/
+│   ├── MetaDto.java
+│   ├── RoomInputDto.java
+│   ├── RoomListResponseDto.java
+│   ├── RoomResponseDto.java
 │   ├── UserResponseDto.java
 │   └── auth/
 │       ├── AuthLoginRequestDto.java
-│       └── AuthLoginResponseDto.java
+│       ├── AuthLoginResponseDto.java
+│       ├── AuthParticipantRequestDto.java
+│       ├── AuthParticipantResponseDto.java
+│       └── ParticipantRefDto.java
 ├── entity/
-│   ├── User.java
 │   ├── BlacklistedIp.java
+│   ├── Room.java
+│   ├── User.java
 │   └── enums/
 │       └── Role.java
 ├── exception/
 │   ├── BadRequestException.java
+│   ├── ConflictException.java
+│   ├── ErrorResponse.java
 │   ├── GlobalExceptionHandler.java
 │   ├── NotFoundException.java
 │   ├── TooManyRequestException.java
 │   ├── UnauthorizedException.java
 │   └── UnprocessableEntityException.java
 ├── mapper/
+│   ├── RoomMapper.java
 │   └── UserMapper.java
 ├── repository/
 │   ├── BlacklistedIpRepository.java
+│   ├── RoomRepository.java
 │   └── UserRepository.java
-├── script/
-│   └── post_auth_login.sh
 ├── service/
-│   └── AuthService.java
+│   ├── AuthService.java
+│   └── RoomService.java
 └── validator/
     └── DataValidator.java
 
 src/test/java/com/techindna/eventsyncapi/
 ├── EventSyncApiApplicationTests.java
 ├── controller/
-│   └── AuthControllerTest.java
+│   ├── auth/
+│   │   └── AuthControllerTest.java
+│   └── rooms/
+│       ├── DeleteRoomControllerTest.java
+│       ├── GetRoomByIdControllerTest.java
+│       ├── GetRoomControllerTest.java
+│       ├── PostRoomControllerTest.java
+│       └── PutRoomControllerTest.java
 └── service/
-    └── AuthServiceTest.java
+    ├── auth/
+    │   └── AuthServiceTest.java
+    └── rooms/
+        ├── DeleteRoomServiceTest.java
+        ├── GetRoomByIdServiceTest.java
+        ├── GetRoomServiceTest.java
+        ├── PostRoomServiceTest.java
+        └── PutRoomServiceTest.java
 
 src/main/resources/
 ├── application.properties
 └── db/
-    └── 001_create_users.sql
+    ├── auth/
+    │   ├── auth_data.sql
+    │   ├── ip_blacklist_schema.sql
+    │   └── users_schema.sql
+    └── rooms/
+        └── rooms_schema.sql
 
 docs/
-├── api.yaml              # OpenAPI 3.0.3 spec (~1700 lines)
+├── api.yaml              # OpenAPI 3.0.3 spec
 ├── mcd.canvas            # Obsidian canvas — conceptual data model
 └── .obsidian/            # Obsidian vault config
 ```
@@ -72,7 +103,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (25 tests)
+./gradlew test                 # run all tests (77 tests)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
@@ -80,7 +111,7 @@ docs/
 ## Conventions
 
 - **DDL** — `ddl-auto=validate`. Schema is managed externally via SQL scripts in `src/main/resources/db/`. Never use `update` or `create`.
-- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"blacklisted_ip"`, etc.).
+- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"room"`, `"blacklisted_ip"`, etc.).
 - **Queries** — prefer `@Query` over JdbcTemplate. Use `@Modifying` + `RETURNING` for write queries. List columns explicitly, no `SELECT *`.
 - **IDs** — UUID PKs generated with `GenerationType.UUID` (Hibernate 6+).
 - **OpenAPI** — camelCase fields (`firstName`, `createdAt`), US English, 3.0.3. Every endpoint declares 400 and 422 explicitly.

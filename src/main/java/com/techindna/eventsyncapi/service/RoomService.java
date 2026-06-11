@@ -63,6 +63,16 @@ public class RoomService {
     }
 
     @Transactional
+    public RoomResponseDto updateRoom(UUID id, RoomInputDto request) {
+        dataValidator.validateName("name", request.getName(), true);
+
+        return roomMapper.toResponseDto(
+                roomRepository.updateRoomById(id, request.getName())
+                        .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id)))
+        );
+    }
+
+    @Transactional
     public void deleteRoom(UUID id) {
         roomRepository.deleteRoomById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id)));
