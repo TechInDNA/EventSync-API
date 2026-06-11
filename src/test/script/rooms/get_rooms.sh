@@ -7,16 +7,12 @@ echo ""
 # Login to populate cookie jars
 # ──────────────────────────────────────────
 echo "--- Obtaining admin JWT cookie ---"
-curlie -k -c /tmp/curlie_admin.txt -H "Content-Type: application/json" \
-  -d '{"email": "admin@eventsync.com", "password": "admin123"}' \
-  http://localhost:8080/auth/login > /dev/null
+curlie -k -c /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"email": "admin@eventsync.com", "password": "admin123"}' http://localhost:8080/auth/login > /dev/null
 echo "Admin cookie saved."
 echo ""
 
 echo "--- Obtaining participant JWT cookie ---"
-curlie -k -c /tmp/curlie_participant.txt -H "Content-Type: application/json" \
-  -d '{"firstName": "Jack", "lastName": "Tester", "email": "jack.tester@example.com"}' \
-  http://localhost:8080/auth/participant > /dev/null
+curlie -k -c /tmp/curlie_participant.txt -H "Content-Type: application/json" -d '{"firstName": "Jack", "lastName": "Tester", "email": "jack.tester@example.com"}' http://localhost:8080/auth/participant > /dev/null
 echo "Participant cookie saved."
 echo ""
 
@@ -24,11 +20,12 @@ echo ""
 # Seed sample rooms for GET tests
 # ──────────────────────────────────────────
 echo "--- Seeding test rooms ---"
-for name in "Workshop Alpha" "Conference Hall" "Salle principale" "LAtelier" "Board Room" "Meeting Room A"; do
-  curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" \
-    -d "{\"name\": \"$name\"}" \
-    http://localhost:8080/rooms > /dev/null 2>&1
-done
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Workshop Alpha"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Conference Hall"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Salle principale"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "LAtelier"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Board Room"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Meeting Room A"}' http://localhost:8080/rooms > /dev/null 2>&1
 echo "Done seeding."
 echo ""
 
@@ -47,7 +44,7 @@ echo ""
 echo "==========  200 — CUSTOM PAGINATION  =========="
 echo "--- Test 2: GET /rooms?page=2&size=3 ---"
 echo "    Expect: 200, 3 rooms, meta.page=2, meta.size=3, meta.total=6"
-curlie -k -b /tmp/curlie_admin.txt http://localhost:8080/rooms?page=2\&size=3
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?page=2&size=3'
 echo ""
 
 echo "--- Test 3: GET /rooms?page=1&size=2 ---"
