@@ -33,4 +33,11 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
             RETURNING id, name
             """, nativeQuery = true)
     Optional<Room> insertRoom(@Param("name") String name);
+
+    @Query(value = """
+            DELETE FROM eventsync_app.room
+            WHERE id = :id
+            RETURNING id, name
+            """, nativeQuery = true)
+    Optional<Room> deleteRoomById(@Param("id") UUID id);
 }
