@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.RoomInputDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.service.RoomService;
@@ -137,6 +138,23 @@ class RoomControllerTest {
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.status").value(422))
                 .andExpect(jsonPath("$.error").value("Unprocessable Entity"));
+    }
+
+    @Test
+    @DisplayName("POST /rooms with duplicate name returns 409")
+    void createRoom_withDuplicateName_returns409() throws Exception {
+        var request = RoomInputDto.builder().name("Workshop A").build();
+
+        when(roomService.createRoom(any(RoomInputDto.class)))
+                .thenThrow(new ConflictException("Room Workshop A already exists."));
+
+        mockMvc.perform(post("/rooms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Room Workshop A already exists."));
     }
 
     private String toJson(Object obj) {

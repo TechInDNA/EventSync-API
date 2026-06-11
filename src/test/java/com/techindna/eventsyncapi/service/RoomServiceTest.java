@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.dto.RoomInputDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,18 +107,33 @@ class RoomServiceTest {
     }
 
     @Test
-    @DisplayName("createRoom calls validator, inserts room, and returns mapped response")
+    @DisplayName("createRoom with valid name calls validator, inserts room, and returns mapped response")
     void createRoom_withValidName_returnsCreatedRoom() {
         var request = RoomInputDto.builder().name("Workshop A").build();
         var saved = Room.builder().id(ROOM_ID).name("Workshop A").build();
 
-        when(roomRepository.insertRoom("Workshop A")).thenReturn(saved);
+        when(roomRepository.insertRoom("Workshop A")).thenReturn(Optional.of(saved));
 
         var result = roomService.createRoom(request);
 
         assertNotNull(result);
         assertEquals(ROOM_ID, result.getId());
         assertEquals("Workshop A", result.getName());
+
+        verify(dataValidator).validateName("name", "Workshop A", true);
+        verify(roomRepository).insertRoom("Workshop A");
+    }
+
+    @Test
+    @DisplayName("createRoom with duplicate name throws ConflictException")
+    void createRoom_withDuplicateName_throwsConflictException() {
+        var request = RoomInputDto.builder().name("Workshop A").build();
+
+        when(roomRepository.insertRoom("Workshop A")).thenReturn(Optional.empty());
+
+        var exception = assertThrows(ConflictException.class, () -> roomService.createRoom(request));
+
+        assertEquals("Room Workshop A already exists.", exception.getMessage());
 
         verify(dataValidator).validateName("name", "Workshop A", true);
         verify(roomRepository).insertRoom("Workshop A");

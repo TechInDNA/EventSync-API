@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -21,7 +22,8 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     @Query(value = """
             INSERT INTO eventsync_app.room (name)
             VALUES (:name)
+            ON CONFLICT DO NOTHING
             RETURNING id, name
             """, nativeQuery = true)
-    Room insertRoom(@Param("name") String name);
+    Optional<Room> insertRoom(@Param("name") String name);
 }

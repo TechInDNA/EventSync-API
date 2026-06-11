@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.RoomInputDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -37,6 +38,11 @@ public class RoomService {
     public RoomResponseDto createRoom(RoomInputDto request) {
         dataValidator.validateName("name", request.getName(), true);
 
-        return roomMapper.toResponseDto(roomRepository.insertRoom(request.getName()));
+        return roomMapper.toResponseDto(
+                roomRepository.insertRoom(request.getName())
+                        .orElseThrow(() -> new ConflictException(
+                                String.format("Room %s already exists.", request.getName()))
+                        )
+        );
     }
 }
