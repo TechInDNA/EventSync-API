@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.exception;
 
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 
@@ -11,15 +12,15 @@ public record ErrorResponse(
         String message
 ) {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     public static void send(HttpServletResponse response, HttpStatus status, String message) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(status.value());
-        response.getWriter().write(
-                "{\"status\":%d,\"error\":\"%s\",\"message\":\"%s\"}".formatted(
-                        status.value(),
-                        status.getReasonPhrase(),
-                        message
-                )
-        );
+        MAPPER.writeValue(response.getWriter(), new ErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                message
+        ));
     }
 }
