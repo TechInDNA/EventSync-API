@@ -1,10 +1,11 @@
 package com.techindna.eventsyncapi.config;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.techindna.eventsyncapi.exception.ErrorResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,21 +49,24 @@ public class SecurityConfig {
         http
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Insufficient privileges.");
-                })
-            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/rooms/**").hasRole("ADMIN")
 
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/participant").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) ->
+                    ErrorResponse.send(response, HttpStatus.UNAUTHORIZED, "Authentication required.")
+                )
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                    ErrorResponse.send(response, HttpStatus.FORBIDDEN, "Insufficient privileges.")
+                )
+            );
         return http.build();
     }
 }

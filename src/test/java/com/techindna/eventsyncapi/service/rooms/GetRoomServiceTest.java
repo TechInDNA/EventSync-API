@@ -1,9 +1,11 @@
-package com.techindna.eventsyncapi.service;
+package com.techindna.eventsyncapi.service.rooms;
 
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
+import com.techindna.eventsyncapi.service.RoomService;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class RoomServiceTest {
+class GetRoomServiceTest {
 
     private final RoomRepository roomRepository;
     private final RoomMapper roomMapper;
@@ -21,10 +23,10 @@ class RoomServiceTest {
 
     private static final UUID ROOM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
 
-    RoomServiceTest() {
+    GetRoomServiceTest() {
         roomRepository = mock(RoomRepository.class);
         roomMapper = new RoomMapper();
-        roomService = new RoomService(roomRepository, roomMapper);
+        roomService = new RoomService(roomRepository, roomMapper, new DataValidator());
     }
 
     @Test

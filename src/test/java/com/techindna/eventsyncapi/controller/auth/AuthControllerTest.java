@@ -1,5 +1,6 @@
-package com.techindna.eventsyncapi.controller;
+package com.techindna.eventsyncapi.controller.auth;
 
+import com.techindna.eventsyncapi.controller.AuthController;
 import com.techindna.eventsyncapi.dto.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;

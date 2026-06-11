@@ -85,6 +85,11 @@ public class GlobalExceptionHandler {
         return respond(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex, HttpServletRequest request) {
+        return respond(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleFallback(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception at {} {}", request.getMethod(), request.getRequestURI(), ex);
@@ -99,10 +104,4 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(body, status);
     }
-
-    public record ErrorResponse(
-            int status,
-            String error,
-            String message
-    ) {}
 }

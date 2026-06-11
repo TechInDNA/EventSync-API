@@ -1,5 +1,6 @@
-package com.techindna.eventsyncapi.controller;
+package com.techindna.eventsyncapi.controller.rooms;
 
+import com.techindna.eventsyncapi.controller.RoomController;
 import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
@@ -16,17 +17,18 @@ import java.util.UUID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-class RoomControllerTest {
+class GetRoomControllerTest {
 
     private final MockMvc mockMvc;
     private final RoomService roomService;
 
     private static final UUID ROOM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
 
-    RoomControllerTest() {
+    GetRoomControllerTest() {
         roomService = mock(RoomService.class);
         var controller = new RoomController(roomService);
         var exceptionHandler = new GlobalExceptionHandler();

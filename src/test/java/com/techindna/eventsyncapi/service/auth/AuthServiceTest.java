@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.service;
+package com.techindna.eventsyncapi.service.auth;
 
 import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
@@ -14,6 +14,7 @@ import com.techindna.eventsyncapi.mapper.UserMapper;
 import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.config.TokenProvider;
+import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
