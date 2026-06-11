@@ -41,8 +41,8 @@ class GetRoomControllerTest {
     }
 
     @Test
-    @DisplayName("GET /rooms returns 200 with paginated room list")
-    void getAllRooms_withDefaultPagination_returns200AndList() throws Exception {
+    @DisplayName("GET /rooms with name param returns 200 with paginated room list")
+    void getAllRooms_withName_returns200AndList() throws Exception {
         var rooms = List.of(
                 RoomResponseDto.builder().id(ROOM_ID).name("Main Hall").build()
         );
@@ -51,9 +51,10 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(roomService.getAllRooms(1, 10, null)).thenReturn(response);
+        when(roomService.getAllRooms(1, 10, "Main")).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
+                        .param("name", "Main")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value(ROOM_ID.toString()))
@@ -64,8 +65,8 @@ class GetRoomControllerTest {
     }
 
     @Test
-    @DisplayName("GET /rooms with custom pagination returns 200")
-    void getAllRooms_withCustomPagination_returns200() throws Exception {
+    @DisplayName("GET /rooms with name and custom pagination returns 200")
+    void getAllRooms_withNameAndCustomPagination_returns200() throws Exception {
         var rooms = List.of(
                 RoomResponseDto.builder().id(ROOM_ID).name("Main Hall").build()
         );
@@ -74,11 +75,12 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(1).page(2).size(5).build())
                 .build();
 
-        when(roomService.getAllRooms(2, 5, null)).thenReturn(response);
+        when(roomService.getAllRooms(2, 5, "Main")).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
                         .param("page", "2")
                         .param("size", "5")
+                        .param("name", "Main")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.meta.page").value(2))
@@ -86,16 +88,17 @@ class GetRoomControllerTest {
     }
 
     @Test
-    @DisplayName("GET /rooms with empty list returns 200 and empty data")
-    void getAllRooms_whenEmpty_returns200WithEmptyList() throws Exception {
+    @DisplayName("GET /rooms with name and empty result returns 200 and empty data")
+    void getAllRooms_withNameAndEmpty_returns200WithEmptyList() throws Exception {
         var response = RoomListResponseDto.builder()
                 .data(List.of())
                 .meta(MetaDto.builder().total(0).page(1).size(10).build())
                 .build();
 
-        when(roomService.getAllRooms(1, 10, null)).thenReturn(response);
+        when(roomService.getAllRooms(1, 10, "Nonexistent")).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
+                        .param("name", "Nonexistent")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isEmpty())
