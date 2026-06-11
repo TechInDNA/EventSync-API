@@ -1,9 +1,11 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.RoomInputDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,7 @@ class RoomServiceTest {
 
     private final RoomRepository roomRepository;
     private final RoomMapper roomMapper;
+    private final DataValidator dataValidator;
     private final RoomService roomService;
 
     private static final UUID ROOM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
@@ -24,7 +27,8 @@ class RoomServiceTest {
     RoomServiceTest() {
         roomRepository = mock(RoomRepository.class);
         roomMapper = new RoomMapper();
-        roomService = new RoomService(roomRepository, roomMapper);
+        dataValidator = mock(DataValidator.class);
+        roomService = new RoomService(roomRepository, roomMapper, dataValidator);
     }
 
     @Test
@@ -98,5 +102,23 @@ class RoomServiceTest {
 
         assertTrue(result.getData().isEmpty());
         assertEquals(0, result.getMeta().getTotal());
+    }
+
+    @Test
+    @DisplayName("createRoom calls validator, inserts room, and returns mapped response")
+    void createRoom_withValidName_returnsCreatedRoom() {
+        var request = RoomInputDto.builder().name("Workshop A").build();
+        var saved = Room.builder().id(ROOM_ID).name("Workshop A").build();
+
+        when(roomRepository.insertRoom("Workshop A")).thenReturn(saved);
+
+        var result = roomService.createRoom(request);
+
+        assertNotNull(result);
+        assertEquals(ROOM_ID, result.getId());
+        assertEquals("Workshop A", result.getName());
+
+        verify(dataValidator).validateName("name", "Workshop A", true);
+        verify(roomRepository).insertRoom("Workshop A");
     }
 }

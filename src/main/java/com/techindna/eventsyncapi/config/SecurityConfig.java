@@ -57,6 +57,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/rooms/**").hasRole("ADMIN")
 
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/participant").permitAll()
