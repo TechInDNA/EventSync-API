@@ -29,11 +29,13 @@ public class RoomService {
 
         int offset = (page - 1) * size;
 
-        dataValidator.validateName("name", name, true);
-        dataValidator.validateName("search",  name, false);
+        if (name != null && !name.isBlank()) {
+            dataValidator.validateName("name", name, true);
+        }
 
-        long total = roomRepository.countByNameContaining(name);
-        List<Room> rooms = roomRepository.findByNameContaining(name, size, offset);
+        String searchName = (name != null && !name.isBlank()) ? name : "";
+        long total = roomRepository.countByNameContaining(searchName);
+        List<Room> rooms = roomRepository.findByNameContaining(searchName, size, offset);
 
         return roomMapper.toListResponseDto(rooms, total, page, size);
     }
