@@ -13,7 +13,7 @@ echo ""
 
 echo "==========  VALID CREATION (201)  =========="
 echo "--- Test 1: Create room with valid name (should return 201 + room data) ---"
-curlie -k -b /tmp/curlie_cookies.txt -H "Content-Type: application/json" -d '{"name": "Workshop A"}' http://localhost:8080/rooms
+curlie -k -b /tmp/curlie_cookies.txt -H "Content-Type: application/json" -d '{"name": "Workshop Alpha"}' http://localhost:8080/rooms
 
 echo ""
 echo "--- Test 2: Create another room (should return 201) ---"
@@ -30,7 +30,7 @@ curlie -k -b /tmp/curlie_cookies.txt -H "Content-Type: application/json" -d '{"n
 echo ""
 echo "==========  CONFLICT (409)  =========="
 echo "--- Test 5: Re-create same name (should return 409) ---"
-curlie -k -b /tmp/curlie_cookies.txt -H "Content-Type: application/json" -d '{"name": "Workshop A"}' http://localhost:8080/rooms
+curlie -k -b /tmp/curlie_cookies.txt -H "Content-Type: application/json" -d '{"name": "Workshop Alpha"}' http://localhost:8080/rooms
 
 echo ""
 echo "==========  UNAUTHORIZED (401)  =========="
