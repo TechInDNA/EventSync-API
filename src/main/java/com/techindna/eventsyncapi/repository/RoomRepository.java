@@ -13,12 +13,6 @@ import java.util.UUID;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, UUID> {
 
-    @Query(value = "SELECT r.id, r.name FROM eventsync_app.room r ORDER BY r.name ASC LIMIT :size OFFSET :offset", nativeQuery = true)
-    List<Room> findAllPaginated(int size, int offset);
-
-    @Query(value = "SELECT COUNT(id) FROM eventsync_app.room", nativeQuery = true)
-    long countAll();
-
     @Query(value = """
             SELECT r.id, r.name FROM eventsync_app.room r
             WHERE r.name ILIKE '%' || :name || '%'

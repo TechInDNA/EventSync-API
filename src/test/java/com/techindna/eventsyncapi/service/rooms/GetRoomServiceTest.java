@@ -34,8 +34,8 @@ class GetRoomServiceTest {
     @DisplayName("getAllRooms returns mapped list with pagination")
     void getAllRooms_withValidPagination_returnsList() {
         var room = Room.builder().id(ROOM_ID).name(VALID_ROOM_NAME).build();
-        when(roomRepository.countAll()).thenReturn(1L);
-        when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of(room));
+        when(roomRepository.countByNameContaining("")).thenReturn(1L);
+        when(roomRepository.findByNameContaining("", 10, 0)).thenReturn(List.of(room));
 
         RoomListResponseDto result = roomService.getAllRooms(1, 10, null);
 
@@ -47,15 +47,15 @@ class GetRoomServiceTest {
         assertEquals(VALID_ROOM_NAME, result.getData().getFirst().getName());
         assertEquals(ROOM_ID, result.getData().getFirst().getId());
 
-        verify(roomRepository).countAll();
-        verify(roomRepository).findAllPaginated(10, 0);
+        verify(roomRepository).countByNameContaining("");
+        verify(roomRepository).findByNameContaining("", 10, 0);
     }
 
     @Test
     @DisplayName("getAllRooms with page 2 returns correct offset")
     void getAllRooms_withPage2_returnsCorrectOffset() {
-        when(roomRepository.countAll()).thenReturn(5L);
-        when(roomRepository.findAllPaginated(10, 10)).thenReturn(List.of());
+        when(roomRepository.countByNameContaining("")).thenReturn(5L);
+        when(roomRepository.findByNameContaining("", 10, 10)).thenReturn(List.of());
 
         RoomListResponseDto result = roomService.getAllRooms(2, 10, null);
 
@@ -64,38 +64,38 @@ class GetRoomServiceTest {
         assertEquals(2, result.getMeta().getPage());
         assertTrue(result.getData().isEmpty());
 
-        verify(roomRepository).findAllPaginated(10, 10);
+        verify(roomRepository).findByNameContaining("", 10, 10);
     }
 
     @Test
     @DisplayName("getAllRooms with page < 1 defaults to 1")
     void getAllRooms_withInvalidPage_defaultsTo1() {
-        when(roomRepository.countAll()).thenReturn(0L);
-        when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
+        when(roomRepository.countByNameContaining("")).thenReturn(0L);
+        when(roomRepository.findByNameContaining("", 10, 0)).thenReturn(List.of());
 
         RoomListResponseDto result = roomService.getAllRooms(0, 10, null);
 
         assertEquals(1, result.getMeta().getPage());
-        verify(roomRepository).findAllPaginated(10, 0);
+        verify(roomRepository).findByNameContaining("", 10, 0);
     }
 
     @Test
     @DisplayName("getAllRooms with size < 1 defaults to 10")
     void getAllRooms_withInvalidSize_defaultsTo10() {
-        when(roomRepository.countAll()).thenReturn(0L);
-        when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
+        when(roomRepository.countByNameContaining("")).thenReturn(0L);
+        when(roomRepository.findByNameContaining("", 10, 0)).thenReturn(List.of());
 
         RoomListResponseDto result = roomService.getAllRooms(1, 0, null);
 
         assertEquals(10, result.getMeta().getSize());
-        verify(roomRepository).findAllPaginated(10, 0);
+        verify(roomRepository).findByNameContaining("", 10, 0);
     }
 
     @Test
     @DisplayName("getAllRooms with empty database returns empty list")
     void getAllRooms_withNoRooms_returnsEmptyList() {
-        when(roomRepository.countAll()).thenReturn(0L);
-        when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
+        when(roomRepository.countByNameContaining("")).thenReturn(0L);
+        when(roomRepository.findByNameContaining("", 10, 0)).thenReturn(List.of());
 
         RoomListResponseDto result = roomService.getAllRooms(1, 10, null);
 
