@@ -61,7 +61,7 @@ public class SecurityConfig {
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, authException) ->
-                    ErrorResponse.send(response, HttpStatus.UNAUTHORIZED, authException.getMessage())
+                    ErrorResponse.send(response, HttpStatus.UNAUTHORIZED, "Authentication required")
                 )
                 .accessDeniedHandler((request, response, accessDeniedException) ->
                     ErrorResponse.send(response, HttpStatus.FORBIDDEN, accessDeniedException.getMessage())
