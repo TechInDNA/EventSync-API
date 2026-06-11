@@ -30,8 +30,6 @@ public class DataValidator {
     public void validateName(String fieldName, String data, boolean isRequired){
         if (isRequired){
             checkNullData(fieldName, data);
-        } else if (data == null || data.isEmpty() || data.isBlank()) {
-            return;
         }
 
         lengthValidation(fieldName, 50, data);

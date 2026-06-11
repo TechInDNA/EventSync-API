@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DataValidatorTest {
@@ -36,14 +35,6 @@ class DataValidatorTest {
             assertThatThrownBy(() -> validator.validateName("firstName", "", true))
                     .isInstanceOf(UnprocessableEntityException.class)
                     .hasMessage("The field firstName is required and cannot be blank.");
-        }
-
-        @Test
-        @DisplayName("skips validation when not required and data is null/empty/blank")
-        void nullNotRequired_skips() {
-            validator.validateName("firstName", null, false);
-            validator.validateName("firstName", "", false);
-            validator.validateName("firstName", "   ", false);
         }
 
         @Test
