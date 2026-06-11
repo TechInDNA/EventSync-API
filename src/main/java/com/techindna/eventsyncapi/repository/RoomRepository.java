@@ -20,6 +20,19 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     long countAll();
 
     @Query(value = """
+            SELECT r.id, r.name FROM eventsync_app.room r
+            WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%'))
+            ORDER BY r.name ASC LIMIT :size OFFSET :offset
+            """, nativeQuery = true)
+    List<Room> findByNameContaining(@Param("name") String name, int size, int offset);
+
+    @Query(value = """
+            SELECT COUNT(id) FROM eventsync_app.room
+            WHERE LOWER(name) LIKE LOWER(CONCAT('%', :name, '%'))
+            """, nativeQuery = true)
+    long countByNameContaining(@Param("name") String name);
+
+    @Query(value = """
             INSERT INTO eventsync_app.room (name)
             VALUES (:name)
             ON CONFLICT DO NOTHING

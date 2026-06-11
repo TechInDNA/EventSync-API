@@ -22,6 +22,7 @@ class GetRoomServiceTest {
     private final RoomService roomService;
 
     private static final UUID ROOM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static final String VALID_ROOM_NAME = "Main Hall";
 
     GetRoomServiceTest() {
         roomRepository = mock(RoomRepository.class);
@@ -32,18 +33,18 @@ class GetRoomServiceTest {
     @Test
     @DisplayName("getAllRooms returns mapped list with pagination")
     void getAllRooms_withValidPagination_returnsList() {
-        var room = Room.builder().id(ROOM_ID).name("Main Hall").build();
+        var room = Room.builder().id(ROOM_ID).name(VALID_ROOM_NAME).build();
         when(roomRepository.countAll()).thenReturn(1L);
         when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of(room));
 
-        RoomListResponseDto result = roomService.getAllRooms(1, 10);
+        RoomListResponseDto result = roomService.getAllRooms(1, 10, null);
 
         assertNotNull(result);
         assertEquals(1, result.getMeta().getTotal());
         assertEquals(1, result.getMeta().getPage());
         assertEquals(10, result.getMeta().getSize());
         assertEquals(1, result.getData().size());
-        assertEquals("Main Hall", result.getData().getFirst().getName());
+        assertEquals(VALID_ROOM_NAME, result.getData().getFirst().getName());
         assertEquals(ROOM_ID, result.getData().getFirst().getId());
 
         verify(roomRepository).countAll();
@@ -56,7 +57,7 @@ class GetRoomServiceTest {
         when(roomRepository.countAll()).thenReturn(5L);
         when(roomRepository.findAllPaginated(10, 10)).thenReturn(List.of());
 
-        RoomListResponseDto result = roomService.getAllRooms(2, 10);
+        RoomListResponseDto result = roomService.getAllRooms(2, 10, null);
 
         assertNotNull(result);
         assertEquals(5, result.getMeta().getTotal());
@@ -72,7 +73,7 @@ class GetRoomServiceTest {
         when(roomRepository.countAll()).thenReturn(0L);
         when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
 
-        RoomListResponseDto result = roomService.getAllRooms(0, 10);
+        RoomListResponseDto result = roomService.getAllRooms(0, 10, null);
 
         assertEquals(1, result.getMeta().getPage());
         verify(roomRepository).findAllPaginated(10, 0);
@@ -84,7 +85,7 @@ class GetRoomServiceTest {
         when(roomRepository.countAll()).thenReturn(0L);
         when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
 
-        RoomListResponseDto result = roomService.getAllRooms(1, 0);
+        RoomListResponseDto result = roomService.getAllRooms(1, 0, null);
 
         assertEquals(10, result.getMeta().getSize());
         verify(roomRepository).findAllPaginated(10, 0);
@@ -96,9 +97,43 @@ class GetRoomServiceTest {
         when(roomRepository.countAll()).thenReturn(0L);
         when(roomRepository.findAllPaginated(10, 0)).thenReturn(List.of());
 
-        RoomListResponseDto result = roomService.getAllRooms(1, 10);
+        RoomListResponseDto result = roomService.getAllRooms(1, 10, null);
 
         assertTrue(result.getData().isEmpty());
         assertEquals(0, result.getMeta().getTotal());
+    }
+
+    @Test
+    @DisplayName("getAllRooms with name filter returns matching rooms")
+    void getAllRooms_withNameFilter_returnsMatchingRooms() {
+        var room = Room.builder().id(ROOM_ID).name(VALID_ROOM_NAME).build();
+        when(roomRepository.countByNameContaining(VALID_ROOM_NAME)).thenReturn(1L);
+        when(roomRepository.findByNameContaining(VALID_ROOM_NAME, 10, 0)).thenReturn(List.of(room));
+
+        RoomListResponseDto result = roomService.getAllRooms(1, 10, VALID_ROOM_NAME);
+
+        assertNotNull(result);
+        assertEquals(1, result.getData().size());
+        assertEquals(VALID_ROOM_NAME, result.getData().getFirst().getName());
+        assertEquals(1, result.getMeta().getTotal());
+
+        verify(roomRepository).countByNameContaining(VALID_ROOM_NAME);
+        verify(roomRepository).findByNameContaining(VALID_ROOM_NAME, 10, 0);
+        verifyNoMoreInteractions(roomRepository);
+    }
+
+    @Test
+    @DisplayName("getAllRooms with name filter and no match returns empty list")
+    void getAllRooms_withNameFilter_noMatch_returnsEmpty() {
+        when(roomRepository.countByNameContaining("Nonexistent")).thenReturn(0L);
+        when(roomRepository.findByNameContaining("Nonexistent", 10, 0)).thenReturn(List.of());
+
+        RoomListResponseDto result = roomService.getAllRooms(1, 10, "Nonexistent");
+
+        assertTrue(result.getData().isEmpty());
+        assertEquals(0, result.getMeta().getTotal());
+
+        verify(roomRepository).countByNameContaining("Nonexistent");
+        verify(roomRepository).findByNameContaining("Nonexistent", 10, 0);
     }
 }

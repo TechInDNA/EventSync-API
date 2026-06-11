@@ -25,9 +25,10 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<RoomListResponseDto> getAllRooms(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size, name));
     }
 
     @PostMapping

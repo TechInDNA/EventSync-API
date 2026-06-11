@@ -23,11 +23,19 @@ public class RoomService {
     private final DataValidator dataValidator;
 
     @Transactional(readOnly = true)
-    public RoomListResponseDto getAllRooms(int page, int size) {
+    public RoomListResponseDto getAllRooms(int page, int size, String name) {
         if (page < 1) page = 1;
         if (size < 1) size = 10;
 
         int offset = (page - 1) * size;
+
+        if (name != null && !name.isBlank()) {
+            dataValidator.validateName("name", name, true);
+            long total = roomRepository.countByNameContaining(name);
+            List<Room> rooms = roomRepository.findByNameContaining(name, size, offset);
+            return roomMapper.toListResponseDto(rooms, total, page, size);
+        }
+
         long total = roomRepository.countAll();
         List<Room> rooms = roomRepository.findAllPaginated(size, offset);
 

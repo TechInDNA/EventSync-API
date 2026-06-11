@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.service.RoomService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,7 +51,7 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(roomService.getAllRooms(1, 10)).thenReturn(response);
+        when(roomService.getAllRooms(1, 10, null)).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -71,7 +74,7 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(1).page(2).size(5).build())
                 .build();
 
-        when(roomService.getAllRooms(2, 5)).thenReturn(response);
+        when(roomService.getAllRooms(2, 5, null)).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
                         .param("page", "2")
@@ -90,12 +93,33 @@ class GetRoomControllerTest {
                 .meta(MetaDto.builder().total(0).page(1).size(10).build())
                 .build();
 
-        when(roomService.getAllRooms(1, 10)).thenReturn(response);
+        when(roomService.getAllRooms(1, 10, null)).thenReturn(response);
 
         mockMvc.perform(get("/rooms")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isEmpty())
                 .andExpect(jsonPath("$.meta.total").value(0));
+    }
+
+    @Test
+    @DisplayName("GET /rooms with name filter returns 200 and filtered results")
+    void getAllRooms_withNameFilter_returns200() throws Exception {
+        var rooms = List.of(
+                RoomResponseDto.builder().id(ROOM_ID).name("Main Hall").build()
+        );
+        var response = RoomListResponseDto.builder()
+                .data(rooms)
+                .meta(MetaDto.builder().total(1).page(1).size(10).build())
+                .build();
+
+        when(roomService.getAllRooms(1, 10, "Main")).thenReturn(response);
+
+        mockMvc.perform(get("/rooms")
+                        .param("name", "Main")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].name").value("Main Hall"))
+                .andExpect(jsonPath("$.meta.total").value(1));
     }
 }
