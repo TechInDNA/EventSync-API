@@ -52,13 +52,14 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.POST, "/rooms/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/rooms/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/rooms/**").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/rooms/**").hasRole("ADMIN")
 
-                .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/auth/participant").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/participant").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
