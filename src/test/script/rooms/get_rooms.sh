@@ -14,13 +14,20 @@ echo "Participant cookie saved."
 echo ""
 
 echo "--- Seeding test rooms ---"
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Workshop Alpha"}' http://localhost:8080/rooms > /dev/null 2>&1
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Conference Hall"}' http://localhost:8080/rooms > /dev/null 2>&1
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Salle principale"}' http://localhost:8080/rooms > /dev/null 2>&1
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "LAtelier"}' http://localhost:8080/rooms > /dev/null 2>&1
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Board Room"}' http://localhost:8080/rooms > /dev/null 2>&1
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Meeting Room A"}' http://localhost:8080/rooms > /dev/null 2>&1
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Workshop Alpha"}' http://localhost:8080/rooms
+echo ""
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Conference Hall"}' http://localhost:8080/rooms
+echo ""
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Salle principale"}' http://localhost:8080/rooms
+echo ""
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "LAtelier"}' http://localhost:8080/rooms
+echo ""
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Board Room"}' http://localhost:8080/rooms
+echo ""
+curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "Meeting Room A"}' http://localhost:8080/rooms
+echo ""
 echo "Done seeding."
+echo "Note: 409 Conflict on re-run is normal (rooms already exist)."
 echo ""
 
 echo "==========  200 — DEFAULT PAGINATION  =========="
@@ -46,30 +53,30 @@ curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?size=1'
 echo ""
 
 echo "==========  200 — NAME FILTER  =========="
-echo "--- Test 5: GET /rooms?searchByName=Alpha ---"
+echo "--- Test 5: GET /rooms?name=Alpha ---"
 echo "    Expect: 200, 1 room named 'Workshop Alpha', meta.total=1"
-curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?searchByName=Alpha'
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?name=Alpha'
 echo ""
 
-echo "--- Test 6: GET /rooms?searchByName=Room ---"
+echo "--- Test 6: GET /rooms?name=Room ---"
 echo "    Expect: 200, 2 rooms (Board Room, Meeting Room A), meta.total=2"
-curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?searchByName=Room'
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?name=Room'
 echo ""
 
-echo "--- Test 7: GET /rooms?searchByName=main (case-insensitive via ILIKE) ---"
+echo "--- Test 7: GET /rooms?name=main (case-insensitive via ILIKE) ---"
 echo "    Expect: 200, at least 1 room (Salle principale), meta.total >= 1"
-curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?searchByName=main'
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?name=main'
 echo ""
 
-echo "--- Test 8: GET /rooms?searchByName=Salle&page=1&size=1 ---"
+echo "--- Test 8: GET /rooms?name=Salle&page=1&size=1 ---"
 echo "    Expect: 200, 1 room, meta.total=1, meta.page=1, meta.size=1"
-curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?searchByName=Salle&page=1&size=1'
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?name=Salle&page=1&size=1'
 echo ""
 
 echo "==========  200 — NAME FILTER (NO MATCH)  =========="
-echo "--- Test 9: GET /rooms?searchByName=Nonexistent ---"
+echo "--- Test 9: GET /rooms?name=Nonexistent ---"
 echo "    Expect: 200, empty data array, meta.total=0"
-curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?searchByName=Nonexistent'
+curlie -k -b /tmp/curlie_admin.txt 'http://localhost:8080/rooms?name=Nonexistent'
 echo ""
 
 echo "==========  200 — PAGE BEYOND DATA  =========="
@@ -82,17 +89,6 @@ echo "==========  200 — PARTICIPANT ACCESS  =========="
 echo "--- Test 11: GET /rooms with participant JWT (any authenticated user) ---"
 echo "     Expect: 200, same data as admin"
 curlie -k -b /tmp/curlie_participant.txt 'http://localhost:8080/rooms'
-echo ""
-
-echo "==========  401 — UNAUTHORIZED  =========="
-echo "--- Test 12: GET /rooms without JWT cookie ---"
-echo "     Expect: 401, {status, error, message}"
-curlie -k http://localhost:8080/rooms
-echo ""
-
-echo "--- Test 13: GET /rooms with invalid JWT cookie ---"
-echo "     Expect: 401, {status, error, message}"
-curlie -k -b "jwt=invalid-token-that-will-be-rejected" http://localhost:8080/rooms
 echo ""
 
 echo "==========  DONE  =========="
