@@ -53,6 +53,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/rooms/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/rooms/**").permitAll()
 
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/participant").permitAll()
