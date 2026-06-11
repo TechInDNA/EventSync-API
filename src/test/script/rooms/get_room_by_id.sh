@@ -13,13 +13,10 @@ curlie -k -c /tmp/curlie_participant.txt -H "Content-Type: application/json" -d 
 echo "Participant cookie saved."
 echo ""
 
-echo "--- Seeding test rooms ---"
-curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "RoomById Test"}' http://localhost:8080/rooms
-echo ""
-
 echo "==========  200 — ROOM FOUND  =========="
 echo "--- Test 1: GET /rooms/{id} with existing room ---"
 echo "    Expect: 200, room object with id and name"
+echo "    --- Seeding a room ---"
 curlie -k -b /tmp/curlie_admin.txt -H "Content-Type: application/json" -d '{"name": "RoomById Test"}' http://localhost:8080/rooms | grep -o '"id":"[^"]*"' | cut -d'"' -f4 | xargs -I {} curlie -k -b /tmp/curlie_admin.txt "http://localhost:8080/rooms/{}"
 echo ""
 
