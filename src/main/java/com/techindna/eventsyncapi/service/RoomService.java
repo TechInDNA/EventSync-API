@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.exception.ConflictException;
+import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.RoomRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,13 @@ public class RoomService {
         List<Room> rooms = roomRepository.findByNameContaining(searchTerm, size, offset);
 
         return roomMapper.toListResponseDto(rooms, total, page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public RoomResponseDto getRoomById(UUID id, String ipAddress) {
+        authService.checkBlacklist(ipAddress);
+        return roomMapper.toResponseDto(roomRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id))));
     }
 
     @Transactional

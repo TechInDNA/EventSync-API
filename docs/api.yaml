@@ -697,6 +697,30 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
   /rooms/{id}:
+    get:
+      summary: Get room details
+      tags:
+        - Rooms
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de la salle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
     put:
       summary: Update a room
       tags:
