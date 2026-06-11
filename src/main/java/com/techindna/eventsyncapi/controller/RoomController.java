@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.RoomInputDto;
 import com.techindna.eventsyncapi.dto.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.RoomResponseDto;
 import com.techindna.eventsyncapi.service.RoomService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,11 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<RoomListResponseDto> getAllRooms(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(roomService.getAllRooms(page, size, name, request.getRemoteAddr()));
     }
 
     @PostMapping

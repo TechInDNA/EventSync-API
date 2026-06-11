@@ -649,6 +649,11 @@ paths:
             type: integer
             default: 10
           description: Number of items per page
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Filter by room name
       responses:
         '200':
           description: List of rooms
@@ -662,6 +667,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '422':
           $ref: '#/components/responses/Unprocessable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
     post:
       summary: Create a new room
       tags:

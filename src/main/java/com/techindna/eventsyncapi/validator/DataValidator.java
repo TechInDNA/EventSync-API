@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class DataValidator {
     private static final Pattern VALID_EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z]+){1,2}$");
     private static final Pattern ALLOWED_EMAIL_CHAR = Pattern.compile("^[a-zA-Z0-9.@_-]+$");
-    private static final Pattern VALID_NAME = Pattern.compile("^[A-Z][a-zA-Z' -]+[a-z]+$");
+    private static final Pattern VALID_NAME = Pattern.compile("^[A-Z][a-zA-Z' -]+[a-zA-Z]+$");
     private static final Pattern ALLOWED_NAME_CHAR = Pattern.compile("^[a-zA-Z-' ]+$");
 
     public void checkNullData(String fieldName, String data){

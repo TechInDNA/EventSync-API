@@ -6,6 +6,7 @@ import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
+import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.RoomService;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +29,7 @@ class PostRoomServiceTest {
     PostRoomServiceTest() {
         roomRepository = mock(RoomRepository.class);
         roomMapper = new RoomMapper();
-        roomService = new RoomService(roomRepository, roomMapper, new DataValidator());
+        roomService = new RoomService(roomRepository, roomMapper, new DataValidator(), mock(AuthService.class));
     }
 
     @Test

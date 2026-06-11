@@ -93,7 +93,7 @@ public class AuthService {
                 .build();
     }
 
-    private void checkBlacklist(String ipAddress) {
+    public void checkBlacklist(String ipAddress) {
         Optional<BlacklistedIp> blacklisted = blacklistedIpRepository.findByIpAddress(ipAddress);
         if (blacklisted.isPresent() && blacklisted.get().getFailedAttempts() >= MAX_ATTEMPT_LIMIT) {
             throw new UnauthorizedException(
