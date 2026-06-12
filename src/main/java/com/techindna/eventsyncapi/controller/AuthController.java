@@ -1,9 +1,6 @@
 package com.techindna.eventsyncapi.controller;
 
-import com.techindna.eventsyncapi.dto.auth.AuthLoginRequestDto;
-import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
-import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
-import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
+import com.techindna.eventsyncapi.dto.auth.*;
 import com.techindna.eventsyncapi.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -52,7 +49,18 @@ public class AuthController {
             @RequestBody AuthParticipantRequestDto request,
             HttpServletRequest servletRequest
     ) {
+        AuthParticipantResponseDto response = authService.participate(request, servletRequest.getRemoteAddr());
+
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", response.getToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(COOKIE_MAX_AGE)
+                .sameSite("Strict")
+                .build();
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(authService.participate(request, servletRequest.getRemoteAddr()));
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(response);
     }
 }
