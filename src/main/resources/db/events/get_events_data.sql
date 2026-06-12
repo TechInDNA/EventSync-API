@@ -1,8 +1,6 @@
 -- Seed: sample events for testing filters
--- UUIDs generated via uuidgen
 INSERT INTO eventsync_app.event (id, title, description, start_date, end_date, location)
 VALUES
-    -- === 2025 — passés ===
     ('5ce88592-6f7f-42b1-8b0a-b5136d6abbca',
      'Conférence Java 2025',
      'Java et Spring Boot — virtual threads, performance, et architecture moderne.',
@@ -104,7 +102,6 @@ VALUES
      'Smart contracts, Solidity, Ethereum, et applications décentralisées.',
      '2026-03-01 09:00:00+03', '2026-03-03 17:00:00+03', 'Toamasina'),
 
-    -- === Même lieu, noms proches (pour tester ILIKE) ===
     ('c0c59fa0-be24-4994-bc6c-884dbb1953c8',
      'Spring Boot Advanced',
      'AOP, caching, sécurité avancée, et tests avec Spring Boot.',
