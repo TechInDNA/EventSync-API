@@ -75,8 +75,8 @@ public class AuthService {
         checkBlacklist(ipAddress);
 
         dataValidator.validateEmail(request.getEmail());
-        dataValidator.validateName("firstName", request.getFirstName(), true);
-        dataValidator.validateName("lastName", request.getLastName(), true);
+        dataValidator.validateName("firstName", request.getFirstName());
+        dataValidator.validateName("lastName", request.getLastName());
 
         User participant = userRepository.findByEmailAndNames(
                 request.getEmail(), request.getFirstName(), request.getLastName()

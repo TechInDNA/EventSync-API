@@ -66,7 +66,7 @@ class GetEventServiceTest {
         assertFalse(result.getData().getFirst().isLive());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator, never()).validateName(any(), any(), anyBoolean());
+        verify(dataValidator, never()).validateName(any(), any());
         verify(eventRepository).countByFilters(null, null);
         verify(eventRepository).findByFilters(null, null, 10, 0);
     }
@@ -85,7 +85,7 @@ class GetEventServiceTest {
         assertTrue(result.getData().isEmpty());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator, never()).validateName(any(), any(), anyBoolean());
+        verify(dataValidator, never()).validateName(any(), any());
         verify(eventRepository).findByFilters(null, null, 10, 10);
     }
 
@@ -144,7 +144,7 @@ class GetEventServiceTest {
         assertEquals(1, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("title", EVENT_TITLE, false);
+        verify(dataValidator).validateName("title", EVENT_TITLE);
         verify(eventRepository).countByFilters(EVENT_TITLE, null);
         verify(eventRepository).findByFilters(EVENT_TITLE, null, 10, 0);
         verifyNoMoreInteractions(eventRepository);
@@ -162,7 +162,7 @@ class GetEventServiceTest {
         assertEquals(0, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("title", "Nonexistent", false);
+        verify(dataValidator).validateName("title", "Nonexistent");
         verify(eventRepository).countByFilters("Nonexistent", null);
         verify(eventRepository).findByFilters("Nonexistent", null, 10, 0);
     }
@@ -182,7 +182,7 @@ class GetEventServiceTest {
         assertEquals(1, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("location", EVENT_LOCATION, false);
+        verify(dataValidator).validateName("location", EVENT_LOCATION);
         verify(eventRepository).countByFilters(null, EVENT_LOCATION);
         verify(eventRepository).findByFilters(null, EVENT_LOCATION, 10, 0);
         verifyNoMoreInteractions(eventRepository);

@@ -27,10 +27,8 @@ public class DataValidator {
         }
     }
 
-    public void validateName(String fieldName, String data, boolean isRequired){
-        if (isRequired){
-            checkNullData(fieldName, data);
-        }
+    public void validateName(String fieldName, String data){
+        checkNullData(fieldName, data);
 
         lengthValidation(fieldName, 50, data);
 

@@ -30,10 +30,10 @@ public class EventService {
         authService.checkBlacklist(ipAddress);
 
         if (title != null) {
-            dataValidator.validateName("title", title, false);
+            dataValidator.validateName("title", title);
         }
         if (location != null) {
-            dataValidator.validateName("location", location, false);
+            dataValidator.validateName("location", location);
         }
 
         long total = eventRepository.countByFilters(title, location);
