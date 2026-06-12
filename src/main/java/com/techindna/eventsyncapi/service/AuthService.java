@@ -42,6 +42,7 @@ public class AuthService {
         checkBlacklist(ipAddress);
 
         dataValidator.validateEmail(request.getEmail());
+        dataValidator.checkNullData("password",  request.getPassword());
 
         User admin = userRepository.findByEmail(request.getEmail())
                 .filter(u -> u.getRole() == Role.ADMIN)
