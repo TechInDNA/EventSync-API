@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.room;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

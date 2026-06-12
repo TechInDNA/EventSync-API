@@ -1,8 +1,8 @@
 package com.techindna.eventsyncapi.mapper;
 
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.dto.MetaDto;
-import com.techindna.eventsyncapi.dto.RoomListResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import org.springframework.stereotype.Component;
 

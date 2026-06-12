@@ -1,8 +1,8 @@
 package com.techindna.eventsyncapi.controller;
 
-import com.techindna.eventsyncapi.dto.RoomInputDto;
-import com.techindna.eventsyncapi.dto.RoomListResponseDto;
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomInputDto;
+import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.service.RoomService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

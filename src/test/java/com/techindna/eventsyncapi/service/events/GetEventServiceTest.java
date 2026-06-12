@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.service.events;
 
-import com.techindna.eventsyncapi.dto.EventListResponseDto;
+import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.mapper.EventMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
