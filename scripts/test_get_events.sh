@@ -1,107 +1,107 @@
 #!/bin/bash
-echo "=== GET /events — default pagination (page=1, size=10) ==="
+echo "=== [200] default pagination (page=1, size=10) — expect: 10 events ==="
 curlie :8080/events
 
 echo ""
-echo "=== GET /events — custom page & size (page=2, size=5) ==="
+echo "=== [200] custom page & size (page=2, size=5) — expect: 5 events ==="
 curlie :8080/events?page=2&size=5
 
 echo ""
-echo "=== GET /events — size=100 (all events) ==="
+echo "=== [200] size=100 (all events) — expect: 22 events ==="
 curlie :8080/events?page=1&size=100
 
 echo ""
-echo "=== GET /events — page out of range ==="
+echo "=== [200] page out of range — expect: 0 events ==="
 curlie :8080/events?page=999&size=10
 
 echo ""
-echo "=== GET /events — title filter: Spring (matches 2 events) ==="
+echo "=== [200] title=Spring — expect: 2 events ==="
 curlie :8080/events?title=Spring
 
 echo ""
-echo "=== GET /events — title filter: Java ==="
+echo "=== [200] title=Java — expect: 1 event ==="
 curlie :8080/events?title=Java
 
 echo ""
-echo "=== GET /events — title filter: Rust ==="
+echo "=== [200] title=Rust — expect: 1 event ==="
 curlie :8080/events?title=Rust
 
 echo ""
-echo "=== GET /events — title filter: no match ==="
+echo "=== [200] title=Nonexistent — expect: 0 events ==="
 curlie :8080/events?title=Nonexistent
 
 echo ""
-echo "=== GET /events — location filter: Antananarivo ==="
+echo "=== [200] location=Antananarivo — expect: 12 events ==="
 curlie :8080/events?location=Antananarivo
 
 echo ""
-echo "=== GET /events — location filter: Fianarantsoa ==="
+echo "=== [200] location=Fianarantsoa — expect: 4 events ==="
 curlie :8080/events?location=Fianarantsoa
 
 echo ""
-echo "=== GET /events — location filter: Toamasina ==="
+echo "=== [200] location=Toamasina — expect: 4 events ==="
 curlie :8080/events?location=Toamasina
 
 echo ""
-echo "=== GET /events — location filter: Mahajanga ==="
+echo "=== [200] location=Mahajanga — expect: 2 events ==="
 curlie :8080/events?location=Mahajanga
 
 echo ""
-echo "=== GET /events — combined title + location: Spring + Antananarivo ==="
+echo "=== [200] title=Spring & location=Antananarivo — expect: 2 events ==="
 curlie :8080/events?title=Spring&location=Antananarivo
 
 echo ""
-echo "=== GET /events — combined title + location: DevOps + Antananarivo ==="
+echo "=== [200] title=DevOps & location=Antananarivo — expect: 1 event ==="
 curlie :8080/events?title=DevOps&location=Antananarivo
 
 echo ""
-echo "=== GET /events — startDate filter: from 2026-01-01 (future events only) ==="
+echo "=== [200] startDate=2026-01-01T00:00:00Z (future only) — expect: 12 events ==="
 curlie ':8080/events?startDate=2026-01-01T00:00:00Z'
 
 echo ""
-echo "=== GET /events — endDate filter: until 2025-12-31 (past events only) ==="
+echo "=== [200] endDate=2025-12-31T23:59:59Z (past only) — expect: 10 events ==="
 curlie ':8080/events?endDate=2025-12-31T23:59:59Z'
 
 echo ""
-echo "=== GET /events — date range: 2025-07-01 to 2025-09-30 ==="
+echo "=== [200] date range 2025-07-01 → 2025-09-30 — expect: 3 events ==="
 curlie ':8080/events?startDate=2025-07-01T00:00:00Z&endDate=2025-09-30T23:59:59Z'
 
 echo ""
-echo "=== GET /events — date range: 2026-01-01 to 2026-06-30 ==="
+echo "=== [200] date range 2026-01-01 → 2026-06-30 — expect: 6 events ==="
 curlie ':8080/events?startDate=2026-01-01T00:00:00Z&endDate=2026-06-30T23:59:59Z'
 
 echo ""
-echo "=== GET /events — isLive=true (currently running events) ==="
+echo "=== [200] isLive=true — expect: 0 events ==="
 curlie :8080/events?isLive=true
 
 echo ""
-echo "=== GET /events — isLive=false (non-live events) ==="
+echo "=== [200] isLive=false — expect: 22 events ==="
 curlie :8080/events?isLive=false
 
 echo ""
-echo "=== GET /events — location + date range: Antananarivo in 2025 ==="
+echo "=== [200] location=Antananarivo & dates 2025 — expect: 5 events ==="
 curlie ':8080/events?location=Antananarivo&startDate=2025-01-01T00:00:00Z&endDate=2025-12-31T23:59:59Z'
 
 echo ""
-echo "=== GET /events — title + date range: Spring in 2026 ==="
+echo "=== [200] title=Spring & dates 2026 — expect: 2 events ==="
 curlie ':8080/events?title=Spring&startDate=2026-01-01T00:00:00Z&endDate=2026-12-31T23:59:59Z'
 
 echo ""
-echo "=== GET /events — location + isLive: Antananarivo + isLive=false ==="
+echo "=== [200] location=Antananarivo & isLive=false — expect: 12 events ==="
 curlie :8080/events?location=Antananarivo&isLive=false
 
 echo ""
-echo "=== GET /events — title + location + date range: full combo ==="
+echo "=== [200] title=Spring & location=Antananarivo & dates 2026 H1 — expect: 2 events ==="
 curlie ':8080/events?title=Spring&location=Antananarivo&startDate=2026-01-01T00:00:00Z&endDate=2026-06-30T23:59:59Z'
 
 echo ""
-echo "=== GET /events — single event match: title=Kubernetes ==="
+echo "=== [200] title=Kubernetes — expect: 1 event ==="
 curlie :8080/events?title=Kubernetes
 
 echo ""
-echo "=== GET /events — startDate only: from 2025-06-01 ==="
+echo "=== [200] startDate=2025-06-01T00:00:00Z — expect: 18 events ==="
 curlie ':8080/events?startDate=2025-06-01T00:00:00Z'
 
 echo ""
-echo "=== GET /events — endDate only: until 2025-06-01 ==="
+echo "=== [200] endDate=2025-06-01T23:59:59Z — expect: 4 events ==="
 curlie ':8080/events?endDate=2025-06-01T23:59:59Z'
