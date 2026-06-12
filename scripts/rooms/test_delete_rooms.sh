@@ -35,6 +35,19 @@ echo "=== [401] DELETE without JWT cookie ==="
 curlie DELETE ":8080/rooms/$SEED_ID"
 echo ""
 
+echo "=== [200] POST /auth/participant — retrieve PARTICIPANT cookie ==="
+curlie -c "$COOKIE_JAR" POST :8080/auth/participant firstName=Jean lastName=Dupont email=jean@test.com
+echo ""
+
+echo "=== [403] DELETE by PARTICIPANT (not ADMIN) ==="
+curlie -b "$COOKIE_JAR" DELETE ":8080/rooms/$SEED_ID"
+echo ""
+
+# re-auth as admin for remaining tests
+echo "=== [200] POST /auth/login — re-auth as ADMIN ==="
+curlie -c "$COOKIE_JAR" POST :8080/auth/login email=admin@eventsync.com password=admin123
+echo ""
+
 echo "=== INVALID UUID ==="
 echo ""
 echo "=== [400] DELETE with malformed UUID ==="
