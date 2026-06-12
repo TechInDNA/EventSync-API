@@ -16,11 +16,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     @Query(value = """
             SELECT e.id, e.title, e.description, e.start_date, e.end_date, e.location, e.created_at
             FROM eventsync_app.event e
-            WHERE (:title IS NULL OR e.title ILIKE '%' || :title || '%')
-              AND (:location IS NULL OR e.location ILIKE '%' || :location || '%')
-              AND (:startDate IS NULL OR e.start_date >= :startDate)
-              AND (:endDate IS NULL OR e.end_date <= :endDate)
-              AND (:isLive IS NULL OR :isLive = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
+            WHERE (CAST(:title AS text) IS NULL OR e.title ILIKE '%' || :title || '%')
+              AND (CAST(:location AS text) IS NULL OR e.location ILIKE '%' || :location || '%')
+              AND (CAST(:startDate AS timestamptz) IS NULL OR e.start_date >= :startDate)
+              AND (CAST(:endDate AS timestamptz) IS NULL OR e.end_date <= :endDate)
+              AND (CAST(:isLive AS boolean) IS NULL OR CAST(:isLive AS boolean) = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
             ORDER BY e.start_date ASC
             LIMIT :size OFFSET :offset
             """, nativeQuery = true)
@@ -34,11 +34,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
 
     @Query(value = """
             SELECT COUNT(e.id) FROM eventsync_app.event e
-            WHERE (:title IS NULL OR e.title ILIKE '%' || :title || '%')
-              AND (:location IS NULL OR e.location ILIKE '%' || :location || '%')
-              AND (:startDate IS NULL OR e.start_date >= :startDate)
-              AND (:endDate IS NULL OR e.end_date <= :endDate)
-              AND (:isLive IS NULL OR :isLive = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
+            WHERE (CAST(:title AS text) IS NULL OR e.title ILIKE '%' || :title || '%')
+              AND (CAST(:location AS text) IS NULL OR e.location ILIKE '%' || :location || '%')
+              AND (CAST(:startDate AS timestamptz) IS NULL OR e.start_date >= :startDate)
+              AND (CAST(:endDate AS timestamptz) IS NULL OR e.end_date <= :endDate)
+              AND (CAST(:isLive AS boolean) IS NULL OR CAST(:isLive AS boolean) = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
             """, nativeQuery = true)
     long countByFilters(@Param("title") String title,
                         @Param("location") String location,
