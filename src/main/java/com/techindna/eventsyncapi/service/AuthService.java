@@ -5,7 +5,7 @@ import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
 import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
-import com.techindna.eventsyncapi.dto.UserResponseDto;
+import com.techindna.eventsyncapi.dto.auth.UserResponseDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -42,6 +42,7 @@ public class AuthService {
         checkBlacklist(ipAddress);
 
         dataValidator.validateEmail(request.getEmail());
+        dataValidator.checkNullData("password",  request.getPassword());
 
         User admin = userRepository.findByEmail(request.getEmail())
                 .filter(u -> u.getRole() == Role.ADMIN)
@@ -75,8 +76,8 @@ public class AuthService {
         checkBlacklist(ipAddress);
 
         dataValidator.validateEmail(request.getEmail());
-        dataValidator.validateName("firstName", request.getFirstName(), true);
-        dataValidator.validateName("lastName", request.getLastName(), true);
+        dataValidator.validateName("firstName", request.getFirstName());
+        dataValidator.validateName("lastName", request.getLastName());
 
         User participant = userRepository.findByEmailAndNames(
                 request.getEmail(), request.getFirstName(), request.getLastName()

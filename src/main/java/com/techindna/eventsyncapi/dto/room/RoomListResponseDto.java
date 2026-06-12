@@ -1,5 +1,6 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.room;
 
+import com.techindna.eventsyncapi.dto.MetaDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

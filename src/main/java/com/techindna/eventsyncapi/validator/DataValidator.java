@@ -10,8 +10,9 @@ import java.util.regex.Pattern;
 public class DataValidator {
     private static final Pattern VALID_EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z]+){1,2}$");
     private static final Pattern ALLOWED_EMAIL_CHAR = Pattern.compile("^[a-zA-Z0-9.@_-]+$");
-    private static final Pattern VALID_NAME = Pattern.compile("^[A-Z][a-zA-Z' -]+[a-zA-Z]+$");
+    private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z][a-zA-Z' -]+[a-zA-Z]+$");
     private static final Pattern ALLOWED_NAME_CHAR = Pattern.compile("^[a-zA-Z-' ]+$");
+    private static final Pattern ALLOWED_SEARCH_STRING = Pattern.compile("^[A-Za-z0-9' -]*$");
 
     public void checkNullData(String fieldName, String data){
         if (data == null || data.isEmpty() || data.isBlank()){
@@ -27,10 +28,16 @@ public class DataValidator {
         }
     }
 
-    public void validateName(String fieldName, String data, boolean isRequired){
-        if (isRequired){
-            checkNullData(fieldName, data);
+    public void validateSearchString(String data){
+        if (data != null && !ALLOWED_SEARCH_STRING.matcher(data).matches()){
+            throw new UnprocessableEntityException(
+                    "Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."
+            );
         }
+    }
+
+    public void validateName(String fieldName, String data){
+        checkNullData(fieldName, data);
 
         lengthValidation(fieldName, 50, data);
 

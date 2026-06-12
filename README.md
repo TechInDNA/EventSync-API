@@ -25,39 +25,45 @@ JWT_TOKEN=your-secret-key
 ### 2. Create the schema
 
 ```bash
-psql "$DATABASE_URL" -f src/main/resources/db/001_create_users.sql
+psql "$DATABASE_URL" -f src/main/resources/db/auth/users_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/auth/ip_blacklist_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/rooms/rooms_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
 ```
 
 ### 3. Build & run
 
 ```bash
 ./gradlew build -x test
-./gradlew test                 # 25 tests
+./gradlew test                 # 90 tests
 ./gradlew bootRun              # → http://localhost:8080
-```
-
-### 4. Test the login endpoint
-
-```bash
-src/main/java/com/techindna/eventsyncapi/script/post_auth_login.sh
 ```
 
 ## Endpoints
 
-| Endpoint | Description |
-|---|---|
-| `POST /auth/login` | Authenticate admin (returns JWT cookie + token body) |
+| Endpoint | Auth | Description |
+|---|---|---|
+| `POST /auth/login` | — | Authenticate admin (returns JWT) |
+| `POST /auth/participant` | — | Identify or register a participant |
+| `GET /events` | — | List all events (paginated, filters: title, location, startDate, endDate, isLive) |
+| `GET /rooms` | — | List all rooms (paginated, filter by name) |
+| `GET /rooms/{id}` | — | Get room details |
+| `POST /rooms` | JWT | Create a new room |
+| `PUT /rooms/{id}` | JWT | Update a room |
+| `DELETE /rooms/{id}` | JWT | Delete a room |
 
-> See `docs/api.yaml` for full spec.
+> See `docs/api.yaml` for the complete OpenAPI spec (all schemas, responses, and error definitions).
 
 ## Architecture
 
 **Validation:** null/blank checks via `@NotBlank` on the DTO. Format validation delegated to `DataValidator` in the service layer — keeps validation logic testable and exception messages precise.
 
-**Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
+**Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`, `NotFoundException`, `ConflictException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
 
 **Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity.
 
+**Persistence:** schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries.
+
 ---
 
-*Java 21 · Spring Boot 4.0.6 · PostgreSQL (Neon) · Gradle · Lombok · JWT*
+*Java 21 · Spring Boot 4.0.6 · PostgreSQL (Neon) · Gradle 9.5.1 · Lombok · JWT (auth0)*

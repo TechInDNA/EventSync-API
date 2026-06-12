@@ -1,7 +1,7 @@
 package com.techindna.eventsyncapi.controller.rooms;
 
 import com.techindna.eventsyncapi.controller.RoomController;
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.service.RoomService;

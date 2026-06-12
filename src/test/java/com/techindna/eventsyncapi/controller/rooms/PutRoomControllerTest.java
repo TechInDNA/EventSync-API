@@ -3,8 +3,8 @@ package com.techindna.eventsyncapi.controller.rooms;
 import com.techindna.eventsyncapi.controller.RoomController;
 import com.techindna.eventsyncapi.dto.room.RoomInputDto;
 import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
-import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
+import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.service.RoomService;
 import org.junit.jupiter.api.DisplayName;
@@ -18,12 +18,13 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+import static org.mockito.Mockito.eq;
 
-class PostRoomControllerTest {
+class PutRoomControllerTest {
 
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
@@ -31,7 +32,7 @@ class PostRoomControllerTest {
 
     private static final UUID ROOM_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
 
-    PostRoomControllerTest() {
+    PutRoomControllerTest() {
         roomService = mock(RoomService.class);
         objectMapper = new ObjectMapper();
         var controller = new RoomController(roomService);
@@ -42,33 +43,33 @@ class PostRoomControllerTest {
     }
 
     @Test
-    @DisplayName("POST /rooms with valid body returns 201 and created room")
-    void createRoom_withValidName_returns201() throws Exception {
-        var request = RoomInputDto.builder().name("Workshop A").build();
+    @DisplayName("PUT /rooms/{id} with valid body returns 200 and updated room")
+    void updateRoom_withValidData_returns200() throws Exception {
+        var request = RoomInputDto.builder().name("Renamed Hall").build();
         var response = RoomResponseDto.builder()
                 .id(ROOM_ID)
-                .name("Workshop A")
+                .name("Renamed Hall")
                 .build();
 
-        when(roomService.createRoom(any(RoomInputDto.class))).thenReturn(response);
+        when(roomService.updateRoom(eq(ROOM_ID), any(RoomInputDto.class))).thenReturn(response);
 
-        mockMvc.perform(post("/rooms")
+        mockMvc.perform(put("/rooms/{id}", ROOM_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ROOM_ID.toString()))
-                .andExpect(jsonPath("$.name").value("Workshop A"));
+                .andExpect(jsonPath("$.name").value("Renamed Hall"));
     }
 
     @Test
-    @DisplayName("POST /rooms with empty name returns 422")
-    void createRoom_withEmptyName_returns422() throws Exception {
+    @DisplayName("PUT /rooms/{id} with empty name returns 422")
+    void updateRoom_withEmptyName_returns422() throws Exception {
         var request = RoomInputDto.builder().name("").build();
 
-        when(roomService.createRoom(any(RoomInputDto.class)))
+        when(roomService.updateRoom(eq(ROOM_ID), any(RoomInputDto.class)))
                 .thenThrow(new UnprocessableEntityException("The field name is required and cannot be blank."));
 
-        mockMvc.perform(post("/rooms")
+        mockMvc.perform(put("/rooms/{id}", ROOM_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andExpect(status().isUnprocessableContent())
@@ -77,20 +78,20 @@ class PostRoomControllerTest {
     }
 
     @Test
-    @DisplayName("POST /rooms with duplicate name returns 409")
-    void createRoom_withDuplicateName_returns409() throws Exception {
-        var request = RoomInputDto.builder().name("Workshop A").build();
+    @DisplayName("PUT /rooms/{id} with unknown id returns 404")
+    void updateRoom_withUnknownId_returns404() throws Exception {
+        var request = RoomInputDto.builder().name("Renamed Hall").build();
 
-        when(roomService.createRoom(any(RoomInputDto.class)))
-                .thenThrow(new ConflictException("Room Workshop A already exists."));
+        when(roomService.updateRoom(eq(ROOM_ID), any(RoomInputDto.class)))
+                .thenThrow(new NotFoundException("Room " + ROOM_ID + " not found."));
 
-        mockMvc.perform(post("/rooms")
+        mockMvc.perform(put("/rooms/{id}", ROOM_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.error").value("Conflict"))
-                .andExpect(jsonPath("$.message").value("Room Workshop A already exists."));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Room " + ROOM_ID + " not found."));
     }
 
     private String toJson(Object obj) {

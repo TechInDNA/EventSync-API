@@ -1,13 +1,12 @@
 package com.techindna.eventsyncapi.service;
 
-import com.techindna.eventsyncapi.dto.RoomInputDto;
-import com.techindna.eventsyncapi.dto.RoomListResponseDto;
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomInputDto;
+import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
-import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.RoomRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +51,7 @@ public class RoomService {
 
     @Transactional
     public RoomResponseDto createRoom(RoomInputDto request) {
-        dataValidator.validateName("name", request.getName(), true);
+        dataValidator.validateName("name", request.getName());
 
         return roomMapper.toResponseDto(
                 roomRepository.insertRoom(request.getName())
@@ -60,5 +59,21 @@ public class RoomService {
                                 String.format("Room %s already exists.", request.getName()))
                         )
         );
+    }
+
+    @Transactional
+    public RoomResponseDto updateRoom(UUID id, RoomInputDto request) {
+        dataValidator.validateName("name", request.getName());
+
+        return roomMapper.toResponseDto(
+                roomRepository.updateRoomById(id, request.getName())
+                        .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id)))
+        );
+    }
+
+    @Transactional
+    public void deleteRoom(UUID id) {
+        roomRepository.deleteRoomById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Room %s not found.", id)));
     }
 }
