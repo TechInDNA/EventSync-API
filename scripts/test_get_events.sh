@@ -105,3 +105,67 @@ curlie ':8080/events?startDate=2025-06-01T00:00:00Z'
 echo ""
 echo "=== [200] endDate=2025-06-01T23:59:59Z — expect: 4 events ==="
 curlie ':8080/events?endDate=2025-06-01T23:59:59Z'
+
+echo ""
+echo ""
+echo "=== EXCEPTION TESTS ==="
+
+echo ""
+echo "=== [400] page=abc — invalid int for page ==="
+curlie :8080/events?page=abc
+
+echo ""
+echo "=== [400] startDate=notadate — invalid Instant format ==="
+curlie :8080/events?startDate=notadate
+
+echo ""
+echo "=== [400] isLive=maybe — invalid Boolean ==="
+curlie :8080/events?isLive=maybe
+
+echo ""
+echo "=== [422] title= (empty) — blank title rejected by validator ==="
+curlie :8080/events?title=
+
+echo ""
+echo "=== [422] title=a — single char, fails VALID_NAME regex ==="
+curlie :8080/events?title=a
+
+echo ""
+echo "=== [422] title=ab — too short, fails VALID_NAME regex ==="
+curlie :8080/events?title=ab
+
+echo ""
+echo "=== [422] title=Title! — invalid char ! in title ==="
+curlie :8080/events?title=Title!
+
+echo ""
+echo "=== [422] location= (empty) — blank location rejected ==="
+curlie :8080/events?location=
+
+echo ""
+echo "=== [422] title=123 — digits only, fails ALLOWED_NAME_CHAR ==="
+curlie :8080/events?title=123
+
+echo ""
+echo ""
+echo "=== EDGE CASES (graceful handling) ==="
+
+echo ""
+echo "=== [200] page=0 — normalised to page=1, expect: 10 events ==="
+curlie :8080/events?page=0
+
+echo ""
+echo "=== [200] page=-5 — normalised to page=1, expect: 10 events ==="
+curlie :8080/events?page=-5
+
+echo ""
+echo "=== [200] size=0 — normalised to size=10, expect: 10 events ==="
+curlie :8080/events?size=0
+
+echo ""
+echo "=== [200] size=-1 — normalised to size=10, expect: 10 events ==="
+curlie :8080/events?size=-1
+
+echo ""
+echo "=== [200] page=1&size=0 — normalised, expect: 10 events ==="
+curlie :8080/events?page=1&size=0
