@@ -31,13 +31,8 @@ public class EventService {
         int offset = (page - 1) * size;
 
         authService.checkBlacklist(ipAddress);
-
-        if (title != null) {
-            dataValidator.validateName("title", title);
-        }
-        if (location != null) {
-            dataValidator.validateName("location", location);
-        }
+        dataValidator.validateSearchString(title);
+        dataValidator.validateSearchString(location);
 
         long total = eventRepository.countByFilters(title, location, startDate, endDate, isLive);
         List<Event> events = eventRepository.findByFilters(title, location, startDate, endDate, isLive, size, offset);

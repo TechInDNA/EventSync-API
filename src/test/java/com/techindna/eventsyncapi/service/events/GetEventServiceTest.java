@@ -66,7 +66,7 @@ class GetEventServiceTest {
         assertFalse(result.getData().getFirst().isLive());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator, never()).validateName(any(), any());
+        verify(dataValidator, times(2)).validateSearchString(isNull());
         verify(eventRepository).countByFilters(null, null, null, null, null);
         verify(eventRepository).findByFilters(null, null, null, null, null, 10, 0);
     }
@@ -85,7 +85,7 @@ class GetEventServiceTest {
         assertTrue(result.getData().isEmpty());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator, never()).validateName(any(), any());
+        verify(dataValidator, times(2)).validateSearchString(isNull());
         verify(eventRepository).findByFilters(null, null, null, null, null, 10, 10);
     }
 
@@ -144,7 +144,7 @@ class GetEventServiceTest {
         assertEquals(1, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("title", EVENT_TITLE);
+        verify(dataValidator).validateSearchString(EVENT_TITLE);
         verify(eventRepository).countByFilters(EVENT_TITLE, null, null, null, null);
         verify(eventRepository).findByFilters(EVENT_TITLE, null, null, null, null, 10, 0);
         verifyNoMoreInteractions(eventRepository);
@@ -162,7 +162,7 @@ class GetEventServiceTest {
         assertEquals(0, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("title", "Nonexistent");
+        verify(dataValidator).validateSearchString("Nonexistent");
         verify(eventRepository).countByFilters("Nonexistent", null, null, null, null);
         verify(eventRepository).findByFilters("Nonexistent", null, null, null, null, 10, 0);
     }
@@ -182,7 +182,7 @@ class GetEventServiceTest {
         assertEquals(1, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
-        verify(dataValidator).validateName("location", EVENT_LOCATION);
+        verify(dataValidator).validateSearchString(EVENT_LOCATION);
         verify(eventRepository).countByFilters(null, EVENT_LOCATION, null, null, null);
         verify(eventRepository).findByFilters(null, EVENT_LOCATION, null, null, null, 10, 0);
         verifyNoMoreInteractions(eventRepository);

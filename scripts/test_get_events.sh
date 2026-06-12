@@ -123,27 +123,27 @@ echo "=== [400] isLive=maybe — invalid Boolean ==="
 curlie GET :8080/events?isLive=maybe
 
 echo ""
-echo "=== [422] title= (empty) — blank title rejected by validator ==="
+echo "=== [200] title= (empty) — treated as no filter (empty string allowed by validateSearchString) ==="
 curlie GET :8080/events?title=
 
 echo ""
-echo "=== [422] title=a — single char, fails VALID_NAME regex ==="
+echo "=== [200] title=a — single char allowed by validateSearchString ==="
 curlie GET :8080/events?title=a
 
 echo ""
-echo "=== [422] title=ab — too short, fails VALID_NAME regex ==="
+echo "=== [200] title=ab — short string allowed by validateSearchString ==="
 curlie GET :8080/events?title=ab
 
 echo ""
-echo "=== [422] title=Title! — invalid char ! in title ==="
+echo "=== [422] title=Title! — invalid char ! rejected by validateSearchString ==="
 curlie GET :8080/events?title=Title!
 
 echo ""
-echo "=== [422] location= (empty) — blank location rejected ==="
+echo "=== [200] location= (empty) — treated as no filter (empty string allowed by validateSearchString) ==="
 curlie GET :8080/events?location=
 
 echo ""
-echo "=== [422] title=123 — digits only, fails ALLOWED_NAME_CHAR ==="
+echo "=== [200] title=123 — digits allowed by validateSearchString ==="
 curlie GET :8080/events?title=123
 
 echo ""
