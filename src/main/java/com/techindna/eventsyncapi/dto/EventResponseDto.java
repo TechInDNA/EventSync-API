@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -17,10 +17,10 @@ public class EventResponseDto {
     private UUID id;
     private String title;
     private String description;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private Instant startDate;
+    private Instant endDate;
     private String location;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @JsonProperty("isLive")
     private boolean live;

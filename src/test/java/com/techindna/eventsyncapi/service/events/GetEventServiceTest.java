@@ -10,7 +10,7 @@ import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,15 +45,15 @@ class GetEventServiceTest {
                 .id(EVENT_ID)
                 .title(EVENT_TITLE)
                 .description("A great event")
-                .startDate(LocalDateTime.of(2025, 6, 1, 9, 0))
-                .endDate(LocalDateTime.of(2025, 6, 3, 18, 0))
+                .startDate(Instant.parse("2025-06-01T09:00:00Z"))
+                .endDate(Instant.parse("2025-06-03T18:00:00Z"))
                 .location(EVENT_LOCATION)
-                .createdAt(LocalDateTime.of(2025, 1, 1, 0, 0))
+                .createdAt(Instant.parse("2025-01-01T00:00:00Z"))
                 .build();
-        when(eventRepository.countByFilters(null, null)).thenReturn(1L);
-        when(eventRepository.findByFilters(null, null, 10, 0)).thenReturn(List.of(event));
+        when(eventRepository.countByFilters(null, null, null, null, null)).thenReturn(1L);
+        when(eventRepository.findByFilters(null, null, null, null, null, 10, 0)).thenReturn(List.of(event));
 
-        EventListResponseDto result = eventService.getAllEvents(1, 10, null, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 10, null, null, null, null, null, TEST_IP);
 
         assertNotNull(result);
         assertEquals(1, result.getMeta().getTotal());
@@ -67,17 +67,17 @@ class GetEventServiceTest {
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(dataValidator, never()).validateName(any(), any());
-        verify(eventRepository).countByFilters(null, null);
-        verify(eventRepository).findByFilters(null, null, 10, 0);
+        verify(eventRepository).countByFilters(null, null, null, null, null);
+        verify(eventRepository).findByFilters(null, null, null, null, null, 10, 0);
     }
 
     @Test
     @DisplayName("getAllEvents with page 2 returns correct offset")
     void getAllEvents_withPage2_returnsCorrectOffset() {
-        when(eventRepository.countByFilters(null, null)).thenReturn(5L);
-        when(eventRepository.findByFilters(null, null, 10, 10)).thenReturn(List.of());
+        when(eventRepository.countByFilters(null, null, null, null, null)).thenReturn(5L);
+        when(eventRepository.findByFilters(null, null, null, null, null, 10, 10)).thenReturn(List.of());
 
-        EventListResponseDto result = eventService.getAllEvents(2, 10, null, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(2, 10, null, null, null, null, null, TEST_IP);
 
         assertNotNull(result);
         assertEquals(5, result.getMeta().getTotal());
@@ -86,42 +86,42 @@ class GetEventServiceTest {
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(dataValidator, never()).validateName(any(), any());
-        verify(eventRepository).findByFilters(null, null, 10, 10);
+        verify(eventRepository).findByFilters(null, null, null, null, null, 10, 10);
     }
 
     @Test
     @DisplayName("getAllEvents with page < 1 defaults to 1")
     void getAllEvents_withInvalidPage_defaultsTo1() {
-        when(eventRepository.countByFilters(null, null)).thenReturn(0L);
-        when(eventRepository.findByFilters(null, null, 10, 0)).thenReturn(List.of());
+        when(eventRepository.countByFilters(null, null, null, null, null)).thenReturn(0L);
+        when(eventRepository.findByFilters(null, null, null, null, null, 10, 0)).thenReturn(List.of());
 
-        EventListResponseDto result = eventService.getAllEvents(0, 10, null, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(0, 10, null, null, null, null, null, TEST_IP);
 
         assertEquals(1, result.getMeta().getPage());
         verify(authService).checkBlacklist(TEST_IP);
-        verify(eventRepository).findByFilters(null, null, 10, 0);
+        verify(eventRepository).findByFilters(null, null, null, null, null, 10, 0);
     }
 
     @Test
     @DisplayName("getAllEvents with size < 1 defaults to 10")
     void getAllEvents_withInvalidSize_defaultsTo10() {
-        when(eventRepository.countByFilters(null, null)).thenReturn(0L);
-        when(eventRepository.findByFilters(null, null, 10, 0)).thenReturn(List.of());
+        when(eventRepository.countByFilters(null, null, null, null, null)).thenReturn(0L);
+        when(eventRepository.findByFilters(null, null, null, null, null, 10, 0)).thenReturn(List.of());
 
-        EventListResponseDto result = eventService.getAllEvents(1, 0, null, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 0, null, null, null, null, null, TEST_IP);
 
         assertEquals(10, result.getMeta().getSize());
         verify(authService).checkBlacklist(TEST_IP);
-        verify(eventRepository).findByFilters(null, null, 10, 0);
+        verify(eventRepository).findByFilters(null, null, null, null, null, 10, 0);
     }
 
     @Test
     @DisplayName("getAllEvents with empty database returns empty list")
     void getAllEvents_withNoEvents_returnsEmptyList() {
-        when(eventRepository.countByFilters(null, null)).thenReturn(0L);
-        when(eventRepository.findByFilters(null, null, 10, 0)).thenReturn(List.of());
+        when(eventRepository.countByFilters(null, null, null, null, null)).thenReturn(0L);
+        when(eventRepository.findByFilters(null, null, null, null, null, 10, 0)).thenReturn(List.of());
 
-        EventListResponseDto result = eventService.getAllEvents(1, 10, null, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 10, null, null, null, null, null, TEST_IP);
 
         assertTrue(result.getData().isEmpty());
         assertEquals(0, result.getMeta().getTotal());
@@ -133,10 +133,10 @@ class GetEventServiceTest {
     @DisplayName("getAllEvents with title filter returns matching events")
     void getAllEvents_withTitleFilter_returnsMatchingEvents() {
         var event = Event.builder().id(EVENT_ID).title(EVENT_TITLE).build();
-        when(eventRepository.countByFilters(EVENT_TITLE, null)).thenReturn(1L);
-        when(eventRepository.findByFilters(EVENT_TITLE, null, 10, 0)).thenReturn(List.of(event));
+        when(eventRepository.countByFilters(EVENT_TITLE, null, null, null, null)).thenReturn(1L);
+        when(eventRepository.findByFilters(EVENT_TITLE, null, null, null, null, 10, 0)).thenReturn(List.of(event));
 
-        EventListResponseDto result = eventService.getAllEvents(1, 10, EVENT_TITLE, null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 10, EVENT_TITLE, null, null, null, null, TEST_IP);
 
         assertNotNull(result);
         assertEquals(1, result.getData().size());
@@ -145,36 +145,36 @@ class GetEventServiceTest {
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(dataValidator).validateName("title", EVENT_TITLE);
-        verify(eventRepository).countByFilters(EVENT_TITLE, null);
-        verify(eventRepository).findByFilters(EVENT_TITLE, null, 10, 0);
+        verify(eventRepository).countByFilters(EVENT_TITLE, null, null, null, null);
+        verify(eventRepository).findByFilters(EVENT_TITLE, null, null, null, null, 10, 0);
         verifyNoMoreInteractions(eventRepository);
     }
 
     @Test
     @DisplayName("getAllEvents with title filter and no match returns empty list")
     void getAllEvents_withTitleFilter_noMatch_returnsEmpty() {
-        when(eventRepository.countByFilters("Nonexistent", null)).thenReturn(0L);
-        when(eventRepository.findByFilters("Nonexistent", null, 10, 0)).thenReturn(List.of());
+        when(eventRepository.countByFilters("Nonexistent", null, null, null, null)).thenReturn(0L);
+        when(eventRepository.findByFilters("Nonexistent", null, null, null, null, 10, 0)).thenReturn(List.of());
 
-        EventListResponseDto result = eventService.getAllEvents(1, 10, "Nonexistent", null, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 10, "Nonexistent", null, null, null, null, TEST_IP);
 
         assertTrue(result.getData().isEmpty());
         assertEquals(0, result.getMeta().getTotal());
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(dataValidator).validateName("title", "Nonexistent");
-        verify(eventRepository).countByFilters("Nonexistent", null);
-        verify(eventRepository).findByFilters("Nonexistent", null, 10, 0);
+        verify(eventRepository).countByFilters("Nonexistent", null, null, null, null);
+        verify(eventRepository).findByFilters("Nonexistent", null, null, null, null, 10, 0);
     }
 
     @Test
     @DisplayName("getAllEvents with location filter returns matching events")
     void getAllEvents_withLocationFilter_returnsMatchingEvents() {
         var event = Event.builder().id(EVENT_ID).title(EVENT_TITLE).location(EVENT_LOCATION).build();
-        when(eventRepository.countByFilters(null, EVENT_LOCATION)).thenReturn(1L);
-        when(eventRepository.findByFilters(null, EVENT_LOCATION, 10, 0)).thenReturn(List.of(event));
+        when(eventRepository.countByFilters(null, EVENT_LOCATION, null, null, null)).thenReturn(1L);
+        when(eventRepository.findByFilters(null, EVENT_LOCATION, null, null, null, 10, 0)).thenReturn(List.of(event));
 
-        EventListResponseDto result = eventService.getAllEvents(1, 10, null, EVENT_LOCATION, TEST_IP);
+        EventListResponseDto result = eventService.getAllEvents(1, 10, null, EVENT_LOCATION, null, null, null, TEST_IP);
 
         assertNotNull(result);
         assertEquals(1, result.getData().size());
@@ -183,8 +183,8 @@ class GetEventServiceTest {
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(dataValidator).validateName("location", EVENT_LOCATION);
-        verify(eventRepository).countByFilters(null, EVENT_LOCATION);
-        verify(eventRepository).findByFilters(null, EVENT_LOCATION, 10, 0);
+        verify(eventRepository).countByFilters(null, EVENT_LOCATION, null, null, null);
+        verify(eventRepository).findByFilters(null, EVENT_LOCATION, null, null, null, 10, 0);
         verifyNoMoreInteractions(eventRepository);
     }
 }

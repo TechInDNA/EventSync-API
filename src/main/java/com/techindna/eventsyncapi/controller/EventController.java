@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
@@ -24,9 +26,12 @@ public class EventController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
+            @RequestParam(required = false) Instant startDate,
+            @RequestParam(required = false) Instant endDate,
+            @RequestParam(required = false) Boolean isLive,
             HttpServletRequest request
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(eventService.getAllEvents(page, size, title, location, request.getRemoteAddr()));
+                .body(eventService.getAllEvents(page, size, title, location, startDate, endDate, isLive, request.getRemoteAddr()));
     }
 }

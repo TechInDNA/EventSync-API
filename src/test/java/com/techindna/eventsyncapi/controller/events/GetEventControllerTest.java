@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,10 +50,10 @@ class GetEventControllerTest {
                         .id(EVENT_ID)
                         .title(EVENT_TITLE)
                         .description("A great event")
-                        .startDate(LocalDateTime.of(2025, 6, 1, 9, 0))
-                        .endDate(LocalDateTime.of(2025, 6, 3, 18, 0))
+                        .startDate(Instant.parse("2025-06-01T09:00:00Z"))
+                        .endDate(Instant.parse("2025-06-03T18:00:00Z"))
                         .location(EVENT_LOCATION)
-                        .createdAt(LocalDateTime.of(2025, 1, 1, 0, 0))
+                        .createdAt(Instant.parse("2025-01-01T00:00:00Z"))
                         .live(false)
                         .build()
         );
@@ -62,7 +62,7 @@ class GetEventControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), nullable(String.class))).thenReturn(response);
+        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), any(), any(), any(), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/events")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -76,7 +76,7 @@ class GetEventControllerTest {
                 .andExpect(jsonPath("$.meta.page").value(1))
                 .andExpect(jsonPath("$.meta.size").value(10));
 
-        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), isNull(), nullable(String.class));
+        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), isNull(), isNull(), isNull(), isNull(), nullable(String.class));
     }
 
     @Test
@@ -90,7 +90,7 @@ class GetEventControllerTest {
                 .meta(MetaDto.builder().total(1).page(2).size(5).build())
                 .build();
 
-        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), nullable(String.class))).thenReturn(response);
+        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), any(), any(), any(), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/events")
                         .param("page", "2")
@@ -100,7 +100,7 @@ class GetEventControllerTest {
                 .andExpect(jsonPath("$.meta.page").value(2))
                 .andExpect(jsonPath("$.meta.size").value(5));
 
-        verify(eventService).getAllEvents(eq(2), eq(5), isNull(), isNull(), nullable(String.class));
+        verify(eventService).getAllEvents(eq(2), eq(5), isNull(), isNull(), isNull(), isNull(), isNull(), nullable(String.class));
     }
 
     @Test
@@ -111,7 +111,7 @@ class GetEventControllerTest {
                 .meta(MetaDto.builder().total(0).page(1).size(10).build())
                 .build();
 
-        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), nullable(String.class))).thenReturn(response);
+        when(eventService.getAllEvents(anyInt(), anyInt(), any(), any(), any(), any(), any(), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/events")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -119,7 +119,7 @@ class GetEventControllerTest {
                 .andExpect(jsonPath("$.data").isEmpty())
                 .andExpect(jsonPath("$.meta.total").value(0));
 
-        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), isNull(), nullable(String.class));
+        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), isNull(), isNull(), isNull(), isNull(), nullable(String.class));
     }
 
     @Test
@@ -133,7 +133,7 @@ class GetEventControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(eventService.getAllEvents(anyInt(), anyInt(), eq("Conference"), any(), nullable(String.class)))
+        when(eventService.getAllEvents(anyInt(), anyInt(), eq("Conference"), any(), any(), any(), any(), nullable(String.class)))
                 .thenReturn(response);
 
         mockMvc.perform(get("/events")
@@ -143,7 +143,7 @@ class GetEventControllerTest {
                 .andExpect(jsonPath("$.data[0].title").value(EVENT_TITLE))
                 .andExpect(jsonPath("$.meta.total").value(1));
 
-        verify(eventService).getAllEvents(eq(1), eq(10), eq("Conference"), isNull(), nullable(String.class));
+        verify(eventService).getAllEvents(eq(1), eq(10), eq("Conference"), isNull(), isNull(), isNull(), isNull(), nullable(String.class));
     }
 
     @Test
@@ -157,7 +157,7 @@ class GetEventControllerTest {
                 .meta(MetaDto.builder().total(1).page(1).size(10).build())
                 .build();
 
-        when(eventService.getAllEvents(anyInt(), anyInt(), any(), eq("Antananarivo"), nullable(String.class)))
+        when(eventService.getAllEvents(anyInt(), anyInt(), any(), eq("Antananarivo"), any(), any(), any(), nullable(String.class)))
                 .thenReturn(response);
 
         mockMvc.perform(get("/events")
@@ -167,6 +167,6 @@ class GetEventControllerTest {
                 .andExpect(jsonPath("$.data[0].location").value(EVENT_LOCATION))
                 .andExpect(jsonPath("$.meta.total").value(1));
 
-        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), eq("Antananarivo"), nullable(String.class));
+        verify(eventService).getAllEvents(eq(1), eq(10), isNull(), eq("Antananarivo"), isNull(), isNull(), isNull(), nullable(String.class));
     }
 }

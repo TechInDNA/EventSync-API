@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,11 +18,17 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             FROM eventsync_app.event e
             WHERE (:title IS NULL OR e.title ILIKE '%' || :title || '%')
               AND (:location IS NULL OR e.location ILIKE '%' || :location || '%')
+              AND (:startDate IS NULL OR e.start_date >= :startDate)
+              AND (:endDate IS NULL OR e.end_date <= :endDate)
+              AND (:isLive IS NULL OR :isLive = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
             ORDER BY e.start_date ASC
             LIMIT :size OFFSET :offset
             """, nativeQuery = true)
     List<Event> findByFilters(@Param("title") String title,
                               @Param("location") String location,
+                              @Param("startDate") Instant startDate,
+                              @Param("endDate") Instant endDate,
+                              @Param("isLive") Boolean isLive,
                               int size,
                               int offset);
 
@@ -29,7 +36,13 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             SELECT COUNT(e.id) FROM eventsync_app.event e
             WHERE (:title IS NULL OR e.title ILIKE '%' || :title || '%')
               AND (:location IS NULL OR e.location ILIKE '%' || :location || '%')
+              AND (:startDate IS NULL OR e.start_date >= :startDate)
+              AND (:endDate IS NULL OR e.end_date <= :endDate)
+              AND (:isLive IS NULL OR :isLive = (e.start_date <= CURRENT_TIMESTAMP AND e.end_date >= CURRENT_TIMESTAMP))
             """, nativeQuery = true)
     long countByFilters(@Param("title") String title,
-                        @Param("location") String location);
+                        @Param("location") String location,
+                        @Param("startDate") Instant startDate,
+                        @Param("endDate") Instant endDate,
+                        @Param("isLive") Boolean isLive);
 }

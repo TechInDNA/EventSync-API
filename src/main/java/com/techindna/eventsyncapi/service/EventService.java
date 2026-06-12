@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -21,7 +22,9 @@ public class EventService {
     private final DataValidator dataValidator;
 
     @Transactional(readOnly = true)
-    public EventListResponseDto getAllEvents(int page, int size, String title, String location, String ipAddress) {
+    public EventListResponseDto getAllEvents(int page, int size, String title, String location,
+                                             Instant startDate, Instant endDate,
+                                             Boolean isLive, String ipAddress) {
         if (page < 1) page = 1;
         if (size < 1) size = 10;
 
@@ -36,8 +39,8 @@ public class EventService {
             dataValidator.validateName("location", location);
         }
 
-        long total = eventRepository.countByFilters(title, location);
-        List<Event> events = eventRepository.findByFilters(title, location, size, offset);
+        long total = eventRepository.countByFilters(title, location, startDate, endDate, isLive);
+        List<Event> events = eventRepository.findByFilters(title, location, startDate, endDate, isLive, size, offset);
 
         return eventMapper.toListResponseDto(events, total, page, size);
     }

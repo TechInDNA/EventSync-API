@@ -6,7 +6,7 @@ import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.entity.Event;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Component
@@ -14,9 +14,9 @@ public class EventMapper {
 
     public EventResponseDto toResponseDto(Event event) {
         if (event == null) return null;
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         boolean isLive = event.getStartDate() != null && event.getEndDate() != null
-                && !now.isBefore(event.getStartDate()) && !now.isAfter(event.getEndDate());
+                && now.isAfter(event.getStartDate()) && now.isBefore(event.getEndDate());
 
         return EventResponseDto.builder()
                 .id(event.getId())
