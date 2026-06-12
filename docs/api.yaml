@@ -113,6 +113,23 @@ paths:
           schema:
             type: string
           description: Filter by location
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter events starting on or after this date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter events ending on or before this date
+        - name: isLive
+          in: query
+          schema:
+            type: boolean
+          description: Filter events currently live
       responses:
         '200':
           description: List of events

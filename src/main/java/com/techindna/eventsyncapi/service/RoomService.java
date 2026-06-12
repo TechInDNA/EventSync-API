@@ -52,7 +52,7 @@ public class RoomService {
 
     @Transactional
     public RoomResponseDto createRoom(RoomInputDto request) {
-        dataValidator.validateName("name", request.getName(), true);
+        dataValidator.validateName("name", request.getName());
 
         return roomMapper.toResponseDto(
                 roomRepository.insertRoom(request.getName())
@@ -64,7 +64,7 @@ public class RoomService {
 
     @Transactional
     public RoomResponseDto updateRoom(UUID id, RoomInputDto request) {
-        dataValidator.validateName("name", request.getName(), true);
+        dataValidator.validateName("name", request.getName());
 
         return roomMapper.toResponseDto(
                 roomRepository.updateRoomById(id, request.getName())
