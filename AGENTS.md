@@ -21,8 +21,11 @@ src/main/java/com/techindna/eventsyncapi/
 │   └── JwtAuthenticationFilter.java
 ├── controller/
 │   ├── AuthController.java
+│   ├── EventController.java
 │   └── RoomController.java
 ├── dto/
+│   ├── EventListResponseDto.java
+│   ├── EventResponseDto.java
 │   ├── MetaDto.java
 │   ├── RoomInputDto.java
 │   ├── RoomListResponseDto.java
@@ -36,6 +39,7 @@ src/main/java/com/techindna/eventsyncapi/
 │       └── ParticipantRefDto.java
 ├── entity/
 │   ├── BlacklistedIp.java
+│   ├── Event.java
 │   ├── Room.java
 │   ├── User.java
 │   └── enums/
@@ -50,14 +54,17 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── UnauthorizedException.java
 │   └── UnprocessableEntityException.java
 ├── mapper/
+│   ├── EventMapper.java
 │   ├── RoomMapper.java
 │   └── UserMapper.java
 ├── repository/
 │   ├── BlacklistedIpRepository.java
+│   ├── EventRepository.java
 │   ├── RoomRepository.java
 │   └── UserRepository.java
 ├── service/
 │   ├── AuthService.java
+│   ├── EventService.java
 │   └── RoomService.java
 └── validator/
     └── DataValidator.java
@@ -67,6 +74,8 @@ src/test/java/com/techindna/eventsyncapi/
 ├── controller/
 │   ├── auth/
 │   │   └── AuthControllerTest.java
+│   ├── events/
+│   │   └── GetEventControllerTest.java
 │   └── rooms/
 │       ├── DeleteRoomControllerTest.java
 │       ├── GetRoomByIdControllerTest.java
@@ -76,6 +85,8 @@ src/test/java/com/techindna/eventsyncapi/
 └── service/
     ├── auth/
     │   └── AuthServiceTest.java
+    ├── events/
+    │   └── GetEventServiceTest.java
     └── rooms/
         ├── DeleteRoomServiceTest.java
         ├── GetRoomByIdServiceTest.java
@@ -90,8 +101,14 @@ src/main/resources/
     │   ├── auth_data.sql
     │   ├── ip_blacklist_schema.sql
     │   └── users_schema.sql
+    ├── events/
+    │   ├── events_schema.sql
+    │   └── get_events_data.sql
     └── rooms/
         └── rooms_schema.sql
+
+scripts/
+└── test_get_events.sh
 
 docs/
 ├── api.yaml              # OpenAPI 3.0.3 spec
@@ -103,7 +120,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (77 tests)
+./gradlew test                 # run all tests (90 tests)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
