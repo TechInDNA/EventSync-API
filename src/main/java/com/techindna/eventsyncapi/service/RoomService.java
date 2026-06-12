@@ -1,13 +1,12 @@
 package com.techindna.eventsyncapi.service;
 
-import com.techindna.eventsyncapi.dto.RoomInputDto;
-import com.techindna.eventsyncapi.dto.RoomListResponseDto;
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomInputDto;
+import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
-import com.techindna.eventsyncapi.repository.BlacklistedIpRepository;
 import com.techindna.eventsyncapi.repository.RoomRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import lombok.RequiredArgsConstructor;

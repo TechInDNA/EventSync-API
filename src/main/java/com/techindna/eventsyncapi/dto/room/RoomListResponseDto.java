@@ -1,5 +1,6 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.room;
 
+import com.techindna.eventsyncapi.dto.MetaDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventListResponseDto {
-    private List<EventResponseDto> data;
+public class RoomListResponseDto {
+    private List<RoomResponseDto> data;
     private MetaDto meta;
 }

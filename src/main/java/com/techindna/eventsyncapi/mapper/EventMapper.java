@@ -1,7 +1,7 @@
 package com.techindna.eventsyncapi.mapper;
 
-import com.techindna.eventsyncapi.dto.EventListResponseDto;
-import com.techindna.eventsyncapi.dto.EventResponseDto;
+import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
+import com.techindna.eventsyncapi.dto.event.EventResponseDto;
 import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.entity.Event;
 import org.springframework.stereotype.Component;

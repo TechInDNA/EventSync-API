@@ -35,7 +35,7 @@ psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
 
 ```bash
 ./gradlew build -x test
-./gradlew test                 # 77 tests
+./gradlew test                 # 90 tests
 ./gradlew bootRun              # → http://localhost:8080
 ```
 
@@ -45,6 +45,7 @@ psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
 |---|---|---|
 | `POST /auth/login` | — | Authenticate admin (returns JWT) |
 | `POST /auth/participant` | — | Identify or register a participant |
+| `GET /events` | — | List all events (paginated, filters: title, location, startDate, endDate, isLive) |
 | `GET /rooms` | — | List all rooms (paginated, filter by name) |
 | `GET /rooms/{id}` | — | Get room details |
 | `POST /rooms` | JWT | Create a new room |

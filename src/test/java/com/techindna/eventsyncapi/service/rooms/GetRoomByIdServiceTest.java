@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.service.rooms;
 
-import com.techindna.eventsyncapi.dto.RoomResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.RoomMapper;

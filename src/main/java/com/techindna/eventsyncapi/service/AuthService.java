@@ -5,7 +5,7 @@ import com.techindna.eventsyncapi.dto.auth.AuthLoginResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantResponseDto;
 import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
-import com.techindna.eventsyncapi.dto.UserResponseDto;
+import com.techindna.eventsyncapi.dto.auth.UserResponseDto;
 import com.techindna.eventsyncapi.entity.BlacklistedIp;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;

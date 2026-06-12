@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.controller;
 
-import com.techindna.eventsyncapi.dto.EventListResponseDto;
+import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.service.EventService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

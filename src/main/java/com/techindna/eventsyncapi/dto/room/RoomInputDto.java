@@ -1,17 +1,15 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.room;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomListResponseDto {
-    private List<RoomResponseDto> data;
-    private MetaDto meta;
+public class RoomInputDto {
+
+    private String name;
 }

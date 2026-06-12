@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.service.rooms;
 
-import com.techindna.eventsyncapi.dto.RoomInputDto;
+import com.techindna.eventsyncapi.dto.room.RoomInputDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;

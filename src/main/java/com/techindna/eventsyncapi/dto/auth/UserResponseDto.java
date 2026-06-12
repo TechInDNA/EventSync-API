@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.dto;
+package com.techindna.eventsyncapi.dto.auth;
 
 import com.techindna.eventsyncapi.entity.enums.Role;
 import lombok.AllArgsConstructor;

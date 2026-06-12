@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.mapper;
 
-import com.techindna.eventsyncapi.dto.UserResponseDto;
+import com.techindna.eventsyncapi.dto.auth.UserResponseDto;
 import com.techindna.eventsyncapi.dto.auth.AuthParticipantRequestDto;
 import com.techindna.eventsyncapi.dto.auth.ParticipantRefDto;
 import com.techindna.eventsyncapi.entity.User;

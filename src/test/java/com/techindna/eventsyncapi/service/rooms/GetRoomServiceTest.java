@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.service.rooms;
 
-import com.techindna.eventsyncapi.dto.RoomListResponseDto;
+import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
 import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.mapper.RoomMapper;
 import com.techindna.eventsyncapi.repository.RoomRepository;
