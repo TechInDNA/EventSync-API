@@ -1,6 +1,5 @@
 package com.techindna.eventsyncapi.service;
 
-import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
@@ -35,6 +34,8 @@ public class SpeakerService {
         dataValidator.validateBio(request.getBio());
         dataValidator.validateUrl("profilePicture", request.getProfilePicture());
 
+        dataValidator.externalLinkValidator(request.getExternalLinks());
+
         User speaker = userRepository.insertSpeaker(
                 request.getFirstName().strip(),
                 request.getLastName().strip(),
@@ -45,18 +46,12 @@ public class SpeakerService {
                 String.format("Email %s already exists.", request.getEmail())
         ));
 
-        dataValidator.externalLinkValidator(request.getExternalLinks());
         List<ExternalLink> savedLinks = new ArrayList<>();
         if (request.getExternalLinks() != null) {
-            for (ExternalLinkDto linkDto : request.getExternalLinks()) {
-                ExternalLink saved = externalLinkRepository.insertExternalLink(
-                        speaker.getId(),
-                        linkDto.getName().strip(),
-                        linkDto.getUrl().strip()
-                ).orElseThrow(() -> new ConflictException(String.format("link %s already exists.", linkDto.getUrl())));
-
-                savedLinks.add(saved);
-            }
+            List<ExternalLink> entities = request.getExternalLinks().stream()
+                    .map(dto -> speakerMapper.toEntity(dto, speaker))
+                    .toList();
+            savedLinks = externalLinkRepository.saveAll(entities);
         }
 
         return speakerMapper.toResponseDto(speaker, savedLinks);

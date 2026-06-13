@@ -7,6 +7,7 @@ import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
+import com.techindna.eventsyncapi.mapper.ExternalLinkMapper;
 import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
@@ -37,7 +38,7 @@ class PostSpeakerServiceTest {
         userRepository = mock(UserRepository.class);
         externalLinkRepository = mock(ExternalLinkRepository.class);
         speakerService = new SpeakerService(
-                userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper()
+                userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper())
         );
     }
 
@@ -193,10 +194,7 @@ class PostSpeakerServiceTest {
 
         when(userRepository.insertSpeaker(any(), any(), any(), any(), any()))
                 .thenReturn(Optional.of(savedUser));
-        when(externalLinkRepository.insertExternalLink(SPEAKER_ID, "Twitter", "https://twitter.com/john"))
-                .thenReturn(Optional.of(savedLink1));
-        when(externalLinkRepository.insertExternalLink(SPEAKER_ID, "GitHub", "https://github.com/john"))
-                .thenReturn(Optional.of(savedLink2));
+        when(externalLinkRepository.saveAll(any())).thenReturn(List.of(savedLink1, savedLink2));
 
         var result = speakerService.createSpeaker(request);
 
@@ -207,8 +205,7 @@ class PostSpeakerServiceTest {
         assertEquals("Twitter", result.getExternalLinks().get(0).getName());
         assertEquals("https://github.com/john", result.getExternalLinks().get(1).getUrl());
 
-        verify(externalLinkRepository).insertExternalLink(SPEAKER_ID, "Twitter", "https://twitter.com/john");
-        verify(externalLinkRepository).insertExternalLink(SPEAKER_ID, "GitHub", "https://github.com/john");
+        verify(externalLinkRepository).saveAll(any());
     }
 
     @Test
