@@ -1,10 +1,13 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
+import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
-import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.EventValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +22,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final AuthService authService;
-    private final DataValidator dataValidator;
+    private final EventValidator eventValidator;
 
     @Transactional(readOnly = true)
     public EventListResponseDto getAllEvents(int page, int size, String title, String location,
@@ -31,12 +34,29 @@ public class EventService {
         int offset = (page - 1) * size;
 
         authService.checkBlacklist(ipAddress);
-        dataValidator.validateSearchString(title);
-        dataValidator.validateSearchString(location);
+        eventValidator.validateGet(title, location);
 
         long total = eventRepository.countByFilters(title, location, startDate, endDate, isLive);
         List<Event> events = eventRepository.findByFilters(title, location, startDate, endDate, isLive, size, offset);
 
         return eventMapper.toListResponseDto(events, total, page, size);
+    }
+
+    @Transactional
+    public EventDetailResponseDto createEvent(EventInputDto request) {
+        eventValidator.validatePost(request);
+
+        return eventMapper.toDetailResponseDto(
+                eventRepository.insertEvent(
+                        request.getTitle().strip(),
+                        request.getDescription().strip(),
+                        request.getStartDate(),
+                        request.getEndDate(),
+                        request.getLocation().strip()
+                ).orElseThrow(() -> new ConflictException(
+                        String.format("Event '%s' already exists.", request.getTitle())
+                )),
+                List.of()
+        );
     }
 }

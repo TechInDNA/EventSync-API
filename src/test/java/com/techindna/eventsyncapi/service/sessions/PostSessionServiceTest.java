@@ -332,6 +332,23 @@ class PostSessionServiceTest {
     }
 
     @Test
+    @DisplayName("with blank title throws UnprocessableEntityException")
+    void withBlankTitle_throwsUnprocessable() {
+        var request = SessionInputDto.builder()
+                .title("   ")
+                .description("Desc")
+                .startDate(Instant.parse("2025-06-01T09:00:00Z"))
+                .endDate(Instant.parse("2025-06-01T10:00:00Z"))
+                .roomId(ROOM_ID)
+                .capacity(100)
+                .eventId(EVENT_ID)
+                .build();
+
+        assertThrows(UnprocessableEntityException.class, () -> sessionService.createSession(request));
+        verifyNoInteractions(sessionRepository, sessionMapper);
+    }
+
+    @Test
     @DisplayName("with null capacity throws UnprocessableEntityException")
     void withNullCapacity_throwsUnprocessable() {
         var request = SessionInputDto.builder()

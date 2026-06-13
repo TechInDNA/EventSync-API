@@ -88,6 +88,7 @@ class PostSessionControllerTest {
                 .andExpect(jsonPath("$.room.name").value("Conference Hall"))
                 .andExpect(jsonPath("$.event.id").value(EVENT_ID.toString()))
                 .andExpect(jsonPath("$.event.title").value("TechConf"))
+                .andExpect(jsonPath("$.isLive").value(false))
                 .andExpect(jsonPath("$.speakers").isArray())
                 .andExpect(jsonPath("$.speakers").isEmpty());
     }
