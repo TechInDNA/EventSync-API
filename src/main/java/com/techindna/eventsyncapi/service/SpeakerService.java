@@ -36,15 +36,10 @@ public class SpeakerService {
 
         dataValidator.externalLinkValidator(request.getExternalLinks());
 
-        User speaker = userRepository.insertSpeaker(
-                request.getFirstName().strip(),
-                request.getLastName().strip(),
-                request.getEmail().strip(),
-                request.getProfilePicture() != null ? request.getProfilePicture().strip() : null,
-                request.getBio() != null ? request.getBio().strip() : null
-        ).orElseThrow(() -> new ConflictException(
-                String.format("Email %s already exists.", request.getEmail())
-        ));
+        User speaker = userRepository.insertSpeaker(speakerMapper.toEntity(request))
+                .orElseThrow(() -> new ConflictException(
+                        String.format("Email %s already exists.", request.getEmail())
+                ));
 
         List<ExternalLink> savedLinks = new ArrayList<>();
         if (request.getExternalLinks() != null) {

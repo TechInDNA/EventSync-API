@@ -1,9 +1,11 @@
 package com.techindna.eventsyncapi.mapper;
 
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
 import com.techindna.eventsyncapi.entity.User;
+import com.techindna.eventsyncapi.entity.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,17 @@ public class SpeakerMapper {
 
     public ExternalLink toEntity(ExternalLinkDto dto, User user) {
         return externalLinkMapper.toEntity(dto, user);
+    }
+
+    public User toEntity(SpeakerInputDto dto) {
+        return User.builder()
+                .firstName(dto.getFirstName().strip())
+                .lastName(dto.getLastName().strip())
+                .email(dto.getEmail().strip())
+                .profilePicture(dto.getProfilePicture() != null ? dto.getProfilePicture().strip() : null)
+                .bio(dto.getBio() != null ? dto.getBio().strip() : null)
+                .role(Role.SPEAKER)
+                .build();
     }
 
     public SpeakerResponseDto toResponseDto(User user, List<ExternalLink> externalLinks) {

@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class PostSpeakerServiceTest {
@@ -62,8 +61,7 @@ class PostSpeakerServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userRepository.insertSpeaker(eq("John"), eq("Doe"), eq("john@example.com"),
-                eq("https://example.com/avatar.jpg"), eq(null))).thenReturn(Optional.of(savedUser));
+        when(userRepository.insertSpeaker(any(User.class))).thenReturn(Optional.of(savedUser));
 
         var result = speakerService.createSpeaker(request);
 
@@ -75,8 +73,7 @@ class PostSpeakerServiceTest {
         assertNull(result.getBio());
         assertTrue(result.getExternalLinks() == null || result.getExternalLinks().isEmpty());
 
-        verify(userRepository).insertSpeaker(eq("John"), eq("Doe"), eq("john@example.com"),
-                eq("https://example.com/avatar.jpg"), eq(null));
+        verify(userRepository).insertSpeaker(any(User.class));
         verifyNoInteractions(externalLinkRepository);
     }
 
@@ -90,14 +87,14 @@ class PostSpeakerServiceTest {
                 .profilePicture("https://example.com/avatar.jpg")
                 .build();
 
-        when(userRepository.insertSpeaker(any(), any(), any(), any(), any()))
+        when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.empty());
 
         var exception = assertThrows(ConflictException.class,
                 () -> speakerService.createSpeaker(request));
 
         assertEquals("Email existing@example.com already exists.", exception.getMessage());
-        verify(userRepository).insertSpeaker(any(), any(), any(), any(), any());
+        verify(userRepository).insertSpeaker(any(User.class));
     }
 
     @Test
@@ -192,7 +189,7 @@ class PostSpeakerServiceTest {
                 .user(savedUser)
                 .build();
 
-        when(userRepository.insertSpeaker(any(), any(), any(), any(), any()))
+        when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.of(savedUser));
         when(externalLinkRepository.saveAll(any())).thenReturn(List.of(savedLink1, savedLink2));
 
@@ -230,8 +227,7 @@ class PostSpeakerServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userRepository.insertSpeaker(eq("John"), eq("Doe"), eq("john@example.com"),
-                eq("https://example.com/avatar.jpg"), eq("Experienced speaker")))
+        when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.of(savedUser));
 
         var result = speakerService.createSpeaker(request);
@@ -260,7 +256,7 @@ class PostSpeakerServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userRepository.insertSpeaker(any(), any(), any(), any(), any()))
+        when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.of(savedUser));
 
         assertThrows(UnprocessableEntityException.class, () -> speakerService.createSpeaker(request));
@@ -287,7 +283,7 @@ class PostSpeakerServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userRepository.insertSpeaker(any(), any(), any(), any(), any()))
+        when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.of(savedUser));
 
         assertThrows(UnprocessableEntityException.class, () -> speakerService.createSpeaker(request));

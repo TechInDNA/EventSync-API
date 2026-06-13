@@ -16,15 +16,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role, profile_picture, bio)
-            VALUES (:firstName, :lastName, :email, 'SPEAKER', :profilePicture, :bio)
+            VALUES (:#{#speaker.firstName}, :#{#speaker.lastName}, :#{#speaker.email}, :#{#speaker.role},
+                    :#{#speaker.profilePicture}, :#{#speaker.bio})
             ON CONFLICT (email) DO NOTHING
             RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
             """, nativeQuery = true)
-    Optional<User> insertSpeaker(@Param("firstName") String firstName,
-                                 @Param("lastName") String lastName,
-                                 @Param("email") String email,
-                                 @Param("profilePicture") String profilePicture,
-                                 @Param("bio") String bio);
+    Optional<User> insertSpeaker(@Param("speaker") User speaker);
 
     @Query("""
             SELECT u FROM User u
