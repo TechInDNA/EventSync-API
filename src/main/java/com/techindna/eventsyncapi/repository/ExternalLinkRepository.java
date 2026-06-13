@@ -16,6 +16,7 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
     @Query(value = """
             INSERT INTO eventsync_app.external_links (name, url, user_id)
             VALUES (:name, :url, :userId)
+            ON CONFLICT (url) DO NOTHING
             RETURNING id, name, url, user_id
             """, nativeQuery = true)
     Optional<ExternalLink> insertExternalLink(@Param("userId") UUID userId,

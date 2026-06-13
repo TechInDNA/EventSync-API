@@ -43,10 +43,16 @@ public class SpeakerService {
 
         List<ExternalLink> savedLinks = new ArrayList<>();
         if (request.getExternalLinks() != null) {
-            List<ExternalLink> entities = request.getExternalLinks().stream()
-                    .map(dto -> speakerMapper.toEntity(dto, speaker))
-                    .toList();
-            savedLinks = externalLinkRepository.saveAll(entities);
+            for (var dto : request.getExternalLinks()) {
+                ExternalLink saved = externalLinkRepository.insertExternalLink(
+                        speaker.getId(),
+                        dto.getName().strip(),
+                        dto.getUrl().strip()
+                ).orElseThrow(() -> new ConflictException(
+                        String.format("URL %s already exists.", dto.getUrl())
+                ));
+                savedLinks.add(saved);
+            }
         }
 
         return speakerMapper.toResponseDto(speaker, savedLinks);

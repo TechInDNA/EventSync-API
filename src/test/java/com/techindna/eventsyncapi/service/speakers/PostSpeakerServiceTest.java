@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class PostSpeakerServiceTest {
@@ -191,7 +192,10 @@ class PostSpeakerServiceTest {
 
         when(userRepository.insertSpeaker(any(User.class)))
                 .thenReturn(Optional.of(savedUser));
-        when(externalLinkRepository.saveAll(any())).thenReturn(List.of(savedLink1, savedLink2));
+        when(externalLinkRepository.insertExternalLink(eq(SPEAKER_ID), eq("Twitter"), eq("https://twitter.com/john")))
+                .thenReturn(Optional.of(savedLink1));
+        when(externalLinkRepository.insertExternalLink(eq(SPEAKER_ID), eq("GitHub"), eq("https://github.com/john")))
+                .thenReturn(Optional.of(savedLink2));
 
         var result = speakerService.createSpeaker(request);
 
@@ -202,7 +206,41 @@ class PostSpeakerServiceTest {
         assertEquals("Twitter", result.getExternalLinks().get(0).getName());
         assertEquals("https://github.com/john", result.getExternalLinks().get(1).getUrl());
 
-        verify(externalLinkRepository).saveAll(any());
+        verify(externalLinkRepository).insertExternalLink(eq(SPEAKER_ID), eq("Twitter"), eq("https://twitter.com/john"));
+        verify(externalLinkRepository).insertExternalLink(eq(SPEAKER_ID), eq("GitHub"), eq("https://github.com/john"));
+    }
+
+    @Test
+    @DisplayName("with duplicate external link url throws ConflictException")
+    void withDuplicateUrl_throwsConflict() {
+        var links = List.of(new ExternalLinkDto("Twitter", "https://twitter.com/john"));
+        var request = SpeakerInputDto.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .email("john@example.com")
+                .profilePicture("https://example.com/avatar.jpg")
+                .externalLinks(links)
+                .build();
+
+        var savedUser = User.builder()
+                .id(SPEAKER_ID)
+                .firstName("John")
+                .lastName("Doe")
+                .email("john@example.com")
+                .role(Role.SPEAKER)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(userRepository.insertSpeaker(any(User.class)))
+                .thenReturn(Optional.of(savedUser));
+        when(externalLinkRepository.insertExternalLink(any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        var exception = assertThrows(ConflictException.class,
+                () -> speakerService.createSpeaker(request));
+
+        assertEquals("URL https://twitter.com/john already exists.", exception.getMessage());
+        verify(externalLinkRepository).insertExternalLink(eq(SPEAKER_ID), eq("Twitter"), eq("https://twitter.com/john"));
     }
 
     @Test
