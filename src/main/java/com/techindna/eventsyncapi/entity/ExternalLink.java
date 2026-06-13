@@ -22,7 +22,7 @@ public class ExternalLink {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @Column(name = "url", length = 255, nullable = false)
+    @Column(name = "url", length = 255, nullable = false, unique = true)
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
