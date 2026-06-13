@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/rooms/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/rooms/**").hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.POST, "/speakers/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/participant").permitAll()
                 .anyRequest().authenticated()
