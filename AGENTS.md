@@ -22,25 +22,41 @@ src/main/java/com/techindna/eventsyncapi/
 ├── controller/
 │   ├── AuthController.java
 │   ├── EventController.java
-│   └── RoomController.java
+│   ├── RoomController.java
+│   ├── SessionController.java
+│   └── SpeakerController.java
 ├── dto/
-│   ├── EventListResponseDto.java
-│   ├── EventResponseDto.java
 │   ├── MetaDto.java
-│   ├── RoomInputDto.java
-│   ├── RoomListResponseDto.java
-│   ├── RoomResponseDto.java
-│   ├── UserResponseDto.java
-│   └── auth/
-│       ├── AuthLoginRequestDto.java
-│       ├── AuthLoginResponseDto.java
-│       ├── AuthParticipantRequestDto.java
-│       ├── AuthParticipantResponseDto.java
-│       └── ParticipantRefDto.java
+│   ├── auth/
+│   │   ├── AuthLoginRequestDto.java
+│   │   ├── AuthLoginResponseDto.java
+│   │   ├── AuthParticipantRequestDto.java
+│   │   ├── AuthParticipantResponseDto.java
+│   │   ├── ParticipantRefDto.java
+│   │   └── UserResponseDto.java
+│   ├── event/
+│   │   ├── EventListResponseDto.java
+│   │   └── EventResponseDto.java
+│   ├── room/
+│   │   ├── RoomInputDto.java
+│   │   ├── RoomListResponseDto.java
+│   │   └── RoomResponseDto.java
+│   ├── session/
+│   │   ├── EventRefDto.java
+│   │   ├── RoomRefDto.java
+│   │   ├── SessionInputDto.java
+│   │   ├── SessionResponseDto.java
+│   │   └── SpeakerRefDto.java
+│   └── speaker/
+│       ├── ExternalLinkDto.java
+│       ├── SpeakerInputDto.java
+│       └── SpeakerResponseDto.java
 ├── entity/
 │   ├── BlacklistedIp.java
 │   ├── Event.java
+│   ├── ExternalLink.java
 │   ├── Room.java
+│   ├── Session.java
 │   ├── User.java
 │   └── enums/
 │       └── Role.java
@@ -55,19 +71,28 @@ src/main/java/com/techindna/eventsyncapi/
 │   └── UnprocessableEntityException.java
 ├── mapper/
 │   ├── EventMapper.java
+│   ├── ExternalLinkMapper.java
 │   ├── RoomMapper.java
+│   ├── SessionMapper.java
+│   ├── SpeakerMapper.java
 │   └── UserMapper.java
 ├── repository/
 │   ├── BlacklistedIpRepository.java
 │   ├── EventRepository.java
+│   ├── ExternalLinkRepository.java
+│   ├── RoomEventExistence.java        # interface projection
 │   ├── RoomRepository.java
+│   ├── SessionRepository.java
 │   └── UserRepository.java
 ├── service/
 │   ├── AuthService.java
 │   ├── EventService.java
-│   └── RoomService.java
+│   ├── RoomService.java
+│   ├── SessionService.java
+│   └── SpeakerService.java
 └── validator/
-    └── DataValidator.java
+    ├── DataValidator.java
+    └── SessionValidator.java
 
 src/test/java/com/techindna/eventsyncapi/
 ├── EventSyncApiApplicationTests.java
@@ -76,23 +101,31 @@ src/test/java/com/techindna/eventsyncapi/
 │   │   └── AuthControllerTest.java
 │   ├── events/
 │   │   └── GetEventControllerTest.java
-│   └── rooms/
-│       ├── DeleteRoomControllerTest.java
-│       ├── GetRoomByIdControllerTest.java
-│       ├── GetRoomControllerTest.java
-│       ├── PostRoomControllerTest.java
-│       └── PutRoomControllerTest.java
+│   ├── rooms/
+│   │   ├── DeleteRoomControllerTest.java
+│   │   ├── GetRoomByIdControllerTest.java
+│   │   ├── GetRoomControllerTest.java
+│   │   ├── PostRoomControllerTest.java
+│   │   └── PutRoomControllerTest.java
+│   ├── sessions/
+│   │   └── PostSessionControllerTest.java
+│   └── speakers/
+│       └── PostSpeakerControllerTest.java
 └── service/
     ├── auth/
     │   └── AuthServiceTest.java
     ├── events/
     │   └── GetEventServiceTest.java
-    └── rooms/
-        ├── DeleteRoomServiceTest.java
-        ├── GetRoomByIdServiceTest.java
-        ├── GetRoomServiceTest.java
-        ├── PostRoomServiceTest.java
-        └── PutRoomServiceTest.java
+    ├── rooms/
+    │   ├── DeleteRoomServiceTest.java
+    │   ├── GetRoomByIdServiceTest.java
+    │   ├── GetRoomServiceTest.java
+    │   ├── PostRoomServiceTest.java
+    │   └── PutRoomServiceTest.java
+    ├── sessions/
+    │   └── PostSessionServiceTest.java
+    └── speakers/
+        └── PostSpeakerServiceTest.java
 
 src/main/resources/
 ├── application.properties
@@ -104,11 +137,32 @@ src/main/resources/
     ├── events/
     │   ├── events_schema.sql
     │   └── get_events_data.sql
-    └── rooms/
-        └── rooms_schema.sql
+    ├── externalLink/
+    │   └── external_links_schema.sql
+    ├── rooms/
+    │   ├── delete_room_data.sql
+    │   ├── get_room_by_id_data.sql
+    │   ├── put_room_data.sql
+    │   └── rooms_schema.sql
+    └── sessions/
+        ├── session_speaker_schema.sql
+        ├── sessions_schema.sql
+        └── test_session_data.sql
 
 scripts/
-└── test_get_events.sh
+├── auth/
+│   └── test_post_auth_login.sh
+├── event/
+│   └── test_get_events.sh
+├── room/
+│   ├── test_delete_room.sh
+│   ├── test_get_room_by_id.sh
+│   ├── test_post_room.sh
+│   └── test_put_room.sh
+├── sessions/
+│   └── test_post_sessions.sh
+└── speaker/
+    └── test_post_speaker.sh
 
 docs/
 ├── api.yaml              # OpenAPI 3.0.3 spec
@@ -120,7 +174,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (90 tests)
+./gradlew test                 # run all tests (126 tests)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
@@ -128,18 +182,25 @@ docs/
 ## Conventions
 
 - **DDL** — `ddl-auto=validate`. Schema is managed externally via SQL scripts in `src/main/resources/db/`. Never use `update` or `create`.
-- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"room"`, `"blacklisted_ip"`, etc.).
+- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"room"`, `"blacklisted_ip"`, `"session"`, `"external_links"`).
 - **Queries** — prefer `@Query` over JdbcTemplate. Use `@Modifying` + `RETURNING` for write queries. List columns explicitly, no `SELECT *`.
 - **IDs** — UUID PKs generated with `GenerationType.UUID` (Hibernate 6+).
 - **OpenAPI** — camelCase fields (`firstName`, `createdAt`), US English, 3.0.3. Every endpoint declares 400 and 422 explicitly.
-- **Security** — JWT extracted from cookie `"jwt"`. Auth config lives in `config/` package.
-- **Validation** — null/blank checks via `@NotBlank` + `@Valid` on the DTO. Format/regex validation via `DataValidator` in the service layer (not via Bean Validation annotations).
+- **Security** — JWT extracted from cookie `"jwt"`. Auth config lives in `config/` package. Filter clears context for bad JWT — no framework exceptions, `ExceptionTranslationFilter` + custom handlers return JSON 401/403.
+- **Validation** — **All validation in the service layer via `DataValidator`** (and `SessionValidator` for sessions). DTOs are plain `@Data` beans with no `@NotBlank`/`@Valid` annotations. `DataValidator` handles null checks, format regex, name/email/URL validation, text length limits, and external link validation.
 - **Exception handling** — business exceptions (`BadRequestException`, `UnprocessableEntityException`, etc.) thrown from services, caught by `GlobalExceptionHandler` (`@RestControllerAdvice`). Error response format: `{status, error, message}`.
-- **Tests** — `@DisplayName` in English. Constructor injection with `mock()` (no `@Mock`, no `@ExtendWith`). Controller tests use `MockMvcBuilders.standaloneSetup`. Service tests use Mockito only.
+- **Tests** — `@DisplayName` in English. Constructor injection with `mock()` (no `@Mock`, no `@ExtendWith`). Controller tests use `MockMvcBuilders.standaloneSetup` + `GlobalExceptionHandler` as controller advice. Service tests use Mockito only. Test subpackages per endpoint (e.g., `service/sessions/`, `controller/speakers/`).
+- **IP blacklist** — `AuthService.checkBlacklist(ipAddress)` guards GET endpoints (events, rooms). Rate-limited to 5 failed login attempts per IP via `BlacklistedIp` entity.
+- **Mappers** — Aggregate facade pattern: `SessionMapper` depends on `EventMapper`, `RoomMapper`, `SpeakerMapper`. `SpeakerMapper` depends on `ExternalLinkMapper`. Services depend only on the aggregate mapper, never on sub-mappers.
+- **Session** — Created via `POST /sessions`. Uses `SessionValidator` for validation, `SessionRepository.findRoomAndEventExistence()` for DB existence check before insert. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs.
+- **Speaker** — Created via `POST /speakers` (role `SPEAKER`). Supports nested `externalLinks` array saved via `ExternalLinkRepository.insertExternalLink()` per-row. Uses `UserRepository.insertSpeaker()` with `ON CONFLICT (email) DO NOTHING`.
 
 ## Common pitfalls
 
-- `.env` is **gitignored**. Required vars: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `JWT_TOKEN`, `PGSSLMODE`.
+- `.env` is **gitignored**. Required vars: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `JWT_TOKEN`, `PGSSLMODE`, `CORS_ALLOWED_ORIGINS`.
 - DB is Neon PostgreSQL pooler — connections may be transient. Use `channel_binding=require` + `sslmode=require`.
 - OpenAPI spec is hand-written in `docs/api.yaml`, not generated.
 - MCD is an Obsidian canvas (`docs/mcd.canvas`) — parse as JSON to read nodes/edges.
+- `User` entity table name is `"user"` (reserved keyword, needs quotes in native queries).
+- `Session` title is unique (DB constraint `ON CONFLICT (title)`).
+- `ExternalLink` url is unique (DB constraint `ON CONFLICT (url)`).

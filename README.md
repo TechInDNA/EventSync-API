@@ -18,6 +18,8 @@ PGDATABASE=eventsync_db
 PGUSER=eventsync_manager
 PGPASSWORD=...
 JWT_TOKEN=your-secret-key
+PGSSLMODE=require
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 > `.env` is gitignored.
@@ -25,17 +27,31 @@ JWT_TOKEN=your-secret-key
 ### 2. Create the schema
 
 ```bash
+# Auth
 psql "$DATABASE_URL" -f src/main/resources/db/auth/users_schema.sql
 psql "$DATABASE_URL" -f src/main/resources/db/auth/ip_blacklist_schema.sql
+
+# Events
+psql "$DATABASE_URL" -f src/main/resources/db/events/events_schema.sql
+
+# Rooms
 psql "$DATABASE_URL" -f src/main/resources/db/rooms/rooms_schema.sql
+
+# Sessions & speakers
+psql "$DATABASE_URL" -f src/main/resources/db/sessions/sessions_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/sessions/session_speaker_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/externalLink/external_links_schema.sql
+
+# Seed data (optional — for testing)
 psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
+psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 ```
 
 ### 3. Build & run
 
 ```bash
 ./gradlew build -x test
-./gradlew test                 # 90 tests
+./gradlew test                 # 126 tests
 ./gradlew bootRun              # → http://localhost:8080
 ```
 
@@ -51,18 +67,26 @@ psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
 | `POST /rooms` | JWT | Create a new room |
 | `PUT /rooms/{id}` | JWT | Update a room |
 | `DELETE /rooms/{id}` | JWT | Delete a room |
+| `POST /sessions` | JWT | Create a session (linked to room + event) |
+| `POST /speakers` | JWT | Create a speaker (with optional external links) |
 
 > See `docs/api.yaml` for the complete OpenAPI spec (all schemas, responses, and error definitions).
 
 ## Architecture
 
-**Validation:** null/blank checks via `@NotBlank` on the DTO. Format validation delegated to `DataValidator` in the service layer — keeps validation logic testable and exception messages precise.
+**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
 
 **Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`, `NotFoundException`, `ConflictException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
 
-**Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity.
+**Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity. GET endpoints (events, rooms) validate IP blacklist via `AuthService.checkBlacklist()` to block banned IPs from public resources.
 
-**Persistence:** schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries.
+**Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for rooms, sessions, speakers) require `ROLE_ADMIN`. Read endpoints are public.
+
+**Persistence:** schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries with `ON CONFLICT` for idempotent inserts.
+
+**Session model:** Each session is linked to a room and an event via UUID references. Supports ManyToMany speakers via the `session_speaker` join table. Computed `isLive` field (between startDate/endDate) set by `SessionMapper`.
+
+**Speaker model:** Users with role `SPEAKER` and optional `externalLinks` (name + URL). Links are stored in `external_links` table per-row with `ON CONFLICT (url)` guarding against duplicates.
 
 ---
 
