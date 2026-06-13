@@ -76,6 +76,12 @@ public class DataValidator {
     public void validateText(String fieldName, String text){
         checkNullData(fieldName, text);
 
+        if (text.isBlank()){
+            throw new UnprocessableEntityException(
+                    String.format("The field %s cannot be blank.", fieldName)
+            );
+        }
+
         lengthValidation(fieldName, TEXT_MAX_LENGTH, text);
 
         if (!ALLOWED_BIO_CHARS.matcher(text).matches()){
