@@ -16,11 +16,11 @@ echo "=========================================="
 echo ""
 
 echo "=== Test #1: [401] no JWT cookie ==="
-curlie -X DELETE :8080/events/4ec5228a-44ee-45d3-a099-8b9e67045db5
+curlie -X DELETE :8080/events/e1e2e3e4-e5e6-7890-abcd-ef1234567890
 
 echo ""
 echo "=== Test #2: [401] invalid JWT cookie ==="
-curlie -b "jwt=invalid-token" -X DELETE :8080/events/4ec5228a-44ee-45d3-a099-8b9e67045db5
+curlie -b "jwt=invalid-token" -X DELETE :8080/events/e1e2e3e4-e5e6-7890-abcd-ef1234567890
 
 echo ""
 echo ""
@@ -61,7 +61,7 @@ echo "=========================================="
 echo ""
 
 echo "=== Test #7: [403] participant JWT (role=PARTICIPANT, not ADMIN) ==="
-curlie -b /tmp/eventsync_participant.txt -X DELETE :8080/events/4ec5228a-44ee-45d3-a099-8b9e67045db5
+curlie -b /tmp/eventsync_participant.txt -X DELETE :8080/events/e1e2e3e4-e5e6-7890-abcd-ef1234567890
 
 echo ""
 echo ""
@@ -71,11 +71,11 @@ echo "  SUCCESS (204)"
 echo "=========================================="
 echo ""
 
-echo "=== Test #8: [204] delete existing event (seed: Spring Cloud Workshop) ==="
-curlie -b /tmp/eventsync_admin.txt -X DELETE :8080/events/4ec5228a-44ee-45d3-a099-8b9e67045db5
+echo "=== Test #8: [204] delete existing event (Delete Test Event) ==="
+curlie -b /tmp/eventsync_admin.txt -X DELETE :8080/events/e1e2e3e4-e5e6-7890-abcd-ef1234567890
 
 echo ""
 echo "=== Test #9: [404] delete same event again (now gone) ==="
-curlie -b /tmp/eventsync_admin.txt -X DELETE :8080/events/4ec5228a-44ee-45d3-a099-8b9e67045db5
+curlie -b /tmp/eventsync_admin.txt -X DELETE :8080/events/e1e2e3e4-e5e6-7890-abcd-ef1234567890
 
 rm -f /tmp/eventsync_admin.txt /tmp/eventsync_participant.txt
