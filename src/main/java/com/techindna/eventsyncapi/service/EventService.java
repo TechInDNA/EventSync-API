@@ -1,8 +1,8 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
-import com.techindna.eventsyncapi.dto.event.EventResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
@@ -43,10 +43,10 @@ public class EventService {
     }
 
     @Transactional
-    public EventResponseDto createEvent(EventInputDto request) {
+    public EventDetailResponseDto createEvent(EventInputDto request) {
         eventValidator.validatePost(request);
 
-        return eventMapper.toResponseDto(
+        return eventMapper.toDetailResponseDto(
                 eventRepository.insertEvent(
                         request.getTitle().strip(),
                         request.getDescription().strip(),
@@ -55,7 +55,8 @@ public class EventService {
                         request.getLocation().strip()
                 ).orElseThrow(() -> new ConflictException(
                         String.format("Event '%s' already exists.", request.getTitle())
-                ))
+                )),
+                List.of()
         );
     }
 }

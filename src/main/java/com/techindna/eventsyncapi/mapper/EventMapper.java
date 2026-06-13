@@ -1,7 +1,9 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventResponseDto;
+import com.techindna.eventsyncapi.dto.event.SessionForEventDto;
 import com.techindna.eventsyncapi.dto.session.EventRefDto;
 import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.entity.Event;
@@ -51,6 +53,25 @@ public class EventMapper {
         return EventListResponseDto.builder()
                 .data(data)
                 .meta(meta)
+                .build();
+    }
+
+    public EventDetailResponseDto toDetailResponseDto(Event event, List<SessionForEventDto> sessions) {
+        if (event == null) return null;
+        Instant now = Instant.now();
+        boolean isLive = event.getStartDate() != null && event.getEndDate() != null
+                && now.isAfter(event.getStartDate()) && now.isBefore(event.getEndDate());
+
+        return EventDetailResponseDto.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .startDate(event.getStartDate())
+                .endDate(event.getEndDate())
+                .location(event.getLocation())
+                .createdAt(event.getCreatedAt())
+                .live(isLive)
+                .sessions(sessions.isEmpty() ? null : sessions)
                 .build();
     }
 }

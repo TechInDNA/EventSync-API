@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.dto.session;
+package com.techindna.eventsyncapi.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -14,17 +14,16 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SessionResponseDto {
-
+public class EventDetailResponseDto {
     private UUID id;
     private String title;
     private String description;
     private Instant startDate;
     private Instant endDate;
-    private RoomRefDto room;
-    private int capacity;
-    private EventRefDto event;
-    private List<SpeakerRefDto> speakers;
+    private String location;
+    private Instant createdAt;
+    private List<SessionForEventDto> sessions;
+
     @JsonProperty("isLive")
-    private boolean isLive;
+    private boolean live;
 }

@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.controller;
 
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventResponseDto;
@@ -40,7 +41,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<EventResponseDto> createEvent(@RequestBody EventInputDto request) {
+    public ResponseEntity<EventDetailResponseDto> createEvent(@RequestBody EventInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));
     }
 }

@@ -1,8 +1,8 @@
 package com.techindna.eventsyncapi.controller.events;
 
 import com.techindna.eventsyncapi.controller.EventController;
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
-import com.techindna.eventsyncapi.dto.event.EventResponseDto;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
@@ -54,7 +54,7 @@ class PostEventControllerTest {
                 .location("Antananarivo")
                 .build();
 
-        var response = EventResponseDto.builder()
+        var response = EventDetailResponseDto.builder()
                 .id(EVENT_ID)
                 .title("Annual Tech Conference")
                 .description("A great tech conference")
@@ -63,6 +63,7 @@ class PostEventControllerTest {
                 .location("Antananarivo")
                 .createdAt(NOW)
                 .live(false)
+                .sessions(null)
                 .build();
 
         when(eventService.createEvent(any(EventInputDto.class))).thenReturn(response);
@@ -77,7 +78,8 @@ class PostEventControllerTest {
                 .andExpect(jsonPath("$.startDate").value("2025-06-01T09:00:00Z"))
                 .andExpect(jsonPath("$.endDate").value("2025-06-03T18:00:00Z"))
                 .andExpect(jsonPath("$.location").value("Antananarivo"))
-                .andExpect(jsonPath("$.isLive").value(false));
+                .andExpect(jsonPath("$.isLive").value(false))
+                .andExpect(jsonPath("$.sessions").value((Object) null));
     }
 
     @Test

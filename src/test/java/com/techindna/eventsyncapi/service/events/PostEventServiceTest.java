@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.service.events;
 
+import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.ConflictException;
@@ -74,6 +75,7 @@ class PostEventServiceTest {
         assertEquals(END_DATE, result.getEndDate());
         assertEquals(EVENT_LOCATION, result.getLocation());
         assertEquals(NOW, result.getCreatedAt());
+        assertNull(result.getSessions());
 
         verify(eventRepository).insertEvent(EVENT_TITLE, EVENT_DESCRIPTION, START_DATE, END_DATE, EVENT_LOCATION);
     }
