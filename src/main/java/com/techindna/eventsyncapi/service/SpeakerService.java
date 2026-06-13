@@ -5,7 +5,6 @@ import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.exception.ConflictException;
-import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
@@ -31,7 +30,7 @@ public class SpeakerService {
         dataValidator.validateName("firstName", request.getFirstName());
         dataValidator.validateName("lastName", request.getLastName());
         dataValidator.validateEmail(request.getEmail());
-        dataValidator.validateBio(request.getBio());
+        dataValidator.validateText("bio", request.getBio());
         dataValidator.validateUrl("profilePicture", request.getProfilePicture());
 
         dataValidator.externalLinkValidator(request.getExternalLinks());

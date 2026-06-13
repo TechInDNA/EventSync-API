@@ -1320,8 +1320,9 @@ components:
         - description
         - startDate
         - endDate
-        - roomName
-        - eventTitle
+        - roomId
+        - capacity
+        - eventId
       properties:
         title:
           type: string
@@ -1333,12 +1334,14 @@ components:
         endDate:
           type: string
           format: date-time
-        roomName:
+        roomId:
           type: string
+          format: uuid
         capacity:
           type: integer
-        eventTitle:
+        eventId:
           type: string
+          format: uuid
     SessionUpdateInput:
       type: object
       properties:

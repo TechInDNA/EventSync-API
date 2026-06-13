@@ -2,6 +2,7 @@ package com.techindna.eventsyncapi.mapper;
 
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventResponseDto;
+import com.techindna.eventsyncapi.dto.session.EventRefDto;
 import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.entity.Event;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,14 @@ public class EventMapper {
                 .location(event.getLocation())
                 .createdAt(event.getCreatedAt())
                 .live(isLive)
+                .build();
+    }
+
+    public EventRefDto toRefDto(Event event) {
+        if (event == null) return null;
+        return EventRefDto.builder()
+                .id(event.getId())
+                .title(event.getTitle())
                 .build();
     }
 

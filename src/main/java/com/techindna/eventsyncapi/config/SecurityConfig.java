@@ -61,6 +61,11 @@ public class SecurityConfig {
 
                 .requestMatchers(HttpMethod.POST, "/speakers/**").hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.POST, "/sessions/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/sessions/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/sessions/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/sessions/**").permitAll()
+
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/participant").permitAll()
                 .anyRequest().authenticated()
