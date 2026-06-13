@@ -47,9 +47,10 @@ public class SpeakerMapper {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .email(user.getEmail())
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
-                .externalLinks(linkDtos)
+                .externalLinks(linkDtos.isEmpty() ? null : linkDtos)
                 .build();
     }
 }

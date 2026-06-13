@@ -28,7 +28,7 @@ public class DataValidator {
     }
 
     protected void lengthValidation(String fieldName, int limit, String data){
-        if (data != null && data.length() > limit){
+        if (data != null && data.length() >= limit){
             throw new UnprocessableEntityException(
                     String.format("The length of %s field cannot exceed %d.", fieldName, limit)
             );

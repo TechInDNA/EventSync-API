@@ -16,6 +16,7 @@ public class SpeakerResponseDto {
     private UUID id;
     private String firstName;
     private String lastName;
+    private String email;
     private String profilePicture;
     private String bio;
     private List<ExternalLinkDto> externalLinks;

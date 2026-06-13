@@ -16,7 +16,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role, profile_picture, bio)
-            VALUES (:#{#speaker.firstName}, :#{#speaker.lastName}, :#{#speaker.email}, :#{#speaker.role},
+            VALUES (:#{#speaker.firstName}, :#{#speaker.lastName}, :#{#speaker.email},
+                    CAST(:#{#speaker.role.name()} AS eventsync_app.user_role),
                     :#{#speaker.profilePicture}, :#{#speaker.bio})
             ON CONFLICT (email) DO NOTHING
             RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
