@@ -11,7 +11,7 @@ public class EventValidator {
     private final DataValidator dataValidator;
 
     public void validatePost(EventInputDto request) {
-        dataValidator.validateName("title", request.getTitle());
+        dataValidator.validateString("title", request.getTitle());
         dataValidator.validateText("description", request.getDescription());
         dataValidator.checkNullData("startDate", request.getStartDate());
         dataValidator.checkNullData("endDate", request.getEndDate());

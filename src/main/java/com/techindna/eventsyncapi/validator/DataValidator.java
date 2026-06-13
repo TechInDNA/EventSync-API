@@ -19,10 +19,11 @@ public class DataValidator {
     private static final Pattern ALLOWED_SEARCH_STRING = Pattern.compile("^[A-Za-z0-9' -]*$");
     private static final Pattern ALLOWED_BIO_CHARS = Pattern.compile("^[A-Za-z0-9.,;\"!' -]*$");
     private final Pattern VALID_URL = Pattern.compile("^https?://[a-zA-Z0-9\\-._%&?#/]+$");
+    private final Pattern ALLOWED_STRING_CHAR = Pattern.compile("^[0-9a-zA-Z-' ]+$");
 
     public void checkNullData(String fieldName, Object data){
         if (data == null){
-            throw new UnprocessableEntityException(String.format("The field %s is required and cannot be blank.", fieldName));
+            throw new UnprocessableEntityException(String.format("The field %s is required.", fieldName));
         }
     }
 
@@ -79,6 +80,23 @@ public class DataValidator {
 
         if (!ALLOWED_BIO_CHARS.matcher(text).matches()){
             throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\\\"!'- characters are allowed.");
+        }
+    }
+
+    public void validateString(String fieldName, String data){
+        checkNullData(fieldName, data);
+
+        if (data.isBlank()){
+            throw new UnprocessableEntityException(
+                    String.format("The field %s is required and cannot be blank.", fieldName)
+            );
+        }
+
+        lengthValidation(fieldName, 50, data);
+        if (!ALLOWED_STRING_CHAR.matcher(data).matches()){
+            throw new UnprocessableEntityException(
+                    String.format("Invalid input for %s field: only a-zA-Z0-9-' characters are allowed.",  fieldName)
+            );
         }
     }
 
