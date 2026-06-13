@@ -17,7 +17,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             INSERT INTO eventsync_app.session (title, description, start_date, end_date, room_id, capacity, event_id)
             VALUES (:title, :description, :startDate, :endDate, :roomId, :capacity, :eventId)
             ON CONFLICT (title) DO NOTHING
-            RETURNING id, title, description, start_date, end_date, room_id, capacity, event_id
+            RETURNING id, title, description, start_date, end_date, room_id, capacity, event_id, created_at
             """, nativeQuery = true)
     Optional<Session> insertSession(@Param("title") String title,
                                  @Param("description") String description,
