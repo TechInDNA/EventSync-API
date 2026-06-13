@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.ConflictException;
+import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
 import com.techindna.eventsyncapi.validator.EventValidator;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +60,11 @@ public class EventService {
                 )),
                 List.of()
         );
+    }
+
+    @Transactional
+    public void deleteEvent(UUID id) {
+        eventRepository.deleteEventById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Event %s not found.", id)));
     }
 }
