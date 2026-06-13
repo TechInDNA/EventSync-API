@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -45,4 +46,16 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
                         @Param("startDate") Instant startDate,
                         @Param("endDate") Instant endDate,
                         @Param("isLive") Boolean isLive);
+
+    @Query(value = """
+            INSERT INTO eventsync_app.event (title, description, start_date, end_date, location)
+            VALUES (:title, :description, :startDate, :endDate, :location)
+            ON CONFLICT (title) DO NOTHING
+            RETURNING id, title, description, start_date, end_date, location, created_at
+            """, nativeQuery = true)
+    Optional<Event> insertEvent(@Param("title") String title,
+                                @Param("description") String description,
+                                @Param("startDate") Instant startDate,
+                                @Param("endDate") Instant endDate,
+                                @Param("location") String location);
 }

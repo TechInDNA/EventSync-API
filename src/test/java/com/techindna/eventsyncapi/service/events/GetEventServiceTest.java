@@ -7,6 +7,7 @@ import com.techindna.eventsyncapi.repository.EventRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.EventService;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.EventValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,7 @@ class GetEventServiceTest {
         eventMapper = new EventMapper();
         authService = mock(AuthService.class);
         dataValidator = mock(DataValidator.class);
-        eventService = new EventService(eventRepository, eventMapper, authService, dataValidator);
+        eventService = new EventService(eventRepository, eventMapper, authService, new EventValidator(dataValidator));
     }
 
     @Test
