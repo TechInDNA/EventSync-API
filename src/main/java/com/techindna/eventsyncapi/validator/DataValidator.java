@@ -10,9 +10,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class DataValidator {
-    private static final int BIO_MAX_LENGTH = 1000;
+    private static final int TEXT_MAX_LENGTH = 1000;
     private static final int URL_MAX_LENGTH = 255;
-    private static final int LINK_NAME_MAX_LENGTH = 50;
     private static final Pattern VALID_EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z]+){1,2}$");
     private static final Pattern ALLOWED_EMAIL_CHAR = Pattern.compile("^[a-zA-Z0-9.@_-]+$");
     private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z][a-zA-Z' -]+[a-zA-Z]+$");
@@ -21,8 +20,8 @@ public class DataValidator {
     private static final Pattern ALLOWED_BIO_CHARS = Pattern.compile("^[A-Za-z0-9.,;\"!' -]*$");
     private final Pattern VALID_URL = Pattern.compile("^https?://[a-zA-Z0-9\\-._%&?#/]+$");
 
-    public void checkNullData(String fieldName, String data){
-        if (data == null || data.isEmpty() || data.isBlank()){
+    public void checkNullData(String fieldName, Object data){
+        if (data == null){
             throw new UnprocessableEntityException(String.format("The field %s is required and cannot be blank.", fieldName));
         }
     }
@@ -73,13 +72,13 @@ public class DataValidator {
         }
     }
 
-    public void validateBio(String bio){
-        if (bio == null) return;
+    public void validateText(String fieldName, String text){
+        checkNullData(fieldName, text);
 
-        lengthValidation("bio", BIO_MAX_LENGTH, bio);
+        lengthValidation(fieldName, TEXT_MAX_LENGTH, text);
 
-        if (!ALLOWED_BIO_CHARS.matcher(bio).matches()){
-            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\"!'- characters are allowed.");
+        if (!ALLOWED_BIO_CHARS.matcher(text).matches()){
+            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\\\"!'- characters are allowed.");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
@@ -18,11 +19,7 @@ import java.util.Optional;
 public class SpeakerMapper {
 
     private final ExternalLinkMapper externalLinkMapper;
-
-    public ExternalLink toEntity(ExternalLinkDto dto, User user) {
-        return externalLinkMapper.toEntity(dto, user);
-    }
-
+    
     public User toEntity(SpeakerInputDto dto) {
         return User.builder()
                 .firstName(dto.getFirstName().strip())
@@ -51,6 +48,17 @@ public class SpeakerMapper {
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
                 .externalLinks(linkDtos.isEmpty() ? null : linkDtos)
+                .build();
+    }
+
+    public SpeakerRefDto toRefDto(User speaker) {
+        if (speaker == null) return null;
+        return SpeakerRefDto.builder()
+                .id(speaker.getId())
+                .firstName(speaker.getFirstName())
+                .lastName(speaker.getLastName())
+                .profilePicture(speaker.getProfilePicture())
+                .bio(speaker.getBio())
                 .build();
     }
 }
