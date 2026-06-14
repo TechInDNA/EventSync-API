@@ -60,6 +60,19 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
                                 @Param("location") String location);
 
     @Query(value = """
+            UPDATE eventsync_app.event
+            SET title = :title, description = :description, start_date = :startDate, end_date = :endDate, location = :location
+            WHERE id = :id
+            RETURNING id, title, description, start_date, end_date, location, created_at
+            """, nativeQuery = true)
+    Optional<Event> updateEventById(@Param("id") UUID id,
+                                    @Param("title") String title,
+                                    @Param("description") String description,
+                                    @Param("startDate") Instant startDate,
+                                    @Param("endDate") Instant endDate,
+                                    @Param("location") String location);
+
+    @Query(value = """
             DELETE FROM eventsync_app.event
             WHERE id = :id
             RETURNING id, title, description, start_date, end_date, location, created_at

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class EventValidator {
     private final DataValidator dataValidator;
 
-    public void validatePost(EventInputDto request) {
+    public void validateUpdate(EventInputDto request) {
         dataValidator.validateString("title", request.getTitle());
         dataValidator.validateText("description", request.getDescription());
         dataValidator.checkNullData("startDate", request.getStartDate());

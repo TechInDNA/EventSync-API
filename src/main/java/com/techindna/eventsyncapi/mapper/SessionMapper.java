@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.event.SessionForEventDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.entity.Session;
@@ -46,6 +47,25 @@ public class SessionMapper {
                 .event(eventMapper.toRefDto(session.getEvent()))
                 .speakers(speakers)
                 .isLive(isLive)
+                .build();
+    }
+
+    public SessionForEventDto toEventSessionDto(Session session) {
+        if (session == null) return null;
+
+        Instant now = Instant.now();
+        boolean isLive = session.getStartDate() != null && session.getEndDate() != null
+                && now.isAfter(session.getStartDate()) && now.isBefore(session.getEndDate());
+
+        return SessionForEventDto.builder()
+                .id(session.getId())
+                .title(session.getTitle())
+                .description(session.getDescription())
+                .startDate(session.getStartDate())
+                .endDate(session.getEndDate())
+                .room(roomMapper.toResponseDto(session.getRoom()))
+                .capacity(session.getCapacity())
+                .live(isLive)
                 .build();
     }
 }

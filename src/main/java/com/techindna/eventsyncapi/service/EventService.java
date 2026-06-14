@@ -7,12 +7,16 @@ import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
+import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.validator.EventValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +29,9 @@ public class EventService {
     private final EventMapper eventMapper;
     private final AuthService authService;
     private final EventValidator eventValidator;
+    private final SessionRepository sessionRepository;
+    private final SessionMapper sessionMapper;
+    private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
 
     @Transactional(readOnly = true)
     public EventListResponseDto getAllEvents(int page, int size, String title, String location,
@@ -46,7 +53,7 @@ public class EventService {
 
     @Transactional
     public EventDetailResponseDto createEvent(EventInputDto request) {
-        eventValidator.validatePost(request);
+        eventValidator.validateUpdate(request);
 
         return eventMapper.toDetailResponseDto(
                 eventRepository.insertEvent(
@@ -60,6 +67,44 @@ public class EventService {
                 )),
                 List.of()
         );
+    }
+
+    @Transactional
+    public EventDetailResponseDto updateEvent(UUID id, EventInputDto request) {
+        eventValidator.validateUpdate(request);
+
+        var updated = updateEventOrThrow(id, request);
+
+        var sessions = sessionRepository.findByEventId(id).stream()
+                .map(sessionMapper::toEventSessionDto)
+                .toList();
+
+        return eventMapper.toDetailResponseDto(updated, sessions);
+    }
+
+    private Event updateEventOrThrow(UUID id, EventInputDto request) {
+        try {
+            return eventRepository.updateEventById(
+                    id,
+                    request.getTitle().strip(),
+                    request.getDescription().strip(),
+                    request.getStartDate(),
+                    request.getEndDate(),
+                    request.getLocation().strip()
+            ).orElseThrow(() -> new NotFoundException(
+                    String.format("Event %s not found.", id)));
+        } catch (DataIntegrityViolationException e) {
+            if (uniqueViolation(e)) {
+                throw new ConflictException(
+                        "Event '" + request.getTitle().strip() + "' already exists.");
+            }
+            throw e;
+        }
+    }
+
+    private static boolean uniqueViolation(DataIntegrityViolationException e) {
+        return e.getRootCause() instanceof SQLException sqlEx
+                && UNIQUE_CONSTRAINT_VIOLATION.equals(sqlEx.getSQLState());
     }
 
     @Transactional

@@ -6,7 +6,9 @@ import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
+import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.EventService;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -38,7 +40,7 @@ class PostEventServiceTest {
     PostEventServiceTest() {
         eventRepository = mock(EventRepository.class);
         eventMapper = new EventMapper();
-        eventService = new EventService(eventRepository, eventMapper, mock(AuthService.class), new EventValidator(new DataValidator()));
+        eventService = new EventService(eventRepository, eventMapper, mock(AuthService.class), new EventValidator(new DataValidator()), mock(SessionRepository.class), mock(SessionMapper.class));
     }
 
     @Test

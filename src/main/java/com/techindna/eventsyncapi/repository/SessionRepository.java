@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,4 +36,11 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             """, nativeQuery = true)
     RoomEventExistence findRoomAndEventExistence(@Param("roomId") UUID roomId,
                                                  @Param("eventId") UUID eventId);
+
+    @Query(value = """
+            SELECT s.id, s.title, s.description, s.start_date, s.end_date, s.room_id, s.capacity, s.event_id, s.created_at
+            FROM eventsync_app.session s
+            WHERE s.event_id = :eventId
+            """, nativeQuery = true)
+    List<Session> findByEventId(@Param("eventId") UUID eventId);
 }
