@@ -93,6 +93,57 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 
 **Speaker model:** Users with role `SPEAKER` and optional `externalLinks` (name + URL). Links are stored in `external_links` table per-row with `ON CONFLICT (url)` guarding against duplicates.
 
+## AI / MCP Integration
+
+The API exposes an **MCP (Model Context Protocol) server** over SSE transport, allowing AI agents like [Hermes Agent](https://hermes-agent.nousresearch.com) to discover and invoke business operations via natural language.
+
+### Available MCP tools
+
+| Tool | Description |
+|---|---|
+| `createRoom` | Create a new room (name) |
+| `listRooms` | List rooms with optional search and pagination |
+| `getRoom` | Get room details by UUID |
+| `updateRoom` | Update an existing room (name) |
+| `deleteRoom` | Delete a room by UUID |
+
+Each tool wraps the existing service layer — validation, error handling, and business rules are identical to the REST API.
+
+### Configure Hermes Agent to connect
+
+1. Ensure the API is running (`./gradlew bootRun`).
+2. Add the MCP server to your Hermes `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  eventsync:
+    transport: sse
+    url: "http://localhost:8080/mcp/sse"
+    timeout: 30
+```
+
+3. Start a new Hermes session or reload existing ones with `/reload-mcp`.
+
+Hermes discovers the tools and the AI can now run operations like:
+
+> *"Create a room called Conference Hall A"* → Hermes calls `createRoom(name="Conference Hall A")` → returns success or error details.
+
+### How it works
+
+```
+User message
+    → Hermes AI (LLM decides to call a tool)
+    → SSE POST /mcp/message
+    → Spring Boot @Tool bean (e.g. RoomMcpTools.createRoom)
+    → RoomService → Database
+    → Tool result returned over SSE
+    → Hermes reports back to user
+```
+
+- The MCP server runs inside the Spring Boot process — no separate service needed.
+- The `/mcp/sse` and `/mcp/message` endpoints are auto-configured by `spring-ai-starter-mcp-server-webmvc` and are not JWT-protected (use `permitAll` in `SecurityConfig`).
+- Tools use `@ToolParam(description = ...)` so the AI knows what each parameter means.
+
 ---
 
 *Java 21 · Spring Boot 4.0.6 · PostgreSQL (Neon) · Gradle 9.5.1 · Lombok · JWT (auth0)*

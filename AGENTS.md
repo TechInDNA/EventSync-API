@@ -7,7 +7,7 @@
 - **Database** — PostgreSQL (Neon), schema `eventsync_app`
 - **Build** — Gradle 9.5.1 (wrapper: `./gradlew`)
 - **Auth** — JWT (auth0/java-jwt 4.5.2), Argon2 password encoder
-- **AI** — Spring AI MCP Server (webmvc)
+- **AI** — Spring AI MCP Server (webmvc, SSE transport). `@Tool` beans auto-discovered by `spring-ai-starter-mcp-server-webmvc` at `/mcp/sse`.
 - **Lombok** — compileOnly + annotationProcessor
 
 ## Project structure
@@ -93,7 +93,9 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── RoomService.java
 │   ├── SessionService.java
 │   └── SpeakerService.java
-└── validator/
+├── mcp/
+│   └── RoomMcpTools.java          # MCP @Tool beans — room CRUD for Hermes
+├── validator/
     ├── DataValidator.java
     ├── EventValidator.java
     └── SessionValidator.java
@@ -210,6 +212,7 @@ docs/
 - **Event** — CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions.
 - **Session** — Created via `POST /sessions`. Uses `SessionValidator` for validation, `SessionRepository.findRoomAndEventExistence()` for DB existence check before insert. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs.
 - **Speaker** — Created via `POST /speakers` (role `SPEAKER`). Supports nested `externalLinks` array saved via `ExternalLinkRepository.insertExternalLink()` per-row. Uses `UserRepository.insertSpeaker()` with `ON CONFLICT (email) DO NOTHING`.
+- **MCP tools** — Room CRUD exposed as `@Tool` methods in `mcp/` package. Each tool wraps the existing service layer (validation included). `@ToolParam(description = ...)` is mandatory so the AI knows what to pass. Tools return user-friendly strings with success/error messages. All `/mcp/**` paths are **permitAll** in `SecurityConfig` (SSE transport is not JWT-authenticated).
 
 ## Common pitfalls
 
