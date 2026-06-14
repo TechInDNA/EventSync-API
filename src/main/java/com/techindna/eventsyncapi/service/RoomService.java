@@ -34,10 +34,10 @@ public class RoomService {
 
         authService.checkBlacklist(ipAddress);
 
-        String searchTerm = searchByName != null ? searchByName : "";
+        dataValidator.validateSearchString(searchByName);
 
-        long total = roomRepository.countByNameContaining(searchTerm);
-        List<Room> rooms = roomRepository.findByNameContaining(searchTerm, size, offset);
+        long total = roomRepository.countByNameContaining(searchByName);
+        List<Room> rooms = roomRepository.findByNameContaining(searchByName, size, offset);
 
         return roomMapper.toListResponseDto(rooms, total, page, size);
     }

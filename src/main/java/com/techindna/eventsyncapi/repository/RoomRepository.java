@@ -15,14 +15,14 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
 
     @Query(value = """
             SELECT r.id, r.name FROM eventsync_app.room r
-            WHERE r.name ILIKE '%' || :name || '%'
+            WHERE (:name IS NULL OR r.name ILIKE '%' || :name || '%')
             ORDER BY r.name ASC LIMIT :size OFFSET :offset
             """, nativeQuery = true)
     List<Room> findByNameContaining(@Param("name") String name, int size, int offset);
 
     @Query(value = """
             SELECT COUNT(id) FROM eventsync_app.room
-            WHERE name ILIKE '%' || :name || '%'
+            WHERE (:name IS NULL OR name ILIKE '%' || :name || '%')
             """, nativeQuery = true)
     long countByNameContaining(@Param("name") String name);
 
