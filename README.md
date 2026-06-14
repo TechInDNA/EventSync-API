@@ -51,7 +51,7 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 
 ```bash
 ./gradlew build -x test
-./gradlew test                 # 126 tests
+./gradlew test                 # 171 tests
 ./gradlew bootRun              # → http://localhost:8080
 ```
 
@@ -62,6 +62,9 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 | `POST /auth/login` | — | Authenticate admin (returns JWT) |
 | `POST /auth/participant` | — | Identify or register a participant |
 | `GET /events` | — | List all events (paginated, filters: title, location, startDate, endDate, isLive) |
+| `POST /events` | JWT | Create a new event |
+| `PUT /events/{id}` | JWT | Update an event |
+| `DELETE /events/{id}` | JWT | Delete an event |
 | `GET /rooms` | — | List all rooms (paginated, filter by name) |
 | `GET /rooms/{id}` | — | Get room details |
 | `POST /rooms` | JWT | Create a new room |
@@ -74,15 +77,17 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 
 ## Architecture
 
-**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
+**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions, `EventValidator` for events). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
 
 **Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`, `NotFoundException`, `ConflictException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
 
 **Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity. GET endpoints (events, rooms) validate IP blacklist via `AuthService.checkBlacklist()` to block banned IPs from public resources.
 
-**Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for rooms, sessions, speakers) require `ROLE_ADMIN`. Read endpoints are public.
+**Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for events, rooms, sessions, speakers) require `ROLE_ADMIN`. Read endpoints are public.
 
-**Persistence:** schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries with `ON CONFLICT` for idempotent inserts.
+**Persistence:** schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries with `ON CONFLICT` for idempotent inserts (event title, session title, external link URL).
+
+**Event model:** Full CRUD via `EventRepository` native queries. Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates required fields and ensures `endDate` is after `startDate`. `EventMapper` computes `isLive` and builds detail responses with nested sessions for `POST`/`PUT` endpoints.
 
 **Session model:** Each session is linked to a room and an event via UUID references. Supports ManyToMany speakers via the `session_speaker` join table. Computed `isLive` field (between startDate/endDate) set by `SessionMapper`.
 

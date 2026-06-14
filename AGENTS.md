@@ -35,8 +35,11 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── ParticipantRefDto.java
 │   │   └── UserResponseDto.java
 │   ├── event/
+│   │   ├── EventDetailResponseDto.java
+│   │   ├── EventInputDto.java
 │   │   ├── EventListResponseDto.java
-│   │   └── EventResponseDto.java
+│   │   ├── EventResponseDto.java
+│   │   └── SessionForEventDto.java
 │   ├── room/
 │   │   ├── RoomInputDto.java
 │   │   ├── RoomListResponseDto.java
@@ -92,6 +95,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   └── SpeakerService.java
 └── validator/
     ├── DataValidator.java
+    ├── EventValidator.java
     └── SessionValidator.java
 
 src/test/java/com/techindna/eventsyncapi/
@@ -100,7 +104,10 @@ src/test/java/com/techindna/eventsyncapi/
 │   ├── auth/
 │   │   └── AuthControllerTest.java
 │   ├── events/
-│   │   └── GetEventControllerTest.java
+│   │   ├── DeleteEventControllerTest.java
+│   │   ├── GetEventControllerTest.java
+│   │   ├── PostEventControllerTest.java
+│   │   └── PutEventControllerTest.java
 │   ├── rooms/
 │   │   ├── DeleteRoomControllerTest.java
 │   │   ├── GetRoomByIdControllerTest.java
@@ -115,7 +122,10 @@ src/test/java/com/techindna/eventsyncapi/
     ├── auth/
     │   └── AuthServiceTest.java
     ├── events/
-    │   └── GetEventServiceTest.java
+    │   ├── DeleteEventServiceTest.java
+    │   ├── GetEventServiceTest.java
+    │   ├── PostEventServiceTest.java
+    │   └── PutEventServiceTest.java
     ├── rooms/
     │   ├── DeleteRoomServiceTest.java
     │   ├── GetRoomByIdServiceTest.java
@@ -135,8 +145,10 @@ src/main/resources/
     │   ├── ip_blacklist_schema.sql
     │   └── users_schema.sql
     ├── events/
+    │   ├── delete_event_data.sql
     │   ├── events_schema.sql
-    │   └── get_events_data.sql
+    │   ├── get_events_data.sql
+    │   └── put_event_data.sql
     ├── externalLink/
     │   └── external_links_schema.sql
     ├── rooms/
@@ -153,7 +165,10 @@ scripts/
 ├── auth/
 │   └── test_post_auth_login.sh
 ├── event/
-│   └── test_get_events.sh
+│   ├── test_delete_event.sh
+│   ├── test_get_events.sh
+│   ├── test_post_event.sh
+│   └── test_put_event.sh
 ├── room/
 │   ├── test_delete_room.sh
 │   ├── test_get_room_by_id.sh
@@ -174,7 +189,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (126 tests)
+./gradlew test                 # run all tests (171 tests)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
@@ -187,11 +202,12 @@ docs/
 - **IDs** — UUID PKs generated with `GenerationType.UUID` (Hibernate 6+).
 - **OpenAPI** — camelCase fields (`firstName`, `createdAt`), US English, 3.0.3. Every endpoint declares 400 and 422 explicitly.
 - **Security** — JWT extracted from cookie `"jwt"`. Auth config lives in `config/` package. Filter clears context for bad JWT — no framework exceptions, `ExceptionTranslationFilter` + custom handlers return JSON 401/403.
-- **Validation** — **All validation in the service layer via `DataValidator`** (and `SessionValidator` for sessions). DTOs are plain `@Data` beans with no `@NotBlank`/`@Valid` annotations. `DataValidator` handles null checks, format regex, name/email/URL validation, text length limits, and external link validation.
+- **Validation** — **All validation in the service layer via `DataValidator`** (and `SessionValidator` for sessions, `EventValidator` for events). DTOs are plain `@Data` beans with no `@NotBlank`/`@Valid` annotations. `DataValidator` handles null checks, format regex, name/email/URL validation, text length limits, and external link validation.
 - **Exception handling** — business exceptions (`BadRequestException`, `UnprocessableEntityException`, etc.) thrown from services, caught by `GlobalExceptionHandler` (`@RestControllerAdvice`). Error response format: `{status, error, message}`.
 - **Tests** — `@DisplayName` in English. Constructor injection with `mock()` (no `@Mock`, no `@ExtendWith`). Controller tests use `MockMvcBuilders.standaloneSetup` + `GlobalExceptionHandler` as controller advice. Service tests use Mockito only. Test subpackages per endpoint (e.g., `service/sessions/`, `controller/speakers/`).
 - **IP blacklist** — `AuthService.checkBlacklist(ipAddress)` guards GET endpoints (events, rooms). Rate-limited to 5 failed login attempts per IP via `BlacklistedIp` entity.
 - **Mappers** — Aggregate facade pattern: `SessionMapper` depends on `EventMapper`, `RoomMapper`, `SpeakerMapper`. `SpeakerMapper` depends on `ExternalLinkMapper`. Services depend only on the aggregate mapper, never on sub-mappers.
+- **Event** — CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions.
 - **Session** — Created via `POST /sessions`. Uses `SessionValidator` for validation, `SessionRepository.findRoomAndEventExistence()` for DB existence check before insert. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs.
 - **Speaker** — Created via `POST /speakers` (role `SPEAKER`). Supports nested `externalLinks` array saved via `ExternalLinkRepository.insertExternalLink()` per-row. Uses `UserRepository.insertSpeaker()` with `ON CONFLICT (email) DO NOTHING`.
 
@@ -202,5 +218,6 @@ docs/
 - OpenAPI spec is hand-written in `docs/api.yaml`, not generated.
 - MCD is an Obsidian canvas (`docs/mcd.canvas`) — parse as JSON to read nodes/edges.
 - `User` entity table name is `"user"` (reserved keyword, needs quotes in native queries).
+- `Event` title is unique (DB constraint `ON CONFLICT (title)`).
 - `Session` title is unique (DB constraint `ON CONFLICT (title)`).
 - `ExternalLink` url is unique (DB constraint `ON CONFLICT (url)`).
