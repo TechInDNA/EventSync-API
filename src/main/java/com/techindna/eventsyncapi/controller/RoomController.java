@@ -5,7 +5,6 @@ import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.service.RoomService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,14 +43,14 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponseDto> createRoom(@Valid @RequestBody RoomInputDto request) {
+    public ResponseEntity<RoomResponseDto> createRoom(@RequestBody RoomInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.createRoom(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RoomResponseDto> updateRoom(
             @PathVariable UUID id,
-            @Valid @RequestBody RoomInputDto request
+            @RequestBody RoomInputDto request
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(roomService.updateRoom(id, request));
     }
