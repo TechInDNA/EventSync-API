@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.controller.events;
 import com.techindna.eventsyncapi.controller.EventController;
 import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
@@ -77,7 +78,8 @@ class PutEventControllerTest {
                 .andExpect(jsonPath("$.title").value("Updated Conference"))
                 .andExpect(jsonPath("$.description").value("An updated description"))
                 .andExpect(jsonPath("$.location").value("Paris"))
-                .andExpect(jsonPath("$.isLive").value(false));
+                .andExpect(jsonPath("$.isLive").value(false))
+                .andExpect(jsonPath("$.sessions").value((Object) null));
     }
 
     @Test
@@ -123,6 +125,52 @@ class PutEventControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("Event " + EVENT_ID + " not found."));
+    }
+
+    @Test
+    @DisplayName("PUT /events/{id} with duplicate title returns 409")
+    void updateEvent_withDuplicateTitle_returns409() throws Exception {
+        var request = EventInputDto.builder()
+                .title("Existing Event")
+                .description("An updated description")
+                .startDate(START_DATE)
+                .endDate(END_DATE)
+                .location("Paris")
+                .build();
+
+        when(eventService.updateEvent(eq(EVENT_ID), any(EventInputDto.class)))
+                .thenThrow(new ConflictException("Event 'Existing Event' already exists."));
+
+        mockMvc.perform(put("/events/{id}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Event 'Existing Event' already exists."));
+    }
+
+    @Test
+    @DisplayName("PUT /events/{id} with endDate before startDate returns 422")
+    void updateEvent_withEndDateBeforeStartDate_returns422() throws Exception {
+        var request = EventInputDto.builder()
+                .title("Updated Conference")
+                .description("An updated description")
+                .startDate(Instant.parse("2025-06-03T18:00:00Z"))
+                .endDate(Instant.parse("2025-06-01T09:00:00Z"))
+                .location("Paris")
+                .build();
+
+        when(eventService.updateEvent(eq(EVENT_ID), any(EventInputDto.class)))
+                .thenThrow(new UnprocessableEntityException("The field endDate must be after startDate."));
+
+        mockMvc.perform(put("/events/{id}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Entity"))
+                .andExpect(jsonPath("$.message").value("The field endDate must be after startDate."));
     }
 
     private String toJson(Object obj) {

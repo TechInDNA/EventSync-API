@@ -280,4 +280,49 @@ class PutEventServiceTest {
         assertThrows(UnprocessableEntityException.class, () -> eventService.updateEvent(EVENT_ID, request));
         verifyNoInteractions(eventRepository);
     }
+
+    @Test
+    @DisplayName("updateEvent with endDate equal to startDate throws UnprocessableEntityException")
+    void updateEvent_withEndDateEqualToStartDate_throwsUnprocessable() {
+        var request = EventInputDto.builder()
+                .title("Updated Conference")
+                .description("An updated description")
+                .startDate(START_DATE)
+                .endDate(START_DATE)
+                .location("Paris")
+                .build();
+
+        assertThrows(UnprocessableEntityException.class, () -> eventService.updateEvent(EVENT_ID, request));
+        verifyNoInteractions(eventRepository);
+    }
+
+    @Test
+    @DisplayName("updateEvent with empty location throws UnprocessableEntityException")
+    void updateEvent_withEmptyLocation_throwsUnprocessable() {
+        var request = EventInputDto.builder()
+                .title("Updated Conference")
+                .description("An updated description")
+                .startDate(START_DATE)
+                .endDate(END_DATE)
+                .location("")
+                .build();
+
+        assertThrows(UnprocessableEntityException.class, () -> eventService.updateEvent(EVENT_ID, request));
+        verifyNoInteractions(eventRepository);
+    }
+
+    @Test
+    @DisplayName("updateEvent with illegal characters in location throws UnprocessableEntityException")
+    void updateEvent_withIllegalCharsInLocation_throwsUnprocessable() {
+        var request = EventInputDto.builder()
+                .title("Updated Conference")
+                .description("An updated description")
+                .startDate(START_DATE)
+                .endDate(END_DATE)
+                .location("<script>alert(1)</script>")
+                .build();
+
+        assertThrows(UnprocessableEntityException.class, () -> eventService.updateEvent(EVENT_ID, request));
+        verifyNoInteractions(eventRepository);
+    }
 }
