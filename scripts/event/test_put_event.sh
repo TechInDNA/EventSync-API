@@ -52,11 +52,10 @@ echo "=========================================="
 echo ""
 
 echo "--- Setup: create a second event for duplicate-title test ---"
-CONFLICT_TITLE="PUT Test - Conflict Target"
-curlie -s -b /tmp/eventsync_admin.txt -X POST :8080/events -H 'Content-Type: application/json' -d "{\"title\":\"$CONFLICT_TITLE\",\"description\":\"Target for conflict test\",\"startDate\":\"2026-12-01T09:00:00Z\",\"endDate\":\"2026-12-05T18:00:00Z\",\"location\":\"Antananarivo\"}" > /dev/null
+curlie -s -b /tmp/eventsync_admin.txt -X POST :8080/events -H 'Content-Type: application/json' -d '{"title":"PUT Test - Conflict Target","description":"Target for conflict test","startDate":"2026-12-01T09:00:00Z","endDate":"2026-12-05T18:00:00Z","location":"Antananarivo"}' > /dev/null
 
 echo "=== Test #5: [409] PUT /events/{id} with title that already exists (unique constraint) ==="
-curlie -b /tmp/eventsync_admin.txt -X PUT :8080/events/$EVENT_STANDALONE -H 'Content-Type: application/json' -d "{\"title\":\"$CONFLICT_TITLE\",\"description\":\"This title already exists\",\"startDate\":\"2027-01-15T09:00:00Z\",\"endDate\":\"2027-01-17T18:00:00Z\",\"location\":\"Lyon\"}"
+curlie -b /tmp/eventsync_admin.txt -X PUT :8080/events/$EVENT_STANDALONE -H 'Content-Type: application/json' -d '{"title":"PUT Test - Conflict Target","description":"This title already exists","startDate":"2027-01-15T09:00:00Z","endDate":"2027-01-17T18:00:00Z","location":"Lyon"}'
 
 echo ""
 echo ""
