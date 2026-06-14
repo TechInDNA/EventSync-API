@@ -1036,6 +1036,116 @@ paths:
           $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/Unprocessable'
+  /ai/conversations:
+    post:
+      summary: Send a message to the AI and store the conversation
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiConversationInput'
+      responses:
+        '201':
+          description: Conversation created with AI response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    get:
+      summary: List AI conversations for the authenticated user
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number (starts at 1)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Filter conversations by title
+      responses:
+        '200':
+          description: List of AI conversations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /ai/conversations/{id}:
+    get:
+      summary: Get details of an AI conversation
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: AI conversation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    delete:
+      summary: Delete an AI conversation
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: AI conversation deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
 components:
   securitySchemes:
     BearerAuth:
@@ -1091,6 +1201,16 @@ components:
             - admin
             - speaker
             - participant
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
     EventRef:
       type: object
       properties:
@@ -1694,6 +1814,50 @@ components:
         isAnonymous:
           type: boolean
           default: false
+
+    # ────────────────── AI Conversation ──────────────────
+    AiConversationInput:
+      type: object
+      required:
+        - userRequest
+      properties:
+        userRequest:
+          type: string
+          description: Message sent to the AI
+    AiConversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        userRequest:
+          type: string
+        aiResponse:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    AiConversationList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiConversation'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            size:
+              type: integer
 
   responses:
     BadRequest:
