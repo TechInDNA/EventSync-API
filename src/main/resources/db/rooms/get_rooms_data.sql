@@ -1,4 +1,3 @@
--- Seed: salles pour tester la pagination et le filtre par nom (GET /rooms)
 INSERT INTO eventsync_app."room" (id, name)
 VALUES
     ('cfca8633-9500-4d3d-822d-ef59a4d7b03e', 'Main Hall'),
