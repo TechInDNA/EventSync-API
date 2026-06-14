@@ -20,15 +20,15 @@ echo "=== SUCCESS (200) ==="
 echo ""
 
 SEQUENTIAL_NUMBER=$((SEQUENTIAL_NUMBER + 1)); echo "=== [$SEQUENTIAL_NUMBER] [200] PUT /events/{id} — update event with sessions (expect sessions array in response) ==="
-curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_WITH_SESSIONS -H 'Content-Type: application/json' -d '{"title":"PUT Test — Event With Sessions","description":"Updated description for the event with sessions","startDate":"2026-12-01T09:00:00Z","endDate":"2026-12-05T18:00:00Z","location":"Antananarivo"}'
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_WITH_SESSIONS -H 'Content-Type: application/json' -d '{"title":"PUT Test - Event With Sessions","description":"Updated description for the event with sessions","startDate":"2026-12-01T09:00:00Z","endDate":"2026-12-05T18:00:00Z","location":"Antananarivo"}'
 
 echo ""
 SEQUENTIAL_NUMBER=$((SEQUENTIAL_NUMBER + 1)); echo "=== [$SEQUENTIAL_NUMBER] [200] PUT /events/{id} — update standalone event (expect no sessions in response) ==="
-curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_STANDALONE -H 'Content-Type: application/json' -d '{"title":"PUT Test — Event Standalone","description":"Updated standalone event","startDate":"2027-01-15T09:00:00Z","endDate":"2027-01-17T18:00:00Z","location":"Lyon"}'
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_STANDALONE -H 'Content-Type: application/json' -d '{"title":"PUT Test - Event Standalone","description":"Updated standalone event","startDate":"2027-01-15T09:00:00Z","endDate":"2027-01-17T18:00:00Z","location":"Lyon"}'
 
 echo ""
 SEQUENTIAL_NUMBER=$((SEQUENTIAL_NUMBER + 1)); echo "=== [$SEQUENTIAL_NUMBER] [200] PUT /events/{id} — update only title, keep other fields unchanged ==="
-curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_WITH_SESSIONS -H 'Content-Type: application/json' -d '{"title":"PUT Test — Event With Sessions Renamed","description":"Updated description for the event with sessions","startDate":"2026-12-01T09:00:00Z","endDate":"2026-12-05T18:00:00Z","location":"Antananarivo"}'
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_WITH_SESSIONS -H 'Content-Type: application/json' -d '{"title":"PUT Test - Event With Sessions Renamed","description":"Updated description for the event with sessions","startDate":"2026-12-01T09:00:00Z","endDate":"2026-12-05T18:00:00Z","location":"Antananarivo"}'
 
 echo ""
 echo ""
@@ -46,7 +46,7 @@ echo "=== CONFLICT (409) ==="
 echo ""
 
 echo "--- Setup: create a second event for duplicate-title test ---"
-CONFLICT_TITLE="PUT Test — Conflict Target"
+CONFLICT_TITLE="PUT Test - Conflict Target"
 curlie -s -b /tmp/eventsync_admin_jar.txt -X POST :8080/events -H 'Content-Type: application/json' -d "{\"title\":\"$CONFLICT_TITLE\",\"description\":\"Target for conflict test\",\"startDate\":\"2026-12-01T09:00:00Z\",\"endDate\":\"2026-12-05T18:00:00Z\",\"location\":\"Antananarivo\"}" > /dev/null
 
 SEQUENTIAL_NUMBER=$((SEQUENTIAL_NUMBER + 1)); echo "=== [$SEQUENTIAL_NUMBER] [409] PUT /events/{id} with title that already exists (unique constraint) ==="
@@ -95,7 +95,7 @@ curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_STANDALONE -H 
 
 echo ""
 SEQUENTIAL_NUMBER=$((SEQUENTIAL_NUMBER + 1)); echo "=== [$SEQUENTIAL_NUMBER] [422] description too long (>1000 chars) ==="
-LONG_DESC=$(python3 -c "print('x' * 1001)")
+LONG_DESC=$(python3 -c "import sys; sys.stdout.write('x' * 1001)")
 curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/events/$EVENT_STANDALONE -H 'Content-Type: application/json' -d "{\"title\":\"Valid Title\",\"description\":\"$LONG_DESC\",\"startDate\":\"2026-10-01T09:00:00Z\",\"endDate\":\"2026-10-03T18:00:00Z\",\"location\":\"Antananarivo\"}"
 
 echo ""
