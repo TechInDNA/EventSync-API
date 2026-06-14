@@ -3,7 +3,9 @@ package com.techindna.eventsyncapi.service.events;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.mapper.EventMapper;
+import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.EventService;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -36,7 +38,7 @@ class GetEventServiceTest {
         eventMapper = new EventMapper();
         authService = mock(AuthService.class);
         dataValidator = mock(DataValidator.class);
-        eventService = new EventService(eventRepository, eventMapper, authService, new EventValidator(dataValidator));
+        eventService = new EventService(eventRepository, eventMapper, authService, new EventValidator(dataValidator), mock(SessionRepository.class), mock(SessionMapper.class));
     }
 
     @Test

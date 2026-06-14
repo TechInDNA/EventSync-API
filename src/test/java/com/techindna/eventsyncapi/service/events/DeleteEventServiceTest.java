@@ -3,7 +3,9 @@ package com.techindna.eventsyncapi.service.events;
 import com.techindna.eventsyncapi.entity.Event;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.EventMapper;
+import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.EventRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.EventService;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -27,7 +29,7 @@ class DeleteEventServiceTest {
 
     DeleteEventServiceTest() {
         eventRepository = mock(EventRepository.class);
-        eventService = new EventService(eventRepository, new EventMapper(), mock(AuthService.class), new EventValidator(new DataValidator()));
+        eventService = new EventService(eventRepository, new EventMapper(), mock(AuthService.class), new EventValidator(new DataValidator()), mock(SessionRepository.class), mock(SessionMapper.class));
     }
 
     @Test

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +47,14 @@ public class EventController {
     @PostMapping
     public ResponseEntity<EventDetailResponseDto> createEvent(@RequestBody EventInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EventDetailResponseDto> updateEvent(
+            @PathVariable UUID id,
+            @RequestBody EventInputDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.updateEvent(id, request));
     }
 
     @DeleteMapping("/{id}")

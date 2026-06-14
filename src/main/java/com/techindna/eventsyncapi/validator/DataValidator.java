@@ -85,7 +85,7 @@ public class DataValidator {
         lengthValidation(fieldName, TEXT_MAX_LENGTH, text);
 
         if (!ALLOWED_BIO_CHARS.matcher(text).matches()){
-            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\\\"!'- characters are allowed.");
+            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\"!'- characters are allowed.");
         }
     }
 
