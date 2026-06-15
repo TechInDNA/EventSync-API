@@ -31,6 +31,21 @@ echo ""
 echo ""
 
 echo "=========================================="
+echo "  MALFORMED REQUEST (400)"
+echo "=========================================="
+echo ""
+
+echo "=== [400] malformed JSON body — HttpMessageNotReadableException ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{broken}'
+
+echo ""
+echo "=== [400] invalid UUID format (not-a-uuid) — MethodArgumentTypeMismatchException ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/not-a-uuid -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg","bio":"Bio"}'
+
+echo ""
+echo ""
+
+echo "=========================================="
 echo "  NOT FOUND (404)"
 echo "=========================================="
 echo ""
@@ -166,6 +181,14 @@ echo "=== [422] profilePicture invalid URL format ==="
 curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"not-a-url","bio":"Bio"}'
 
 echo ""
+echo "=== [422] profilePicture null (missing field) ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","bio":"Bio"}'
+
+echo ""
+echo "=== [422] profilePicture null (explicit null) ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":null,"bio":"Bio"}'
+
+echo ""
 echo ""
 
 echo "=========================================="
@@ -180,6 +203,22 @@ curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Cont
 echo ""
 echo "=== [422] bio with invalid characters ==="
 curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg","bio":"Hello <world>"}'
+
+echo ""
+echo "=== [422] bio null (missing field) ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg"}'
+
+echo ""
+echo "=== [422] bio null (explicit null) ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg","bio":null}'
+
+echo ""
+echo "=== [422] bio empty ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg","bio":""}'
+
+echo ""
+echo "=== [422] bio blank (spaces only) ==="
+curlie -b /tmp/eventsync_admin_jar.txt -X PUT :8080/speakers/$SEED_UUID -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"https://example.com/pic.jpg","bio":"   "}'
 
 echo ""
 echo ""
