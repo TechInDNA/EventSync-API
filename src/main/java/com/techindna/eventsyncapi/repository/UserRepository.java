@@ -24,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             """, nativeQuery = true)
     Optional<User> insertSpeaker(@Param("speaker") User speaker);
 
-    @Query("""
+    @Query(value = """
             SELECT u FROM User u
             WHERE u.email = :email
             AND u.firstName = :firstName
@@ -33,6 +33,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmailAndNames(@Param("email") String email,
                                        @Param("firstName") String firstName,
                                        @Param("lastName") String lastName);
+
+    @Query("""
+            SELECT u FROM User u
+            LEFT JOIN FETCH u.externalLinks
+            WHERE u.id = :id
+            """)
+    Optional<User> findByIdWithExternalLinks(@Param("id") UUID id);
 
     @Query(value = """
             INSERT INTO eventsync_app."user" (first_name, last_name, email, role)

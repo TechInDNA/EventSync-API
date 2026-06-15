@@ -17,7 +17,6 @@ import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +49,12 @@ class GetSpeakerByIdServiceTest {
     @Test
     @DisplayName("getSpeakerById with existing id returns speaker details with external links and sessions")
     void getSpeakerById_withExistingId_returnsSpeakerDetails() {
+        var link = ExternalLink.builder()
+                .id(UUID.randomUUID())
+                .name("Twitter")
+                .url("https://twitter.com/john")
+                .build();
+
         var speaker = User.builder()
                 .id(SPEAKER_ID)
                 .firstName("John")
@@ -58,20 +63,14 @@ class GetSpeakerByIdServiceTest {
                 .bio("Experienced speaker")
                 .role(Role.SPEAKER)
                 .build();
-
-        var link = ExternalLink.builder()
-                .id(UUID.randomUUID())
-                .name("Twitter")
-                .url("https://twitter.com/john")
-                .build();
+        speaker.setExternalLinks(List.of(link));
 
         var session = Session.builder()
                 .id(UUID.randomUUID())
                 .title("Keynote")
                 .build();
 
-        when(userRepository.findById(SPEAKER_ID)).thenReturn(Optional.of(speaker));
-        when(externalLinkRepository.findByUserId(SPEAKER_ID)).thenReturn(List.of(link));
+        when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of(session));
 
         var result = speakerService.getSpeakerById(SPEAKER_ID);
@@ -87,23 +86,23 @@ class GetSpeakerByIdServiceTest {
         assertEquals("Twitter", result.getExternalLinks().get(0).getName());
         assertNotNull(result.getSessions());
 
-        verify(userRepository).findById(SPEAKER_ID);
-        verify(externalLinkRepository).findByUserId(SPEAKER_ID);
+        verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
         verify(sessionRepository).findBySpeakerId(SPEAKER_ID);
         verify(sessionMapper).toSpeakerSessionDto(session);
+        verifyNoInteractions(externalLinkRepository);
     }
 
     @Test
     @DisplayName("getSpeakerById with unknown id throws NotFoundException")
     void getSpeakerById_withUnknownId_throwsNotFound() {
-        when(userRepository.findById(SPEAKER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.empty());
 
         var exception = assertThrows(NotFoundException.class,
                 () -> speakerService.getSpeakerById(SPEAKER_ID));
 
         assertEquals("Speaker " + SPEAKER_ID + " not found.", exception.getMessage());
-        verify(userRepository).findById(SPEAKER_ID);
-        verifyNoInteractions(externalLinkRepository, sessionRepository, sessionMapper);
+        verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
+        verifyNoInteractions(sessionRepository, sessionMapper, externalLinkRepository);
     }
 
     @Test
@@ -115,8 +114,7 @@ class GetSpeakerByIdServiceTest {
                 .lastName("Doe")
                 .build();
 
-        when(userRepository.findById(SPEAKER_ID)).thenReturn(Optional.of(speaker));
-        when(externalLinkRepository.findByUserId(SPEAKER_ID)).thenReturn(List.of());
+        when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of());
 
         var result = speakerService.getSpeakerById(SPEAKER_ID);
@@ -137,8 +135,7 @@ class GetSpeakerByIdServiceTest {
                 .lastName("Doe")
                 .build();
 
-        when(userRepository.findById(SPEAKER_ID)).thenReturn(Optional.of(speaker));
-        when(externalLinkRepository.findByUserId(SPEAKER_ID)).thenReturn(List.of());
+        when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of());
 
         var result = speakerService.getSpeakerById(SPEAKER_ID);

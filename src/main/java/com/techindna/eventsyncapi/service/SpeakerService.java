@@ -66,15 +66,13 @@ public class SpeakerService {
 
     @Transactional(readOnly = true)
     public SpeakerDetailResponseDto getSpeakerById(UUID id) {
-        User speaker = userRepository.findById(id)
+        User speaker = userRepository.findByIdWithExternalLinks(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Speaker %s not found.", id)));
-
-        List<ExternalLink> externalLinks = externalLinkRepository.findByUserId(id);
 
         var sessions = sessionRepository.findBySpeakerId(id).stream()
                 .map(sessionMapper::toSpeakerSessionDto)
                 .toList();
 
-        return speakerMapper.toDetailResponseDto(speaker, externalLinks, sessions);
+        return speakerMapper.toDetailResponseDto(speaker, speaker.getExternalLinks(), sessions);
     }
 }
