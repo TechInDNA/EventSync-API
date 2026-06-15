@@ -16,6 +16,7 @@ import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.SpeakerValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,8 @@ class PostSpeakerServiceTest {
         authService = mock(AuthService.class);
         speakerService = new SpeakerService(
                 userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper()),
-                sessionRepository, sessionMapper, authService
+                sessionRepository, sessionMapper, authService,
+                new SpeakerValidator(new DataValidator())
         );
     }
 

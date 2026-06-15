@@ -6,6 +6,7 @@ import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SessionForSpeakerDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
@@ -81,6 +82,19 @@ public class SpeakerMapper {
                 .bio(user.getBio())
                 .externalLinks(linkDtos.isEmpty() ? null : linkDtos)
                 .sessions(sessions.isEmpty() ? null : sessions)
+                .build();
+    }
+
+    public SpeakerUpdateResponseDto toUpdateResponseDto(User user) {
+        if (user == null) return null;
+
+        return SpeakerUpdateResponseDto.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .profilePicture(user.getProfilePicture())
+                .bio(user.getBio())
                 .build();
     }
 }

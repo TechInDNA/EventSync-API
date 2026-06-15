@@ -3,6 +3,8 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.exception.ConflictException;
@@ -13,10 +15,13 @@ import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.SpeakerValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +37,8 @@ public class SpeakerService {
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
     private final AuthService authService;
+    private final SpeakerValidator speakerValidator;
+    private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
 
     @Transactional
     public SpeakerResponseDto createSpeaker(SpeakerInputDto request) {
@@ -63,6 +70,38 @@ public class SpeakerService {
         }
 
         return speakerMapper.toResponseDto(speaker, savedLinks);
+    }
+
+    @Transactional
+    public SpeakerUpdateResponseDto updateSpeaker(UUID id, SpeakerUpdateInputDto request) {
+        speakerValidator.validateUpdate(request);
+
+        return speakerMapper.toUpdateResponseDto(updateSpeakerOrThrow(id, request));
+    }
+
+    private User updateSpeakerOrThrow(UUID id, SpeakerUpdateInputDto request) {
+        try {
+            return userRepository.updateSpeakerById(
+                    id,
+                    request.getFirstName().strip(),
+                    request.getLastName().strip(),
+                    request.getEmail().strip(),
+                    request.getProfilePicture() != null ? request.getProfilePicture().strip() : null,
+                    request.getBio() != null ? request.getBio().strip() : null
+            ).orElseThrow(() -> new NotFoundException(
+                    String.format("Speaker %s not found.", id)));
+        } catch (DataIntegrityViolationException e) {
+            if (uniqueViolation(e)) {
+                throw new ConflictException(
+                        "Email '" + request.getEmail().strip() + "' already exists.");
+            }
+            throw e;
+        }
+    }
+
+    private static boolean uniqueViolation(DataIntegrityViolationException e) {
+        return e.getRootCause() instanceof SQLException sqlEx
+                && UNIQUE_CONSTRAINT_VIOLATION.equals(sqlEx.getSQLState());
     }
 
     @Transactional(readOnly = true)
