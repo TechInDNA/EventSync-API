@@ -63,4 +63,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
                                      @Param("email") String email,
                                      @Param("profilePicture") String profilePicture,
                                      @Param("bio") String bio);
+
+    @Query(value = """
+            DELETE FROM eventsync_app."user"
+            WHERE id = :id
+            RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
+            """, nativeQuery = true)
+    Optional<User> deleteSpeakerById(@Param("id") UUID id);
 }

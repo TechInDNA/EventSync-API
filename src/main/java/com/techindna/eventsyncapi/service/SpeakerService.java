@@ -117,4 +117,10 @@ public class SpeakerService {
 
         return speakerMapper.toDetailResponseDto(speaker, speaker.getExternalLinks(), sessions);
     }
+
+    @Transactional
+    public void deleteSpeaker(UUID id) {
+        userRepository.deleteSpeakerById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Speaker %s not found.", id)));
+    }
 }
