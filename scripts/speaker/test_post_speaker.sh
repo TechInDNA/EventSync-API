@@ -15,8 +15,8 @@ echo "  SUCCESS (201)"
 echo "=========================================="
 echo ""
 
-echo "=== Test #1: [201] POST /speakers with valid minimal fields ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","profilePicture":"https://example.com/avatar.jpg"}'
+echo "=== Test #1: [201] POST /speakers with valid input ==="
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/avatar.jpg"}'
 
 echo ""
 echo ""
