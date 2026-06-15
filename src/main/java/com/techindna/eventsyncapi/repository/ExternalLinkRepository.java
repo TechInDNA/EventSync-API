@@ -13,6 +13,8 @@ import java.util.UUID;
 @Repository
 public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID> {
 
+    List<ExternalLink> findByUserId(UUID userId);
+
     @Query(value = """
             INSERT INTO eventsync_app.external_links (name, url, user_id)
             VALUES (:name, :url, :userId)

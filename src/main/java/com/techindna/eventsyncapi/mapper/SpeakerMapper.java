@@ -2,6 +2,8 @@ package com.techindna.eventsyncapi.mapper;
 
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
+import com.techindna.eventsyncapi.dto.speaker.SessionForSpeakerDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
@@ -59,6 +61,26 @@ public class SpeakerMapper {
                 .lastName(speaker.getLastName())
                 .profilePicture(speaker.getProfilePicture())
                 .bio(speaker.getBio())
+                .build();
+    }
+
+    public SpeakerDetailResponseDto toDetailResponseDto(User user, List<ExternalLink> externalLinks, List<SessionForSpeakerDto> sessions) {
+        if (user == null) return null;
+
+        List<ExternalLinkDto> linkDtos = Optional.ofNullable(externalLinks)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(externalLinkMapper::toDto)
+                .toList();
+
+        return SpeakerDetailResponseDto.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .profilePicture(user.getProfilePicture())
+                .bio(user.getBio())
+                .externalLinks(linkDtos.isEmpty() ? null : linkDtos)
+                .sessions(sessions)
                 .build();
     }
 }

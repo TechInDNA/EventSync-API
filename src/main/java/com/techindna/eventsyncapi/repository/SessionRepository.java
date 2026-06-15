@@ -43,4 +43,11 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             WHERE s.event_id = :eventId
             """, nativeQuery = true)
     List<Session> findByEventId(@Param("eventId") UUID eventId);
+
+    @Query("""
+            SELECT s FROM Session s
+            JOIN s.speakers u
+            WHERE u.id = :speakerId
+            """)
+    List<Session> findBySpeakerId(@Param("speakerId") UUID speakerId);
 }

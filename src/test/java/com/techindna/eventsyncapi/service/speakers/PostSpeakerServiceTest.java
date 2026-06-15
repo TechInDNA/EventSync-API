@@ -8,8 +8,10 @@ import com.techindna.eventsyncapi.entity.enums.Role;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.ExternalLinkMapper;
+import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -30,6 +32,8 @@ class PostSpeakerServiceTest {
 
     private final UserRepository userRepository;
     private final ExternalLinkRepository externalLinkRepository;
+    private final SessionRepository sessionRepository;
+    private final SessionMapper sessionMapper;
     private final SpeakerService speakerService;
 
     private static final UUID SPEAKER_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
@@ -37,8 +41,11 @@ class PostSpeakerServiceTest {
     PostSpeakerServiceTest() {
         userRepository = mock(UserRepository.class);
         externalLinkRepository = mock(ExternalLinkRepository.class);
+        sessionRepository = mock(SessionRepository.class);
+        sessionMapper = mock(SessionMapper.class);
         speakerService = new SpeakerService(
-                userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper())
+                userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper()),
+                sessionRepository, sessionMapper
         );
     }
 
