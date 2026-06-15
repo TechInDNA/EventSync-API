@@ -16,6 +16,7 @@ import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.ExternalLinkValidator;
 import com.techindna.eventsyncapi.validator.SpeakerValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,7 @@ class PostSpeakerServiceTest {
         sessionMapper = mock(SessionMapper.class);
         authService = mock(AuthService.class);
         speakerService = new SpeakerService(
-                userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper()),
+                userRepository, externalLinkRepository, new ExternalLinkValidator(new DataValidator()), new SpeakerMapper(new ExternalLinkMapper()),
                 sessionRepository, sessionMapper, authService,
                 new SpeakerValidator(new DataValidator())
         );
@@ -61,6 +62,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .build();
 
@@ -69,6 +71,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .role(Role.SPEAKER)
                 .createdAt(LocalDateTime.now())
@@ -82,8 +85,8 @@ class PostSpeakerServiceTest {
         assertEquals(SPEAKER_ID, result.getId());
         assertEquals("John", result.getFirstName());
         assertEquals("Doe", result.getLastName());
+        assertEquals("Experienced speaker", result.getBio());
         assertEquals("https://example.com/avatar.jpg", result.getProfilePicture());
-        assertNull(result.getBio());
         assertTrue(result.getExternalLinks() == null || result.getExternalLinks().isEmpty());
 
         verify(userRepository).insertSpeaker(any(User.class));
@@ -97,6 +100,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("existing@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .build();
 
@@ -174,6 +178,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .externalLinks(links)
                 .build();
@@ -183,6 +188,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .role(Role.SPEAKER)
                 .createdAt(LocalDateTime.now())
@@ -230,6 +236,7 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
                 .profilePicture("https://example.com/avatar.jpg")
                 .externalLinks(links)
                 .build();

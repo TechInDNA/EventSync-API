@@ -116,13 +116,4 @@ public class DataValidator {
         }
     }
 
-    public void externalLinkValidator(List<ExternalLinkDto> externalLinks){
-        if (externalLinks != null && !externalLinks.isEmpty()){
-            for (ExternalLinkDto linkDto : externalLinks) {
-                validateName("name", linkDto.getName());
-                validateUrl("url", linkDto.getUrl());
-            }
-        }
-    }
-
 }
