@@ -38,4 +38,10 @@ public class SpeakerController {
     public ResponseEntity<SpeakerDetailResponseDto> getSpeakerById(@PathVariable UUID id, HttpServletRequest  request) {
         return ResponseEntity.status(HttpStatus.OK).body(speakerService.getSpeakerById(id, request.getRemoteAddr()));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSpeaker(@PathVariable UUID id) {
+        speakerService.deleteSpeaker(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
