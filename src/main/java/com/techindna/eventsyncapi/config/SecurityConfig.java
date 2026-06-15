@@ -62,6 +62,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/rooms/**").hasRole("ADMIN")
 
                 .requestMatchers(HttpMethod.POST, "/speakers/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/speakers/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/speakers/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/speakers/**").hasRole("ADMIN")
 
                 .requestMatchers(HttpMethod.POST, "/sessions/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/sessions/**").hasRole("ADMIN")
