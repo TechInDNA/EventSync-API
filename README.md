@@ -42,6 +42,9 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/sessions_schema.sql
 psql "$DATABASE_URL" -f src/main/resources/db/sessions/session_speaker_schema.sql
 psql "$DATABASE_URL" -f src/main/resources/db/externalLink/external_links_schema.sql
 
+# AI Conversations
+psql "$DATABASE_URL" -f src/main/resources/db/ai_conversations/ai_conversations_schema.sql
+
 # Seed data (optional — for testing)
 psql "$DATABASE_URL" -f src/main/resources/db/auth/auth_data.sql
 psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
@@ -51,7 +54,7 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 
 ```bash
 ./gradlew build -x test
-./gradlew test                 # 171 tests
+./gradlew test                 # 196 tests
 ./gradlew bootRun              # → http://localhost:8080
 ```
 
@@ -72,16 +75,20 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 | `DELETE /rooms/{id}` | JWT | Delete a room |
 | `POST /sessions` | JWT | Create a session (linked to room + event) |
 | `POST /speakers` | JWT | Create a speaker (with optional external links) |
+| `GET /speakers/{id}` | — | Get speaker details (with external links and sessions) |
+| `PUT /speakers/{id}` | JWT | Update a speaker (bio, profilePicture, externalLinks) |
+| `DELETE /speakers/{id}` | JWT | Delete a speaker |
+| `POST /ai/conversations` | JWT (ADMIN) | Send a message to the AI assistant (room operations via natural language) |
 
 > See `docs/api.yaml` for the complete OpenAPI spec (all schemas, responses, and error definitions).
 
 ## Architecture
 
-**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions, `EventValidator` for events). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
+**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions, `EventValidator` for events, `SpeakerValidator` for speakers, `ExternalLinkValidator` for external links, `AiConversationsValidator` for AI conversations). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
 
 **Error handling:** business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`, `NotFoundException`, `ConflictException`) are thrown from services and handled by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
 
-**Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity. GET endpoints (events, rooms) validate IP blacklist via `AuthService.checkBlacklist()` to block banned IPs from public resources.
+**Authentication:** JWT extracted from `jwt` cookie (HttpOnly, Secure, SameSite=Strict). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity. GET endpoints (events, rooms, speakers) validate IP blacklist via `AuthService.checkBlacklist()` to block banned IPs from public resources.
 
 **Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for events, rooms, sessions, speakers) require `ROLE_ADMIN`. Read endpoints are public.
 
@@ -91,7 +98,7 @@ psql "$DATABASE_URL" -f src/main/resources/db/sessions/test_session_data.sql
 
 **Session model:** Each session is linked to a room and an event via UUID references. Supports ManyToMany speakers via the `session_speaker` join table. Computed `isLive` field (between startDate/endDate) set by `SessionMapper`.
 
-**Speaker model:** Users with role `SPEAKER` and optional `externalLinks` (name + URL). Links are stored in `external_links` table per-row with `ON CONFLICT (url)` guarding against duplicates.
+**Speaker model:** Users with role `SPEAKER` and optional `externalLinks` (name + URL). Full CRUD via `UserRepository` native queries. Creation uses `insertSpeaker()` with `ON CONFLICT (email) DO NOTHING` and per-row external link inserts. Update uses `updateSpeakerById()` with `RETURNING`, guarded by `SpeakerValidator.validateUpdate()` (optional `bio`/`profilePicture`). Detail fetches external links eagerly via `findByIdWithExternalLinks()` and resolves speaker sessions. Deletion cascades to external links. Links are stored in `external_links` table per-row with `ON CONFLICT (url)` guarding against duplicates.
 
 ## AI / MCP Integration
 

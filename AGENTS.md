@@ -20,6 +20,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── TokenProvider.java
 │   └── JwtAuthenticationFilter.java
 ├── controller/
+│   ├── AiConversationController.java
 │   ├── AuthController.java
 │   ├── EventController.java
 │   ├── RoomController.java
@@ -44,6 +45,9 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── RoomInputDto.java
 │   │   ├── RoomListResponseDto.java
 │   │   └── RoomResponseDto.java
+│   ├── ai/
+│   │   ├── AiConversationInputDto.java
+│   │   └── AiConversationResponseDto.java
 │   ├── session/
 │   │   ├── EventRefDto.java
 │   │   ├── RoomRefDto.java
@@ -52,9 +56,14 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   └── SpeakerRefDto.java
 │   └── speaker/
 │       ├── ExternalLinkDto.java
+│       ├── SessionForSpeakerDto.java
+│       ├── SpeakerDetailResponseDto.java
 │       ├── SpeakerInputDto.java
-│       └── SpeakerResponseDto.java
+│       ├── SpeakerResponseDto.java
+│       ├── SpeakerUpdateInputDto.java
+│       └── SpeakerUpdateResponseDto.java
 ├── entity/
+│   ├── AiConversation.java
 │   ├── BlacklistedIp.java
 │   ├── Event.java
 │   ├── ExternalLink.java
@@ -73,6 +82,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── UnauthorizedException.java
 │   └── UnprocessableEntityException.java
 ├── mapper/
+│   ├── AiConversationMapper.java
 │   ├── EventMapper.java
 │   ├── ExternalLinkMapper.java
 │   ├── RoomMapper.java
@@ -80,6 +90,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── SpeakerMapper.java
 │   └── UserMapper.java
 ├── repository/
+│   ├── AiConversationRepository.java
 │   ├── BlacklistedIpRepository.java
 │   ├── EventRepository.java
 │   ├── ExternalLinkRepository.java
@@ -88,6 +99,8 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── SessionRepository.java
 │   └── UserRepository.java
 ├── service/
+│   ├── AiApiService.java
+│   ├── AiConversationService.java
 │   ├── AuthService.java
 │   ├── EventService.java
 │   ├── RoomService.java
@@ -96,9 +109,12 @@ src/main/java/com/techindna/eventsyncapi/
 ├── mcp/
 │   └── RoomMcpTools.java          # MCP @Tool beans — room CRUD for Hermes
 ├── validator/
+    ├── AiConversationsValidator.java
     ├── DataValidator.java
     ├── EventValidator.java
-    └── SessionValidator.java
+    ├── ExternalLinkValidator.java
+    ├── SessionValidator.java
+    └── SpeakerValidator.java
 
 src/test/java/com/techindna/eventsyncapi/
 ├── EventSyncApiApplicationTests.java
@@ -119,7 +135,10 @@ src/test/java/com/techindna/eventsyncapi/
 │   ├── sessions/
 │   │   └── PostSessionControllerTest.java
 │   └── speakers/
-│       └── PostSpeakerControllerTest.java
+│       ├── DeleteSpeakerControllerTest.java
+│       ├── GetSpeakerByIdControllerTest.java
+│       ├── PostSpeakerControllerTest.java
+│       └── PutSpeakerControllerTest.java
 └── service/
     ├── auth/
     │   └── AuthServiceTest.java
@@ -137,11 +156,16 @@ src/test/java/com/techindna/eventsyncapi/
     ├── sessions/
     │   └── PostSessionServiceTest.java
     └── speakers/
-        └── PostSpeakerServiceTest.java
+        ├── DeleteSpeakerServiceTest.java
+        ├── GetSpeakerByIdServiceTest.java
+        ├── PostSpeakerServiceTest.java
+        └── PutSpeakerServiceTest.java
 
 src/main/resources/
 ├── application.properties
 └── db/
+    ├── ai_conversations/
+    │   └── ai_conversations_schema.sql
     ├── auth/
     │   ├── auth_data.sql
     │   ├── ip_blacklist_schema.sql
@@ -156,12 +180,17 @@ src/main/resources/
     ├── rooms/
     │   ├── delete_room_data.sql
     │   ├── get_room_by_id_data.sql
+    │   ├── get_rooms_data.sql
     │   ├── put_room_data.sql
     │   └── rooms_schema.sql
-    └── sessions/
-        ├── session_speaker_schema.sql
-        ├── sessions_schema.sql
-        └── test_session_data.sql
+    ├── sessions/
+    │   ├── session_speaker_schema.sql
+    │   ├── sessions_schema.sql
+    │   └── test_session_data.sql
+    └── speaker/
+        ├── delete_speaker_data.sql
+        ├── get_speaker_by_id_data.sql
+        └── put_speaker_data.sql
 
 scripts/
 ├── auth/
@@ -179,7 +208,10 @@ scripts/
 ├── sessions/
 │   └── test_post_sessions.sh
 └── speaker/
-    └── test_post_speaker.sh
+    ├── test_delete_speaker.sh
+    ├── test_get_speaker_by_id.sh
+    ├── test_post_speaker.sh
+    └── test_put_speaker.sh
 
 docs/
 ├── api.yaml              # OpenAPI 3.0.3 spec
@@ -191,7 +223,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (171 tests)
+./gradlew test                 # run all tests (196 tests)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
@@ -199,19 +231,20 @@ docs/
 ## Conventions
 
 - **DDL** — `ddl-auto=validate`. Schema is managed externally via SQL scripts in `src/main/resources/db/`. Never use `update` or `create`.
-- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"room"`, `"blacklisted_ip"`, `"session"`, `"external_links"`).
+- **Entities** — use `@Table(schema = "eventsync_app")`. Table names match the MCD (singular: `"user"`, `"room"`, `"blacklisted_ip"`, `"session"`, `"external_links"`, `"ai_conversation"`).
 - **Queries** — prefer `@Query` over JdbcTemplate. Use `@Modifying` + `RETURNING` for write queries. List columns explicitly, no `SELECT *`.
 - **IDs** — UUID PKs generated with `GenerationType.UUID` (Hibernate 6+).
 - **OpenAPI** — camelCase fields (`firstName`, `createdAt`), US English, 3.0.3. Every endpoint declares 400 and 422 explicitly.
 - **Security** — JWT extracted from cookie `"jwt"`. Auth config lives in `config/` package. Filter clears context for bad JWT — no framework exceptions, `ExceptionTranslationFilter` + custom handlers return JSON 401/403.
-- **Validation** — **All validation in the service layer via `DataValidator`** (and `SessionValidator` for sessions, `EventValidator` for events). DTOs are plain `@Data` beans with no `@NotBlank`/`@Valid` annotations. `DataValidator` handles null checks, format regex, name/email/URL validation, text length limits, and external link validation.
+- **Validation** — **All validation in the service layer via `DataValidator`** (and `SessionValidator` for sessions, `EventValidator` for events, `SpeakerValidator` for speakers, `ExternalLinkValidator` for external links, `AiConversationsValidator` for AI conversations). DTOs are plain `@Data` beans with no `@NotBlank`/`@Valid` annotations. `DataValidator` handles null checks, format regex, name/email/URL validation, text length limits, and external link validation.
 - **Exception handling** — business exceptions (`BadRequestException`, `UnprocessableEntityException`, etc.) thrown from services, caught by `GlobalExceptionHandler` (`@RestControllerAdvice`). Error response format: `{status, error, message}`.
 - **Tests** — `@DisplayName` in English. Constructor injection with `mock()` (no `@Mock`, no `@ExtendWith`). Controller tests use `MockMvcBuilders.standaloneSetup` + `GlobalExceptionHandler` as controller advice. Service tests use Mockito only. Test subpackages per endpoint (e.g., `service/sessions/`, `controller/speakers/`).
-- **IP blacklist** — `AuthService.checkBlacklist(ipAddress)` guards GET endpoints (events, rooms). Rate-limited to 5 failed login attempts per IP via `BlacklistedIp` entity.
+- **IP blacklist** — `AuthService.checkBlacklist(ipAddress)` guards GET endpoints (events, rooms, speakers). Rate-limited to 5 failed login attempts per IP via `BlacklistedIp` entity.
 - **Mappers** — Aggregate facade pattern: `SessionMapper` depends on `EventMapper`, `RoomMapper`, `SpeakerMapper`. `SpeakerMapper` depends on `ExternalLinkMapper`. Services depend only on the aggregate mapper, never on sub-mappers.
 - **Event** — CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions.
 - **Session** — Created via `POST /sessions`. Uses `SessionValidator` for validation, `SessionRepository.findRoomAndEventExistence()` for DB existence check before insert. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs.
-- **Speaker** — Created via `POST /speakers` (role `SPEAKER`). Supports nested `externalLinks` array saved via `ExternalLinkRepository.insertExternalLink()` per-row. Uses `UserRepository.insertSpeaker()` with `ON CONFLICT (email) DO NOTHING`.
+- **Speaker** — Full CRUD via `UserRepository`. Creation (`POST /speakers`) uses `insertSpeaker()` with `ON CONFLICT (email) DO NOTHING` and `ExternalLinkRepository.insertExternalLink()` per-row for nested links. Update (`PUT /speakers/{id}`) uses `updateSpeakerById()` with `RETURNING`, guarded by `SpeakerValidator.validateUpdate()` which allows optional `bio`/`profilePicture`. Detail (`GET /speakers/{id}`) fetches external links eagerly via `findByIdWithExternalLinks()` and resolves speaker sessions via `SessionRepository.findBySpeakerId()`. Deletion (`DELETE /speakers/{id}`) uses `deleteSpeakerById()` with `ON DELETE CASCADE` on external links. `SpeakerValidator` handles creation vs update validation separately (`validateCreation()` requires all fields, `validateUpdate()` allows optional bio/picture).
+- **AI Conversation** — Created via `POST /ai/conversations` (requires `ROLE_ADMIN`). Uses `AiConversationsValidator.validateUserRequest()` to strip and validate the message. `AiApiService` wraps a Spring AI `ChatClient` (OpenAI, configurable via `base-url` and `model`) with room MCP tools injected as tool context, enabling the AI to perform room operations via natural language. `AiConversationRepository.insertConversation()` persists the exchange with an auto-generated title and `@CreationTimestamp`. Response includes `id`, `title`, `userRequest`, `aiResponse`, `userId`, `createdAt`.
 - **MCP tools** — Room CRUD exposed as `@Tool` methods in `mcp/` package. Each tool wraps the existing service layer (validation included). `@ToolParam(description = ...)` is mandatory so the AI knows what to pass. Tools return user-friendly strings with success/error messages. All `/mcp/**` paths are **permitAll** in `SecurityConfig` (SSE transport is not JWT-authenticated).
 
 ## Common pitfalls
