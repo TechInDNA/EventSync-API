@@ -3,6 +3,8 @@ package com.techindna.eventsyncapi.controller;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,14 @@ public class SpeakerController {
     @PostMapping
     public ResponseEntity<SpeakerResponseDto> createSpeaker(@RequestBody SpeakerInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(speakerService.createSpeaker(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SpeakerUpdateResponseDto> updateSpeaker(
+            @PathVariable UUID id,
+            @RequestBody SpeakerUpdateInputDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(speakerService.updateSpeaker(id, request));
     }
 
     @GetMapping("/{id}")

@@ -49,4 +49,18 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     User insertParticipant(@Param("firstName") String firstName,
                            @Param("lastName") String lastName,
                            @Param("email") String email);
+
+    @Query(value = """
+            UPDATE eventsync_app."user"
+            SET first_name = :firstName, last_name = :lastName, email = :email,
+                profile_picture = :profilePicture, bio = :bio
+            WHERE id = :id
+            RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
+            """, nativeQuery = true)
+    Optional<User> updateSpeakerById(@Param("id") UUID id,
+                                     @Param("firstName") String firstName,
+                                     @Param("lastName") String lastName,
+                                     @Param("email") String email,
+                                     @Param("profilePicture") String profilePicture,
+                                     @Param("bio") String bio);
 }
