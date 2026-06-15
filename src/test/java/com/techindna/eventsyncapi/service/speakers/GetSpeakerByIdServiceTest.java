@@ -12,6 +12,7 @@ import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
+import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
@@ -30,19 +31,22 @@ class GetSpeakerByIdServiceTest {
     private final ExternalLinkRepository externalLinkRepository;
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
+    private final AuthService authService;
     private final SpeakerService speakerService;
 
     private static final UUID SPEAKER_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static final String TEST_IP = "127.0.0.1";
 
     GetSpeakerByIdServiceTest() {
         userRepository = mock(UserRepository.class);
         externalLinkRepository = mock(ExternalLinkRepository.class);
         sessionRepository = mock(SessionRepository.class);
         sessionMapper = mock(SessionMapper.class);
+        authService = mock(AuthService.class);
         speakerService = new SpeakerService(
                 userRepository, externalLinkRepository, new DataValidator(),
                 new SpeakerMapper(new ExternalLinkMapper()),
-                sessionRepository, sessionMapper
+                sessionRepository, sessionMapper, authService
         );
     }
 
@@ -73,7 +77,7 @@ class GetSpeakerByIdServiceTest {
         when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of(session));
 
-        var result = speakerService.getSpeakerById(SPEAKER_ID);
+        var result = speakerService.getSpeakerById(SPEAKER_ID, TEST_IP);
 
         assertNotNull(result);
         assertEquals(SPEAKER_ID, result.getId());
@@ -86,10 +90,11 @@ class GetSpeakerByIdServiceTest {
         assertEquals("Twitter", result.getExternalLinks().get(0).getName());
         assertNotNull(result.getSessions());
 
+        verify(authService).checkBlacklist(TEST_IP);
         verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
         verify(sessionRepository).findBySpeakerId(SPEAKER_ID);
         verify(sessionMapper).toSpeakerSessionDto(session);
-        verifyNoInteractions(externalLinkRepository);
+        verifyNoMoreInteractions(authService);
     }
 
     @Test
@@ -98,10 +103,12 @@ class GetSpeakerByIdServiceTest {
         when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.empty());
 
         var exception = assertThrows(NotFoundException.class,
-                () -> speakerService.getSpeakerById(SPEAKER_ID));
+                () -> speakerService.getSpeakerById(SPEAKER_ID, TEST_IP));
 
         assertEquals("Speaker " + SPEAKER_ID + " not found.", exception.getMessage());
+        verify(authService).checkBlacklist(TEST_IP);
         verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
+        verifyNoMoreInteractions(userRepository, authService);
         verifyNoInteractions(sessionRepository, sessionMapper, externalLinkRepository);
     }
 
@@ -117,13 +124,16 @@ class GetSpeakerByIdServiceTest {
         when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of());
 
-        var result = speakerService.getSpeakerById(SPEAKER_ID);
+        var result = speakerService.getSpeakerById(SPEAKER_ID, TEST_IP);
 
         assertNotNull(result);
         assertEquals(SPEAKER_ID, result.getId());
         assertNull(result.getExternalLinks());
-        assertNotNull(result.getSessions());
-        assertTrue(result.getSessions().isEmpty());
+        assertNull(result.getSessions());
+
+        verify(authService).checkBlacklist(TEST_IP);
+        verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
+        verify(sessionRepository).findBySpeakerId(SPEAKER_ID);
     }
 
     @Test
@@ -138,10 +148,14 @@ class GetSpeakerByIdServiceTest {
         when(userRepository.findByIdWithExternalLinks(SPEAKER_ID)).thenReturn(Optional.of(speaker));
         when(sessionRepository.findBySpeakerId(SPEAKER_ID)).thenReturn(List.of());
 
-        var result = speakerService.getSpeakerById(SPEAKER_ID);
+        var result = speakerService.getSpeakerById(SPEAKER_ID, TEST_IP);
 
         assertNotNull(result);
-        assertNotNull(result.getSessions());
-        assertTrue(result.getSessions().isEmpty());
+        assertNull(result.getSessions());
+        assertNull(result.getExternalLinks());
+
+        verify(authService).checkBlacklist(TEST_IP);
+        verify(userRepository).findByIdWithExternalLinks(SPEAKER_ID);
+        verify(sessionRepository).findBySpeakerId(SPEAKER_ID);
     }
 }

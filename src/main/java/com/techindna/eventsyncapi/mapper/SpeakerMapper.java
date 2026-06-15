@@ -80,7 +80,7 @@ public class SpeakerMapper {
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
                 .externalLinks(linkDtos.isEmpty() ? null : linkDtos)
-                .sessions(sessions)
+                .sessions(sessions.isEmpty() ? null : sessions)
                 .build();
     }
 }

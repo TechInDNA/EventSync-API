@@ -13,6 +13,7 @@ import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
+import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,7 @@ class PostSpeakerServiceTest {
     private final ExternalLinkRepository externalLinkRepository;
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
+    private final AuthService authService;
     private final SpeakerService speakerService;
 
     private static final UUID SPEAKER_ID = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
@@ -43,9 +45,10 @@ class PostSpeakerServiceTest {
         externalLinkRepository = mock(ExternalLinkRepository.class);
         sessionRepository = mock(SessionRepository.class);
         sessionMapper = mock(SessionMapper.class);
+        authService = mock(AuthService.class);
         speakerService = new SpeakerService(
                 userRepository, externalLinkRepository, new DataValidator(), new SpeakerMapper(new ExternalLinkMapper()),
-                sessionRepository, sessionMapper
+                sessionRepository, sessionMapper, authService
         );
     }
 

@@ -31,6 +31,7 @@ public class SpeakerService {
     private final SpeakerMapper speakerMapper;
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
+    private final AuthService authService;
 
     @Transactional
     public SpeakerResponseDto createSpeaker(SpeakerInputDto request) {
@@ -65,7 +66,9 @@ public class SpeakerService {
     }
 
     @Transactional(readOnly = true)
-    public SpeakerDetailResponseDto getSpeakerById(UUID id) {
+    public SpeakerDetailResponseDto getSpeakerById(UUID id, String ipAddress) {
+        authService.checkBlacklist(ipAddress);
+
         User speaker = userRepository.findByIdWithExternalLinks(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Speaker %s not found.", id)));
 

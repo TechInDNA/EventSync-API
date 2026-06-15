@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.service.SpeakerService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class SpeakerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SpeakerDetailResponseDto> getSpeakerById(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(speakerService.getSpeakerById(id));
+    public ResponseEntity<SpeakerDetailResponseDto> getSpeakerById(@PathVariable UUID id, HttpServletRequest  request) {
+        return ResponseEntity.status(HttpStatus.OK).body(speakerService.getSpeakerById(id, request.getRemoteAddr()));
     }
 }

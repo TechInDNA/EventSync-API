@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,7 +54,7 @@ class GetSpeakerByIdControllerTest {
                 ))
                 .build();
 
-        when(speakerService.getSpeakerById(SPEAKER_ID)).thenReturn(response);
+        when(speakerService.getSpeakerById(eq(SPEAKER_ID), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/speakers/{id}", SPEAKER_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -81,7 +83,7 @@ class GetSpeakerByIdControllerTest {
                 .sessions(List.of(session))
                 .build();
 
-        when(speakerService.getSpeakerById(SPEAKER_ID)).thenReturn(response);
+        when(speakerService.getSpeakerById(eq(SPEAKER_ID), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/speakers/{id}", SPEAKER_ID)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -93,7 +95,7 @@ class GetSpeakerByIdControllerTest {
     @Test
     @DisplayName("GET /speakers/{id} with unknown id returns 404")
     void getSpeakerById_withUnknownId_returns404() throws Exception {
-        when(speakerService.getSpeakerById(SPEAKER_ID))
+        when(speakerService.getSpeakerById(eq(SPEAKER_ID), nullable(String.class)))
                 .thenThrow(new NotFoundException("Speaker " + SPEAKER_ID + " not found."));
 
         mockMvc.perform(get("/speakers/{id}", SPEAKER_ID)
@@ -113,7 +115,7 @@ class GetSpeakerByIdControllerTest {
                 .lastName("Doe")
                 .build();
 
-        when(speakerService.getSpeakerById(SPEAKER_ID)).thenReturn(response);
+        when(speakerService.getSpeakerById(eq(SPEAKER_ID), nullable(String.class))).thenReturn(response);
 
         mockMvc.perform(get("/speakers/{id}", SPEAKER_ID)
                         .contentType(MediaType.APPLICATION_JSON))
