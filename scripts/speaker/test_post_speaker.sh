@@ -15,8 +15,8 @@ echo "  SUCCESS (201)"
 echo "=========================================="
 echo ""
 
-echo "=== Test #1: [201] POST /speakers with valid minimal fields ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","profilePicture":"https://example.com/avatar.jpg"}'
+echo "=== Test #1: [201] POST /speakers with valid input ==="
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/avatar.jpg"}'
 
 echo ""
 echo ""
@@ -37,12 +37,12 @@ echo "=========================================="
 echo ""
 
 echo "=== Test #4: [409] POST /speakers with duplicate email ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","profilePicture":"https://example.com/avatar.jpg"}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"john.doe@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/avatar.jpg"}'
 
 echo ""
 echo ""
 echo "=== Test #5: [409] POST /speakers with duplicate external link URL ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"Bob","lastName":"Test","email":"bob.test@example.com","profilePicture":"https://example.com/bob.jpg","externalLinks":[{"name":"Twitter","url":"https://twitter.com/alice"}]}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"Bob","lastName":"Test","email":"bob.test@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/bob.jpg","externalLinks":[{"name":"Twitter","url":"https://twitter.com/alice"}]}'
 
 echo ""
 echo ""
@@ -150,15 +150,15 @@ echo "=========================================="
 echo ""
 
 echo "=== Test #25: [422] profilePicture empty ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":""}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","bio":"Experienced speaker","profilePicture":""}'
 
 echo ""
 echo "=== Test #26: [422] profilePicture null (missing field) ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com"}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","bio":"Experienced speaker"}'
 
 echo ""
 echo "=== Test #27: [422] profilePicture invalid URL format ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","profilePicture":"not-a-url"}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"test@example.com","bio":"Experienced speaker","profilePicture":"not-a-url"}'
 
 echo ""
 echo ""
@@ -185,15 +185,15 @@ echo "=========================================="
 echo ""
 
 echo "=== Test #30: [422] external link with null name ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test@example.com","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":null,"url":"https://example.com"}]}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":null,"url":"https://example.com"}]}'
 
 echo ""
 echo "=== Test #31: [422] external link with empty url ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test2@example.com","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":"MyLink","url":""}]}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test2@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":"MyLink","url":""}]}'
 
 echo ""
 echo "=== Test #32: [422] external link with invalid url ==="
-curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test3@example.com","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":"MyLink","url":"not-a-valid-url"}]}'
+curlie -b /tmp/eventsync_admin.txt -X POST :8080/speakers -H 'Content-Type: application/json' -d '{"firstName":"John","lastName":"Doe","email":"link.test3@example.com","bio":"Experienced speaker","profilePicture":"https://example.com/pic.jpg","externalLinks":[{"name":"MyLink","url":"not-a-valid-url"}]}'
 
 echo ""
 echo ""

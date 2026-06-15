@@ -14,7 +14,7 @@ import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.repository.UserRepository;
-import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.ExternalLinkValidator;
 import com.techindna.eventsyncapi.validator.SpeakerValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,7 +32,7 @@ public class SpeakerService {
 
     private final UserRepository userRepository;
     private final ExternalLinkRepository externalLinkRepository;
-    private final DataValidator dataValidator;
+    private final ExternalLinkValidator externalLinkValidator;
     private final SpeakerMapper speakerMapper;
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
@@ -42,13 +42,8 @@ public class SpeakerService {
 
     @Transactional
     public SpeakerResponseDto createSpeaker(SpeakerInputDto request) {
-        dataValidator.validateName("firstName", request.getFirstName());
-        dataValidator.validateName("lastName", request.getLastName());
-        dataValidator.validateEmail(request.getEmail());
-        dataValidator.validateText("bio", request.getBio());
-        dataValidator.validateUrl("profilePicture", request.getProfilePicture());
-
-        dataValidator.externalLinkValidator(request.getExternalLinks());
+        speakerValidator.validateCreation(request);
+        externalLinkValidator.externalLinkValidator(request.getExternalLinks());
 
         User speaker = userRepository.insertSpeaker(speakerMapper.toEntity(request))
                 .orElseThrow(() -> new ConflictException(

@@ -12,6 +12,7 @@ import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SpeakerService;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.ExternalLinkValidator;
 import com.techindna.eventsyncapi.validator.SpeakerValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class DeleteSpeakerServiceTest {
     DeleteSpeakerServiceTest() {
         userRepository = mock(UserRepository.class);
         speakerService = new SpeakerService(
-                userRepository, mock(ExternalLinkRepository.class), new DataValidator(), new SpeakerMapper(new ExternalLinkMapper()),
+                userRepository, mock(ExternalLinkRepository.class), new ExternalLinkValidator(new DataValidator()), new SpeakerMapper(new ExternalLinkMapper()),
                 mock(SessionRepository.class), mock(SessionMapper.class), mock(AuthService.class),
                 new SpeakerValidator(new DataValidator())
         );
