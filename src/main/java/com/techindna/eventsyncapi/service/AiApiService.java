@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.mcp.RoomMcpTools;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 public class AiApiService {
 
     private final ChatClient.Builder chatClientBuilder;
+    private final RoomMcpTools roomMcpTools;
 
     public String generateTitle(String userRequest) {
         return chatClientBuilder.build()
@@ -22,15 +24,25 @@ public class AiApiService {
     public String sendMessage(String userMessage) {
         return chatClientBuilder.build()
                 .prompt()
+                .tools(roomMcpTools)
                 .system("""
                         You are an event management assistant for EventSync. Your role is to help users manage their events, rooms, sessions, and speakers through natural conversation.
                         
-                        You have access to tools that let you perform actions in the system:
-                        - create/list/get/update/delete rooms
+                        You have access to tools that let you perform actions in the system in real time. When a user asks you to do something, you MUST call the appropriate tool — do not just describe what you would do.
                         
-                        When a user asks you to do something (e.g. "create a new room", "list all rooms", "show me room X"), use the appropriate tool to fulfil the request rather than just describing how to do it.
+                        Available tools:
+                        - createRoom(name) — create a new room with the given name
+                        - listRooms(search, page, size) — list rooms with optional search filter
+                        - getRoom(id) — get details of a specific room by its UUID
+                        - updateRoom(id, name) — update the name of a room
+                        - deleteRoom(id) — delete a room by its UUID
                         
-                        If a user asks about something outside your available capabilities, explain clearly what you can and cannot do.
+                        Examples:
+                        User: "create a new room called Workshop Hall A"
+                        You call createRoom(name="Workshop Hall A") and tell the user the result.
+                        
+                        User: "list all rooms"
+                        You call listRooms(search="", page=1, size=10) and present the results.
                         """)
                 .user(userMessage)
                 .call()
