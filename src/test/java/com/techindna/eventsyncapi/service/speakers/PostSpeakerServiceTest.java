@@ -301,6 +301,8 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
+                .profilePicture("https://example.com/avatar.jpg")
                 .externalLinks(links)
                 .build();
 
@@ -309,6 +311,8 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
+                .profilePicture("https://example.com/avatar.jpg")
                 .role(Role.SPEAKER)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -328,6 +332,8 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
+                .profilePicture("https://example.com/avatar.jpg")
                 .externalLinks(links)
                 .build();
 
@@ -336,6 +342,8 @@ class PostSpeakerServiceTest {
                 .firstName("John")
                 .lastName("Doe")
                 .email("john@example.com")
+                .bio("Experienced speaker")
+                .profilePicture("https://example.com/avatar.jpg")
                 .role(Role.SPEAKER)
                 .createdAt(LocalDateTime.now())
                 .build();
