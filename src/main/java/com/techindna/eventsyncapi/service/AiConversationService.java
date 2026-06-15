@@ -22,13 +22,14 @@ public class AiConversationService {
 
     @Transactional
     public AiConversationResponseDto createConversation(UUID userId, AiConversationInputDto request) {
-        String title = aiConversationsValidator.validateAndGetTitle(request.getUserRequest());
+        String userRequest = aiConversationsValidator.validateUserRequest(request.getUserRequest());
 
-        String aiResponse = aiApiService.sendMessage(request.getUserRequest());
+        String aiResponse = aiApiService.sendMessage(userRequest);
+        String title = aiApiService.generateTitle(userRequest);
 
         return aiConversationMapper.toResponseDto(
                 aiConversationRepository.insertConversation(
-                        title, request.getUserRequest(), aiResponse, userId
+                        title, userRequest, aiResponse, userId
                 ).orElseThrow(() -> new RuntimeException("Failed to save AI conversation."))
         );
     }
