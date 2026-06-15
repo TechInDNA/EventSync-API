@@ -13,7 +13,12 @@ public class SpeakerValidator {
         dataValidator.validateName("firstName", speaker.getFirstName());
         dataValidator.validateName("lastName", speaker.getLastName());
         dataValidator.validateEmail(speaker.getEmail());
-        dataValidator.validateText("bio", speaker.getBio());
-        dataValidator.validateUrl("profilePicture", speaker.getProfilePicture());
+
+        if (speaker.getBio() != null) {
+            dataValidator.validateText("bio", speaker.getBio());
+        }
+        if (speaker.getProfilePicture() != null) {
+            dataValidator.validateUrl("profilePicture", speaker.getProfilePicture());
+        }
     }
 }
