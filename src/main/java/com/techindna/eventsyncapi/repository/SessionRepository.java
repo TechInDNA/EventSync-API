@@ -50,4 +50,11 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             WHERE u.id = :speakerId
             """)
     List<Session> findBySpeakerId(@Param("speakerId") UUID speakerId);
+
+    @Query(value = """
+            DELETE FROM eventsync_app.session
+            WHERE id = :id
+            RETURNING id, title, description, start_date, end_date, room_id, capacity, event_id, created_at
+            """, nativeQuery = true)
+    Optional<Session> deleteSessionById(@Param("id") UUID id);
 }
