@@ -26,5 +26,5 @@ public class SessionResponseDto {
     private EventRefDto event;
     private List<SpeakerRefDto> speakers;
     @JsonProperty("isLive")
-    private boolean isLive;
+    private boolean live;
 }

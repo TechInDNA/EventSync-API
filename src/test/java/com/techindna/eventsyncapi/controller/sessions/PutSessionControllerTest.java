@@ -72,7 +72,7 @@ class PutSessionControllerTest {
                 .capacity(200)
                 .event(EventRefDto.builder().id(EVENT_ID).title("TechConf").build())
                 .speakers(Collections.emptyList())
-                .isLive(false)
+                .live(false)
                 .build();
 
         when(sessionService.updateSession(eq(SESSION_ID), any(SessionUpdateInputDto.class))).thenReturn(response);

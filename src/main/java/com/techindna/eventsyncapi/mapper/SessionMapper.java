@@ -47,8 +47,8 @@ public class SessionMapper {
                 .room(roomMapper.toRefDto(session.getRoom()))
                 .capacity(session.getCapacity())
                 .event(eventMapper.toRefDto(session.getEvent()))
-                .speakers(speakers)
-                .isLive(isLive)
+                .speakers(speakers.isEmpty() ? null : speakers)
+                .live(isLive)
                 .build();
     }
 
