@@ -71,7 +71,7 @@ class PostSessionControllerTest {
                 .capacity(100)
                 .event(EventRefDto.builder().id(EVENT_ID).title("TechConf").build())
                 .speakers(Collections.emptyList())
-                .isLive(false)
+                .live(false)
                 .build();
 
         when(sessionService.createSession(any(SessionInputDto.class))).thenReturn(response);
