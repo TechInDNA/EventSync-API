@@ -48,4 +48,10 @@ public class SessionService {
                 String.format("Session '%s' already exists.", request.getTitle())
         )));
     }
+
+    @Transactional
+    public void deleteSession(UUID id) {
+        sessionRepository.deleteSessionById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", id)));
+    }
 }
