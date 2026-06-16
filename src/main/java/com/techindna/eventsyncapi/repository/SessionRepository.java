@@ -57,4 +57,26 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             RETURNING id, title, description, start_date, end_date, room_id, capacity, event_id, created_at
             """, nativeQuery = true)
     Optional<Session> deleteSessionById(@Param("id") UUID id);
+
+    @Query(value = """
+            UPDATE eventsync_app.session
+            SET
+                title = :title,
+                description = :description,
+                start_date = :startDate,
+                end_date = :endDate,
+                room_id = :roomId,
+                capacity = :capacity,
+                event_id = :eventId
+            WHERE id = :id
+            RETURNING id, title, description, start_date, end_date, room_id, capacity, event_id, created_at
+            """, nativeQuery = true)
+    Optional<Session> updateSessionById(@Param("id") UUID id,
+                                        @Param("title") String title,
+                                        @Param("description") String description,
+                                        @Param("startDate") Instant startDate,
+                                        @Param("endDate") Instant endDate,
+                                        @Param("roomId") UUID roomId,
+                                        @Param("capacity") int capacity,
+                                        @Param("eventId") UUID eventId);
 }
