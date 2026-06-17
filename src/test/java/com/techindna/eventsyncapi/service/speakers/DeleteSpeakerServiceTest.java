@@ -34,7 +34,8 @@ class DeleteSpeakerServiceTest {
     DeleteSpeakerServiceTest() {
         userRepository = mock(UserRepository.class);
         speakerService = new SpeakerService(
-                userRepository, mock(ExternalLinkRepository.class), new ExternalLinkValidator(new DataValidator()), new SpeakerMapper(new ExternalLinkMapper()),
+                userRepository, mock(ExternalLinkRepository.class), new ExternalLinkValidator(new DataValidator()),
+                new SpeakerMapper(new ExternalLinkMapper()), mock(ExternalLinkMapper.class),
                 mock(SessionRepository.class), mock(SessionMapper.class), mock(AuthService.class),
                 new SpeakerValidator(new DataValidator())
         );

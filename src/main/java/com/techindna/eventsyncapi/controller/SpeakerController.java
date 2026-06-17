@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.controller;
 
+import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,5 +45,14 @@ public class SpeakerController {
     public ResponseEntity<Void> deleteSpeaker(@PathVariable UUID id) {
         speakerService.deleteSpeaker(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{id}/external-link")
+    public ResponseEntity<List<ExternalLinkDto>> addExternalLink(
+            @PathVariable UUID id,
+            @RequestBody ExternalLinkDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(speakerService.addExternalLink(id, request));
     }
 }

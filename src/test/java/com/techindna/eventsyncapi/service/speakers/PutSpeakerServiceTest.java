@@ -48,7 +48,8 @@ class PutSpeakerServiceTest {
         sessionMapper = mock(SessionMapper.class);
         authService = mock(AuthService.class);
         speakerService = new SpeakerService(
-                userRepository, externalLinkRepository, new ExternalLinkValidator(new DataValidator()), new SpeakerMapper(new ExternalLinkMapper()),
+                userRepository, externalLinkRepository, new ExternalLinkValidator(new DataValidator()),
+                new SpeakerMapper(new ExternalLinkMapper()), mock(ExternalLinkMapper.class),
                 sessionRepository, sessionMapper, authService,
                 new SpeakerValidator(new DataValidator())
         );

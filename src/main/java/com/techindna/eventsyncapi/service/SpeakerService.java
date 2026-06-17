@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
@@ -9,6 +10,7 @@ import com.techindna.eventsyncapi.entity.ExternalLink;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
+import com.techindna.eventsyncapi.mapper.ExternalLinkMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.mapper.SpeakerMapper;
 import com.techindna.eventsyncapi.repository.ExternalLinkRepository;
@@ -34,6 +36,7 @@ public class SpeakerService {
     private final ExternalLinkRepository externalLinkRepository;
     private final ExternalLinkValidator externalLinkValidator;
     private final SpeakerMapper speakerMapper;
+    private final ExternalLinkMapper externalLinkMapper;
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
     private final AuthService authService;
@@ -117,5 +120,25 @@ public class SpeakerService {
     public void deleteSpeaker(UUID id) {
         userRepository.deleteSpeakerById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Speaker %s not found.", id)));
+    }
+
+    @Transactional
+    public List<ExternalLinkDto> addExternalLink(UUID speakerId, ExternalLinkDto request) {
+        externalLinkValidator.validateSingleLink(request);
+
+        userRepository.findById(speakerId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Speaker %s not found.", speakerId)));
+
+        externalLinkRepository.insertExternalLink(
+                    speakerId,
+                    request.getName().strip(),
+                    request.getUrl().strip()
+        ).orElseThrow(() -> new ConflictException(
+                    String.format("URL %s already exists.", request.getUrl())));
+
+        return externalLinkRepository.findByUserId(speakerId).stream()
+                .map(externalLinkMapper::toDto)
+                .toList();
     }
 }

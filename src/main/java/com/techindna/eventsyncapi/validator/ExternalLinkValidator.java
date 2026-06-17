@@ -20,4 +20,10 @@ public class ExternalLinkValidator {
             }
         }
     }
+
+    public void validateSingleLink(ExternalLinkDto linkDto) {
+        dataValidator.checkNullData("externalLink", linkDto);
+        dataValidator.validateName("name", linkDto.getName());
+        dataValidator.validateUrl("url", linkDto.getUrl());
+    }
 }
