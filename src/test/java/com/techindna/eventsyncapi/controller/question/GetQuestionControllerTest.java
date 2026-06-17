@@ -1,4 +1,140 @@
 package com.techindna.eventsyncapi.controller.question;
 
-public class GetQuestionControllerTest {
+import com.techindna.eventsyncapi.controller.QuestionController;
+import com.techindna.eventsyncapi.dto.MetaDto;
+import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
+import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
+import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
+import com.techindna.eventsyncapi.service.QuestionService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+
+class GetQuestionControllerTest {
+
+    private final MockMvc mockMvc;
+    private final QuestionService questionService;
+
+    private static final UUID SESSION_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
+    private static final UUID QUESTION_ID = UUID.fromString("99999999-8888-7777-6666-555555555555");
+    private static final String DEFAULT_SORT = "creationDate";
+    private static final String MOCK_IP = "127.0.0.1";
+
+    GetQuestionControllerTest() {
+        questionService = mock(QuestionService.class);
+        var controller = new QuestionController(questionService);
+        var exceptionHandler = new GlobalExceptionHandler();
+        mockMvc = standaloneSetup(controller)
+                .setControllerAdvice(exceptionHandler)
+                .build();
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions returns 200 with default pagination and sorting")
+    void getQuestions_withDefaultParameters_returns200AndList() throws Exception {
+
+        var questions = List.of(
+                QuestionResponseDto.builder()
+                        .id(QUESTION_ID)
+                        .title("How does Spring work?")
+                        .content("Can someone explain Dependency Injection?")
+                        .sessionId(SESSION_ID)
+                        .anonymous(true)
+                        .upvotes(0)
+                        .createdAt(Instant.now())
+                        .build()
+        );
+        var response = QuestionListResponseDto.builder()
+                .data(questions)
+                .meta(MetaDto.builder().total(1).page(1).size(5).build())
+                .build();
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), any(), any()))
+                .thenReturn(response);
+
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value(QUESTION_ID.toString()))
+                .andExpect(jsonPath("$.data[0].title").value("How does Spring work?"))
+                .andExpect(jsonPath("$.data[0].isAnonymous").value(true))
+                .andExpect(jsonPath("$.meta.total").value(1))
+                .andExpect(jsonPath("$.meta.page").value(1))
+                .andExpect(jsonPath("$.meta.size").value(5));
+
+        verify(questionService).getQuestionsBySessionId(
+                eq(SESSION_ID), eq(1), eq(5), eq(DEFAULT_SORT), eq(""), eq(MOCK_IP)
+        );
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions with custom params returns 200")
+    void getQuestions_withCustomParameters_returns200() throws Exception {
+
+        var response = QuestionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(2).size(20).build())
+                .build();
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), any(), any()))
+                .thenReturn(response);
+
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .param("page", "2")
+                        .param("size", "20")
+                        .param("sort", "upvotes")
+                        .param("searchByName", "Spring")
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meta.page").value(2))
+                .andExpect(jsonPath("$.meta.size").value(20));
+
+        verify(questionService).getQuestionsBySessionId(
+                eq(SESSION_ID), eq(2), eq(20), eq("upvotes"), eq("Spring"), eq(MOCK_IP)
+        );
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions when no questions found returns 200 with empty list")
+    void getQuestions_whenEmpty_returns200WithEmptyData() throws Exception {
+
+        var response = QuestionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(1).size(5).build())
+                .build();
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), any(), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.meta.total").value(0));
+
+        verify(questionService).getQuestionsBySessionId(
+                eq(SESSION_ID), eq(1), eq(5), eq(DEFAULT_SORT), eq(""), eq(MOCK_IP)
+        );
+    }
 }
