@@ -4,7 +4,10 @@ import com.techindna.eventsyncapi.controller.QuestionController;
 import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
+import com.techindna.eventsyncapi.exception.BadRequestException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
+import com.techindna.eventsyncapi.exception.NotFoundException;
+import com.techindna.eventsyncapi.exception.TooManyRequestException;
 import com.techindna.eventsyncapi.service.QuestionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -136,5 +140,127 @@ class GetQuestionControllerTest {
         verify(questionService).getQuestionsBySessionId(
                 eq(SESSION_ID), eq(1), eq(5), eq(DEFAULT_SORT), eq(""), eq(MOCK_IP)
         );
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions with searchByName returns 200 and filtered results")
+    void getQuestions_withSearchByName_returns200() throws Exception {
+
+        var questions = List.of(
+                QuestionResponseDto.builder()
+                        .id(QUESTION_ID)
+                        .title("How does Spring work?")
+                        .content("Can someone explain Dependency Injection?")
+                        .sessionId(SESSION_ID)
+                        .anonymous(true)
+                        .upvotes(3)
+                        .createdAt(Instant.now())
+                        .build()
+        );
+        var response = QuestionListResponseDto.builder()
+                .data(questions)
+                .meta(MetaDto.builder().total(1).page(1).size(5).build())
+                .build();
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), eq("Spring"), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .param("searchByName", "Spring")
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].title").value("How does Spring work?"))
+                .andExpect(jsonPath("$.data[0].upvotes").value(3))
+                .andExpect(jsonPath("$.meta.total").value(1));
+
+        verify(questionService).getQuestionsBySessionId(
+                eq(SESSION_ID), eq(1), eq(5), eq(DEFAULT_SORT), eq("Spring"), eq(MOCK_IP)
+        );
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions sorted by upvotes returns 200")
+    void getQuestions_withUpvotesSort_returns200() throws Exception {
+
+        var questions = List.of(
+                QuestionResponseDto.builder()
+                        .id(QUESTION_ID)
+                        .title("Top question")
+                        .content("Most upvoted")
+                        .sessionId(SESSION_ID)
+                        .anonymous(false)
+                        .upvotes(42)
+                        .createdAt(Instant.now())
+                        .build()
+        );
+        var response = QuestionListResponseDto.builder()
+                .data(questions)
+                .meta(MetaDto.builder().total(1).page(1).size(5).build())
+                .build();
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), eq("upvotes"), any(), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .param("sort", "upvotes")
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].upvotes").value(42))
+                .andExpect(jsonPath("$.meta.total").value(1));
+
+        verify(questionService).getQuestionsBySessionId(
+                eq(SESSION_ID), eq(1), eq(5), eq("upvotes"), eq(""), eq(MOCK_IP)
+        );
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions when session not found returns 404")
+    void getQuestions_whenSessionNotFound_returns404() throws Exception {
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), any(), any()))
+                .thenThrow(new NotFoundException("Session " + SESSION_ID + " not found."));
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Session " + SESSION_ID + " not found."));
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions when IP is blacklisted returns 429")
+    void getQuestions_whenBlacklistedIp_returns429() throws Exception {
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), any(), any()))
+                .thenThrow(new TooManyRequestException("Too many requests. Please try again later."));
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.status").value(429))
+                .andExpect(jsonPath("$.error").value("Too Many Requests"))
+                .andExpect(jsonPath("$.message").value("Too many requests. Please try again later."));
+    }
+
+    @Test
+    @DisplayName("GET /sessions/{id}/questions with invalid search string returns 400")
+    void getQuestions_withInvalidSearchString_returns400() throws Exception {
+
+        when(questionService.getQuestionsBySessionId(eq(SESSION_ID), anyInt(), anyInt(), any(), anyString(), any()))
+                .thenThrow(new BadRequestException("Invalid search string"));
+
+        mockMvc.perform(get("/sessions/{id}/questions", SESSION_ID)
+                        .param("searchByName", "invalid@#$")
+                        .with(request -> { request.setRemoteAddr(MOCK_IP); return request; })
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid search string"));
     }
 }
