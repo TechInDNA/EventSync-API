@@ -19,7 +19,6 @@ public class QuestionResponseDto {
     private String title;
     private String content;
     private Instant createdAt;
-    private UUID sessionId;
     @JsonProperty("isAnonymous")
     private boolean anonymous;
     private ParticipantRefDto participant;

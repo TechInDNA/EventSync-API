@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -16,7 +19,7 @@ public class QuestionMapper {
 
     private final UserMapper userMapper;
 
-    public QuestionResponseDto toResponseDto(Question question) {
+    public QuestionResponseDto toResponseDto(Question question, int upvoteCount) {
         if (question == null) return null;
 
         ParticipantRefDto participant = question.isAnonymous()
@@ -28,16 +31,19 @@ public class QuestionMapper {
                 .title(question.getTitle())
                 .content(question.getContent())
                 .createdAt(question.getCreatedAt())
-                .sessionId(question.getSession().getId())
                 .anonymous(question.isAnonymous())
                 .participant(participant)
-                .upvotes(0)
+                .upvotes(upvoteCount)
                 .build();
     }
 
     public QuestionListResponseDto toListResponseDto(List<Question> questions, long total, int page, int size) {
+        return toListResponseDto(questions, Map.of(), total, page, size);
+    }
+
+    public QuestionListResponseDto toListResponseDto(List<Question> questions, Map<UUID, Integer> upvoteCounts, long total, int page, int size) {
         List<QuestionResponseDto> data = questions.stream()
-                .map(this::toResponseDto)
+                .map(q -> toResponseDto(q, upvoteCounts.getOrDefault(q.getId(), 0)))
                 .toList();
 
         MetaDto meta = MetaDto.builder()
