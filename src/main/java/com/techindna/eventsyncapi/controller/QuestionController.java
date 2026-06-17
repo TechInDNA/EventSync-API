@@ -19,10 +19,10 @@ public class QuestionController {
     @GetMapping("/{id}/questions")
     public ResponseEntity<QuestionListResponseDto> getQuestionsBySessionId(
             @PathVariable UUID id,
-            @RequestParam(defaultValue = "creationDate") String sort,
+            @RequestParam(defaultValue = "upvotes") String sort,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(required = false, defaultValue = "") String searchByName,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String title,
             HttpServletRequest request
     ) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -31,7 +31,7 @@ public class QuestionController {
                         page,
                         size,
                         sort,
-                        searchByName,
+                        title,
                         request.getRemoteAddr()
                 ));
     }
