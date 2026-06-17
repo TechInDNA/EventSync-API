@@ -4,12 +4,14 @@ import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
 import com.techindna.eventsyncapi.entity.Question;
 import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.exception.NotFoundException;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.UserMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.QuestionService;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +29,7 @@ class GetQuestionServiceTest {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
     private final AuthService authService;
+    private final DataValidator dataValidator;
     private final QuestionService questionService;
 
     private static final UUID SESSION_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
@@ -42,12 +45,14 @@ class GetQuestionServiceTest {
         questionMapper = new QuestionMapper(userMapper);
 
         authService = mock(AuthService.class);
+        dataValidator = mock(DataValidator.class);
 
         questionService = new QuestionService(
                 sessionRepository,
                 questionRepository,
                 questionMapper,
-                authService
+                authService,
+                dataValidator
         );
     }
 
@@ -85,6 +90,7 @@ class GetQuestionServiceTest {
 
         verify(authService).checkBlacklist(TEST_IP);
         verify(sessionRepository).findById(SESSION_ID);
+        verify(dataValidator).validateSearchString(null);
         verify(questionRepository).countBySessionId(SESSION_ID, null);
         verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 10, 0);
     }
@@ -112,6 +118,7 @@ class GetQuestionServiceTest {
 
 
         verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 5, 10);
+        verify(dataValidator).validateSearchString(null);
     }
 
     @Test
@@ -131,6 +138,7 @@ class GetQuestionServiceTest {
 
 
         assertEquals(1, result.getMeta().getPage());
+        verify(dataValidator).validateSearchString(null);
         verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 10, 0);
     }
 
@@ -151,6 +159,7 @@ class GetQuestionServiceTest {
 
 
         assertEquals(20, result.getMeta().getSize());
+        verify(dataValidator).validateSearchString(null);
         verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 20, 0);
     }
 
@@ -171,6 +180,7 @@ class GetQuestionServiceTest {
         verify(authService).checkBlacklist(TEST_IP);
         verify(sessionRepository).findById(SESSION_ID);
         verifyNoInteractions(questionRepository);
+        verify(dataValidator, never()).validateSearchString(any());
     }
 
     @Test
@@ -202,15 +212,16 @@ class GetQuestionServiceTest {
 
         verify(questionRepository).countBySessionId(SESSION_ID, "Spring");
         verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, "Spring", 10, 0);
+        verify(dataValidator).validateSearchString("Spring");
     }
 
     @Test
-    @DisplayName("getQuestionsBySessionId with blank title treated as no filter (null)")
-    void getQuestions_withBlankTitle_treatedAsNoFilter() {
+    @DisplayName("getQuestionsBySessionId with blank title passes through validation and repo")
+    void getQuestions_withBlankTitle_passesThroughValidation() {
         var mockSession = Session.builder().id(SESSION_ID).build();
         when(sessionRepository.findById(SESSION_ID)).thenReturn(Optional.of(mockSession));
-        when(questionRepository.countBySessionId(SESSION_ID, null)).thenReturn(0L);
-        when(questionRepository.findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 10, 0))
+        when(questionRepository.countBySessionId(SESSION_ID, "   ")).thenReturn(0L);
+        when(questionRepository.findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, "   ", 10, 0))
                 .thenReturn(List.of());
 
         QuestionListResponseDto result = questionService.getQuestionsBySessionId(
@@ -218,7 +229,27 @@ class GetQuestionServiceTest {
         );
 
         assertNotNull(result);
-        verify(questionRepository).countBySessionId(SESSION_ID, null);
-        verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, null, 10, 0);
+        verify(dataValidator).validateSearchString("   ");
+        verify(questionRepository).countBySessionId(SESSION_ID, "   ");
+        verify(questionRepository).findBySessionIdWithPagination(SESSION_ID, SORT_FIELD, "   ", 10, 0);
+    }
+
+    @Test
+    @DisplayName("getQuestionsBySessionId with invalid title chars throws UnprocessableEntityException")
+    void getQuestions_withInvalidTitleChars_throwsUnprocessableEntity() {
+        var mockSession = Session.builder().id(SESSION_ID).build();
+        when(sessionRepository.findById(SESSION_ID)).thenReturn(Optional.of(mockSession));
+
+        doThrow(new UnprocessableEntityException("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."))
+                .when(dataValidator).validateSearchString("Title with !");
+
+        assertThrows(UnprocessableEntityException.class, () ->
+                questionService.getQuestionsBySessionId(SESSION_ID, 1, 10, SORT_FIELD, "Title with !", TEST_IP)
+        );
+
+        verify(authService).checkBlacklist(TEST_IP);
+        verify(sessionRepository).findById(SESSION_ID);
+        verify(dataValidator).validateSearchString("Title with !");
+        verifyNoInteractions(questionRepository);
     }
 }

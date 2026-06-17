@@ -106,7 +106,7 @@ echo "=== [404] non-existent session ID ==="
 curlie GET ":8080/sessions/${NONEXISTENT_SESSION}/questions"
 
 echo ""
-echo "=== [422] sort=invalid (not 'upvotes' or 'createdAt') ==="
+echo "=== [200] sort=invalid (unknown value falls through to created_at DESC) ==="
 curlie GET ":8080/sessions/${SESSION_ID}/questions?sort=invalid"
 
 echo ""

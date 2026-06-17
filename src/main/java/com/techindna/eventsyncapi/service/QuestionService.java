@@ -6,6 +6,7 @@ import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.validator.DataValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
     private final AuthService authService;
+    private final DataValidator dataValidator;
 
     @Transactional(readOnly = true)
     public QuestionListResponseDto getQuestionsBySessionId(UUID sessionId, int page, int size, String sort, String title, String ipAddress) {
@@ -33,11 +35,11 @@ public class QuestionService {
         sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", sessionId)));
 
-        String titleFilter = (title == null || title.isBlank()) ? null : title;
+        dataValidator.validateSearchString(title);
 
         int offset = (page - 1) * size;
-        long total = questionRepository.countBySessionId(sessionId, titleFilter);
-        List<Question> questions = questionRepository.findBySessionIdWithPagination(sessionId, sort, titleFilter, size, offset);
+        long total = questionRepository.countBySessionId(sessionId, title);
+        List<Question> questions = questionRepository.findBySessionIdWithPagination(sessionId, sort, title, size, offset);
 
         return questionMapper.toListResponseDto(questions, total, page, size);
     }
