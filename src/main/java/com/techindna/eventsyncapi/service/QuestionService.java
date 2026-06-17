@@ -1,0 +1,50 @@
+package com.techindna.eventsyncapi.service;
+
+import com.techindna.eventsyncapi.dto.question.QuestionListResponseDTO;
+import com.techindna.eventsyncapi.entity.Question;
+import com.techindna.eventsyncapi.exception.NotFoundException;
+import com.techindna.eventsyncapi.mapper.QuestionMapper;
+import com.techindna.eventsyncapi.repository.QuestionRepository;
+import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.validator.DataValidator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class QuestionService {
+
+    private final SessionRepository sessionRepository;
+    private final QuestionRepository questionRepository;
+    private final QuestionMapper questionMapper;
+    private final AuthService authService;
+    private final DataValidator dataValidator;
+
+    @Transactional(readOnly = true)
+    public QuestionListResponseDTO getQuestionsBySessionId(UUID sessionId, int page, int size, String sort, String searchByName, String ipAddress) {
+
+        if (page < 1) page = 1;
+        if (size < 1) size = 10;
+
+        int offset = (page - 1) * size;
+
+
+        authService.checkBlacklist(ipAddress);
+        dataValidator.validateSearchString(searchByName);
+
+        // 3. Vérification de la ressource parente
+        sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", sessionId)));
+
+        // 4. Récupération des données (Même logique que Room)
+        long total = questionRepository.countBySessionId(sessionId);
+        List<Question> questions = questionRepository.findBySessionIdWithPagination(sessionId, sort, size, offset);
+
+        // 5. Retour via le mapper (Même syntaxe exacte que Room !)
+        return questionMapper.toListResponseDto(questions, total, page, size);
+    }
+}
