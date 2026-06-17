@@ -1,22 +1,18 @@
 package com.techindna.eventsyncapi.dto.question;
 
 import com.techindna.eventsyncapi.dto.MetaDto;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class QuestionListResponseDTO {
-    private List<QuestionResponseDTO> data;
-    private int totalQuestions;
-    private int currentPage;
-    private int pageSize;
+@NoArgsConstructor
+@AllArgsConstructor
+public class QuestionListResponseDto {
+    private List<QuestionResponseDto> data;
     private MetaDto meta;
-
 }
-
-
-
