@@ -542,6 +542,11 @@ paths:
             type: integer
             default: 20
           description: Number of items per page
+        - name: title
+          in: query
+          schema:
+            type: string
+          description: Filter questions by title (partial match, case-insensitive)
       responses:
         '200':
           description: List of questions
