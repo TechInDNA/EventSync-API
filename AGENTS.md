@@ -53,6 +53,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── RoomRefDto.java
 │   │   ├── SessionInputDto.java
 │   │   ├── SessionResponseDto.java
+│   │   ├── SessionUpdateInputDto.java
 │   │   └── SpeakerRefDto.java
 │   └── speaker/
 │       ├── ExternalLinkDto.java
@@ -133,7 +134,8 @@ src/test/java/com/techindna/eventsyncapi/
 │   │   ├── PostRoomControllerTest.java
 │   │   └── PutRoomControllerTest.java
 │   ├── sessions/
-│   │   └── PostSessionControllerTest.java
+│   │   ├── PostSessionControllerTest.java
+│   │   └── PutSessionControllerTest.java
 │   └── speakers/
 │       ├── DeleteSpeakerControllerTest.java
 │       ├── GetSpeakerByIdControllerTest.java
@@ -154,7 +156,8 @@ src/test/java/com/techindna/eventsyncapi/
     │   ├── PostRoomServiceTest.java
     │   └── PutRoomServiceTest.java
     ├── sessions/
-    │   └── PostSessionServiceTest.java
+    │   ├── PostSessionServiceTest.java
+    │   └── PutSessionServiceTest.java
     └── speakers/
         ├── DeleteSpeakerServiceTest.java
         ├── GetSpeakerByIdServiceTest.java
@@ -184,6 +187,8 @@ src/main/resources/
     │   ├── put_room_data.sql
     │   └── rooms_schema.sql
     ├── sessions/
+    │   ├── delete_session_data.sql
+    │   ├── put_session_data.sql
     │   ├── session_speaker_schema.sql
     │   ├── sessions_schema.sql
     │   └── test_session_data.sql
@@ -206,7 +211,9 @@ scripts/
 │   ├── test_post_room.sh
 │   └── test_put_room.sh
 ├── sessions/
-│   └── test_post_sessions.sh
+│   ├── test_delete_session.sh
+│   ├── test_post_sessions.sh
+│   └── test_put_sessions.sh
 └── speaker/
     ├── test_delete_speaker.sh
     ├── test_get_speaker_by_id.sh
@@ -223,7 +230,7 @@ docs/
 
 ```bash
 ./gradlew compileJava          # compile only (fast)
-./gradlew test                 # run all tests (196 tests)
+./gradlew test                 # run all tests (218 tests; 3 pre-existing AuthServiceTest failures)
 ./gradlew bootRun              # start server → http://localhost:8080
 ./gradlew build -x test        # full build without tests
 ```
@@ -241,15 +248,16 @@ docs/
 - **Tests** — `@DisplayName` in English. Constructor injection with `mock()` (no `@Mock`, no `@ExtendWith`). Controller tests use `MockMvcBuilders.standaloneSetup` + `GlobalExceptionHandler` as controller advice. Service tests use Mockito only. Test subpackages per endpoint (e.g., `service/sessions/`, `controller/speakers/`).
 - **IP blacklist** — `AuthService.checkBlacklist(ipAddress)` guards GET endpoints (events, rooms, speakers). Rate-limited to 5 failed login attempts per IP via `BlacklistedIp` entity.
 - **Mappers** — Aggregate facade pattern: `SessionMapper` depends on `EventMapper`, `RoomMapper`, `SpeakerMapper`. `SpeakerMapper` depends on `ExternalLinkMapper`. Services depend only on the aggregate mapper, never on sub-mappers.
-- **Event** — CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions.
-- **Session** — Created via `POST /sessions`. Uses `SessionValidator` for validation, `SessionRepository.findRoomAndEventExistence()` for DB existence check before insert. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs.
+- **Event** — Full CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions.
+- **Room** — Full CRUD via `RoomRepository` native queries with `RETURNING`. Name is unique (`ON CONFLICT (name) DO NOTHING`). `RoomValidator` validates the name. `GET /rooms/{id}` fetches by UUID. `RoomMapper` maps entity to `RoomResponseDto` (id, name).
+- **Session** — Full CRUD via `SessionRepository` native queries with `RETURNING`. Title is unique (`ON CONFLICT (title) DO NOTHING`). `POST /sessions` requires `SessionInputDto` (all mandatory). `PUT /sessions/{id}` requires `SessionUpdateInputDto` (all mandatory — title, description, startDate, endDate, roomId, capacity, eventId). `DELETE /sessions/{id}` removes session and cascade-deletes `session_speaker` rows. Uses `SessionValidator.validateUpdate()` for PUT and `SessionValidator.validate()` for POST. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs from the join table. `SessionRepository.findRoomAndEventExistence()` performs a dual existence check before insert/update.
 - **Speaker** — Full CRUD via `UserRepository`. Creation (`POST /speakers`) uses `insertSpeaker()` with `ON CONFLICT (email) DO NOTHING` and `ExternalLinkRepository.insertExternalLink()` per-row for nested links. Update (`PUT /speakers/{id}`) uses `updateSpeakerById()` with `RETURNING`, guarded by `SpeakerValidator.validateUpdate()` which allows optional `bio`/`profilePicture`. Detail (`GET /speakers/{id}`) fetches external links eagerly via `findByIdWithExternalLinks()` and resolves speaker sessions via `SessionRepository.findBySpeakerId()`. Deletion (`DELETE /speakers/{id}`) uses `deleteSpeakerById()` with `ON DELETE CASCADE` on external links. `SpeakerValidator` handles creation vs update validation separately (`validateCreation()` requires all fields, `validateUpdate()` allows optional bio/picture).
-- **AI Conversation** — Created via `POST /ai/conversations` (requires `ROLE_ADMIN`). Uses `AiConversationsValidator.validateUserRequest()` to strip and validate the message. `AiApiService` wraps a Spring AI `ChatClient` (OpenAI, configurable via `base-url` and `model`) with room MCP tools injected as tool context, enabling the AI to perform room operations via natural language. `AiConversationRepository.insertConversation()` persists the exchange with an auto-generated title and `@CreationTimestamp`. Response includes `id`, `title`, `userRequest`, `aiResponse`, `userId`, `createdAt`.
+- **AI Conversation** — Created via `POST /ai/conversations` (requires `ROLE_ADMIN`). Uses `AiConversationsValidator.validateUserRequest()` to strip and validate the message. `AiApiService` wraps a Spring AI `ChatClient` (OpenAI-compatible API, configurable via `base-url` and `model`) with room MCP tools injected as tool context, enabling the AI to perform room operations via natural language. `AiConversationRepository.insertConversation()` persists the exchange with an auto-generated title and `@CreationTimestamp`. Response includes `id`, `title`, `userRequest`, `aiResponse`, `userId`, `createdAt`.
 - **MCP tools** — Room CRUD exposed as `@Tool` methods in `mcp/` package. Each tool wraps the existing service layer (validation included). `@ToolParam(description = ...)` is mandatory so the AI knows what to pass. Tools return user-friendly strings with success/error messages. All `/mcp/**` paths are **permitAll** in `SecurityConfig` (SSE transport is not JWT-authenticated).
 
 ## Common pitfalls
 
-- `.env` is **gitignored**. Required vars: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `JWT_TOKEN`, `PGSSLMODE`, `CORS_ALLOWED_ORIGINS`.
+- `.env` is **gitignored**. Required vars: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `JWT_SECRET`, `PGSSLMODE`, `CORS_ALLOWED_ORIGINS`, `AI_API_KEY`, `AI_MODEL`.
 - DB is Neon PostgreSQL pooler — connections may be transient. Use `channel_binding=require` + `sslmode=require`.
 - OpenAPI spec is hand-written in `docs/api.yaml`, not generated.
 - MCD is an Obsidian canvas (`docs/mcd.canvas`) — parse as JSON to read nodes/edges.
@@ -257,3 +265,6 @@ docs/
 - `Event` title is unique (DB constraint `ON CONFLICT (title)`).
 - `Session` title is unique (DB constraint `ON CONFLICT (title)`).
 - `ExternalLink` url is unique (DB constraint `ON CONFLICT (url)`).
+- `Room` name is unique (DB constraint `ON CONFLICT (name)`).
+- Application config uses `JWT_SECRET` as the env var, not `JWT_TOKEN`. The example `.env` must use `JWT_SECRET`.
+- 3 pre-existing `AuthServiceTest` failures (null-check order in `AuthService.registerParticipant`) are unrelated to other endpoints.
