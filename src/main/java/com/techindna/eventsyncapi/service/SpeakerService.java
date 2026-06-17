@@ -126,20 +126,16 @@ public class SpeakerService {
     public List<ExternalLinkDto> addExternalLink(UUID speakerId, ExternalLinkDto request) {
         externalLinkValidator.validateSingleLink(request);
 
-        try {
-            externalLinkRepository.insertExternalLink(
+        userRepository.findById(speakerId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Speaker %s not found.", speakerId)));
+
+        externalLinkRepository.insertExternalLink(
                     speakerId,
                     request.getName().strip(),
                     request.getUrl().strip()
-            ).orElseThrow(() -> new NotFoundException(
-                    String.format("Speaker %s not found.", speakerId)));
-        } catch (DataIntegrityViolationException e) {
-            if (uniqueViolation(e)) {
-                throw new ConflictException(
-                        String.format("URL %s already exists.", request.getUrl()));
-            }
-            throw e;
-        }
+        ).orElseThrow(() -> new ConflictException(
+                    String.format("URL %s already exists.", request.getUrl())));
 
         return externalLinkRepository.findByUserId(speakerId).stream()
                 .map(externalLinkMapper::toDto)
