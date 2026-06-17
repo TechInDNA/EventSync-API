@@ -34,4 +34,14 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
             @Param("limit") int limit,
             @Param("offset") int offset
     );
+
+    @Query(value = """
+           SELECT q.id AS question_id, COUNT(up.id) AS upvote_count
+           FROM eventsync_app.question q
+           LEFT JOIN eventsync_app.upvote up ON up.question_id = q.id
+           WHERE q.session_id = :sessionId
+           AND (:title IS NULL OR :title = '' OR q.title ILIKE '%' || cast(:title as text) || '%')
+           GROUP BY q.id
+           """, nativeQuery = true)
+    List<Object[]> countUpvotesBySessionId(@Param("sessionId") UUID sessionId, @Param("title") String title);
 }

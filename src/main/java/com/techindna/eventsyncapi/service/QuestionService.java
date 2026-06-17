@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,13 @@ public class QuestionService {
         long total = questionRepository.countBySessionId(sessionId, title);
         List<Question> questions = questionRepository.findBySessionIdWithPagination(sessionId, sort, title, size, offset);
 
-        return questionMapper.toListResponseDto(questions, total, page, size);
+        Map<UUID, Integer> upvoteCounts = questionRepository.countUpvotesBySessionId(sessionId, title)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (UUID) row[0],
+                        row -> ((Number) row[1]).intValue()
+                ));
+
+        return questionMapper.toListResponseDto(questions, upvoteCounts, total, page, size);
     }
 }

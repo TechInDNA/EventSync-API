@@ -40,6 +40,7 @@ class GetQuestionServiceTest {
     GetQuestionServiceTest() {
         sessionRepository = mock(SessionRepository.class);
         questionRepository = mock(QuestionRepository.class);
+        lenient().when(questionRepository.countUpvotesBySessionId(any(), any())).thenReturn(List.of());
 
         UserMapper userMapper = mock(UserMapper.class);
         questionMapper = new QuestionMapper(userMapper);

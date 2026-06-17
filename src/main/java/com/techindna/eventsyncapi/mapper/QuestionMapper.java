@@ -37,10 +37,6 @@ public class QuestionMapper {
                 .build();
     }
 
-    public QuestionListResponseDto toListResponseDto(List<Question> questions, long total, int page, int size) {
-        return toListResponseDto(questions, Map.of(), total, page, size);
-    }
-
     public QuestionListResponseDto toListResponseDto(List<Question> questions, Map<UUID, Integer> upvoteCounts, long total, int page, int size) {
         List<QuestionResponseDto> data = questions.stream()
                 .map(q -> toResponseDto(q, upvoteCounts.getOrDefault(q.getId(), 0)))
