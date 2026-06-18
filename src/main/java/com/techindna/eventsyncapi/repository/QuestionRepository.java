@@ -44,4 +44,15 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
            GROUP BY q.id
            """, nativeQuery = true)
     List<Object[]> countUpvotesBySessionId(@Param("sessionId") UUID sessionId, @Param("title") String title);
+
+    @Query(value = """
+           INSERT INTO eventsync_app.question (id, title, content, session_id, user_id, anonymous)
+           VALUES (gen_random_uuid(), :title, :content, :sessionId, :userId, :anonymous)
+           RETURNING id, title, content, created_at, session_id, anonymous, user_id
+           """, nativeQuery = true)
+    Question insertQuestion(@Param("title") String title,
+                            @Param("content") String content,
+                            @Param("sessionId") UUID sessionId,
+                            @Param("userId") UUID userId,
+                            @Param("anonymous") boolean anonymous);
 }
