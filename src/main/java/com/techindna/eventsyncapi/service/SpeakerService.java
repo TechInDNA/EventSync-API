@@ -163,4 +163,11 @@ public class SpeakerService {
                 .map(externalLinkMapper::toDto)
                 .toList();
     }
+
+    @Transactional
+    public void deleteExternalLink(UUID speakerId, UUID externalLinkId) {
+        externalLinkRepository.deleteExternalLinkByIdAndUserId(externalLinkId, speakerId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Speaker %s or external link %s not found.", speakerId, externalLinkId)));
+    }
 }
