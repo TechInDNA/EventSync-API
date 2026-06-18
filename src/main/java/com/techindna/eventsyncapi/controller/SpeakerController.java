@@ -68,6 +68,16 @@ public class SpeakerController {
                 .body(speakerService.addExternalLink(id, request));
     }
 
+    @PutMapping("/{id}/external-link")
+    public ResponseEntity<List<ExternalLinkDto>> updateExternalLink(
+            @PathVariable UUID id,
+            @RequestParam String urlName,
+            @RequestBody ExternalLinkDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(speakerService.updateExternalLink(id, urlName, request));
+    }
+
     @DeleteMapping("/{id}/external-link")
     public ResponseEntity<Void> deleteExternalLink(
             @PathVariable UUID id,

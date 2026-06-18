@@ -165,6 +165,31 @@ public class SpeakerService {
     }
 
     @Transactional
+    public List<ExternalLinkDto> updateExternalLink(UUID speakerId, String urlName, ExternalLinkDto request) {
+        externalLinkValidator.validateSingleLink(request);
+
+        try {
+            externalLinkRepository.updateExternalLinkByNameAndUserId(
+                    speakerId,
+                    urlName.strip(),
+                    request.getName().strip(),
+                    request.getUrl().strip()
+            ).orElseThrow(() -> new NotFoundException(
+                    String.format("Speaker %s or external link '%s' not found.", speakerId, urlName)));
+        } catch (DataIntegrityViolationException e) {
+            if (uniqueViolation(e)) {
+                throw new ConflictException(
+                        String.format("URL %s already exists.", request.getUrl()));
+            }
+            throw e;
+        }
+
+        return externalLinkRepository.findByUserId(speakerId).stream()
+                .map(externalLinkMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
     public void deleteExternalLink(UUID speakerId, UUID externalLinkId) {
         externalLinkRepository.deleteExternalLinkByIdAndUserId(externalLinkId, speakerId)
                 .orElseThrow(() -> new NotFoundException(

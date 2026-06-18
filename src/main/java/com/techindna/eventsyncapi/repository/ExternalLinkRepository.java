@@ -28,6 +28,17 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
                                               @Param("url") String url);
 
     @Query(value = """
+            UPDATE eventsync_app.external_links
+            SET name = :newName, url = :newUrl
+            WHERE name = :urlName AND user_id = :speakerId
+            RETURNING id, name, url, user_id
+            """, nativeQuery = true)
+    Optional<ExternalLink> updateExternalLinkByNameAndUserId(@Param("speakerId") UUID speakerId,
+                                                             @Param("urlName") String urlName,
+                                                             @Param("newName") String newName,
+                                                             @Param("newUrl") String newUrl);
+
+    @Query(value = """
             DELETE FROM eventsync_app.external_links
             WHERE id = :linkId AND user_id = :speakerId
             RETURNING id
