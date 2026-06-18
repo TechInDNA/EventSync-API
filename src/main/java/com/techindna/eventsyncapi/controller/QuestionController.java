@@ -1,6 +1,8 @@
 package com.techindna.eventsyncapi.controller;
 
 import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
+import com.techindna.eventsyncapi.dto.question.QuestionRequestDto;
+import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.service.QuestionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,20 @@ public class QuestionController {
                         sort,
                         title,
                         request.getRemoteAddr()
+                ));
+    }
+
+    @PostMapping("/{id}/questions")
+    public ResponseEntity<QuestionResponseDto> createQuestion(
+            @PathVariable UUID id,
+            @RequestBody QuestionRequestDto request,
+            HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(questionService.createQuestion(
+                        id,
+                        request,
+                        httpRequest.getRemoteAddr()
                 ));
     }
 }
