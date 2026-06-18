@@ -6,7 +6,7 @@
 -- ============================================================
 INSERT INTO eventsync_app."user" (id, first_name, last_name, email, bio, profile_picture, role)
 VALUES (
-    'd4e5f6a7-b8c9-0123-4567-89abcdef0123',
+    '95f04aa3-431f-453a-8067-137a0e2fd718',
     'Multi',
     'Link',
     'multi.link@example.com',
@@ -14,13 +14,14 @@ VALUES (
     'https://example.com/avatars/multi.jpg',
     'SPEAKER'
 )
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE
+    SET id = EXCLUDED.id;
 
-INSERT INTO eventsync_app.external_links (name, url, user_id)
+INSERT INTO eventsync_app.external_links (id, name, url, user_id)
 VALUES
-    ('LinkedIn',  'https://linkedin.com/in/multi-link',    'd4e5f6a7-b8c9-0123-4567-89abcdef0123'),
-    ('Twitter',   'https://twitter.com/multi_link',        'd4e5f6a7-b8c9-0123-4567-89abcdef0123'),
-    ('Website',   'https://multi-link.example.com',        'd4e5f6a7-b8c9-0123-4567-89abcdef0123')
+    ('e1722b17-ecc6-4c03-b5b2-74b6b15d4fe1', 'LinkedIn',  'https://linkedin.com/in/multi-link',    '95f04aa3-431f-453a-8067-137a0e2fd718'),
+    ('73b5c723-5cbd-4a29-aad3-20d54cba6615', 'Twitter',   'https://twitter.com/multi_link',        '95f04aa3-431f-453a-8067-137a0e2fd718'),
+    ('0c68d440-3f20-46f7-87dc-1fe802ed9dbd', 'Website',   'https://multi-link.example.com',        '95f04aa3-431f-453a-8067-137a0e2fd718')
 ON CONFLICT (url) DO NOTHING;
 
 -- ============================================================
@@ -28,7 +29,7 @@ ON CONFLICT (url) DO NOTHING;
 -- ============================================================
 INSERT INTO eventsync_app."user" (id, first_name, last_name, email, bio, profile_picture, role)
 VALUES (
-    'e5f6a7b8-c9d0-1234-5678-9abcdef01234',
+    'f94b5d76-9a2d-47cf-8caf-399a384f7f79',
     'No',
     'Link',
     'no.link@example.com',
@@ -36,4 +37,5 @@ VALUES (
     'https://example.com/avatars/none.jpg',
     'SPEAKER'
 )
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE
+    SET id = EXCLUDED.id;
