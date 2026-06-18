@@ -67,4 +67,13 @@ public class SpeakerController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(speakerService.addExternalLink(id, request));
     }
+
+    @DeleteMapping("/{id}/external-link")
+    public ResponseEntity<Void> deleteExternalLink(
+            @PathVariable UUID id,
+            @RequestParam UUID externalLinkId
+    ) {
+        speakerService.deleteExternalLink(id, externalLinkId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

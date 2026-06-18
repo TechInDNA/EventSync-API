@@ -26,4 +26,12 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
     Optional<ExternalLink> insertExternalLink(@Param("userId") UUID userId,
                                               @Param("name") String name,
                                               @Param("url") String url);
+
+    @Query(value = """
+            DELETE FROM eventsync_app.external_links
+            WHERE id = :linkId AND user_id = :speakerId
+            RETURNING id
+            """, nativeQuery = true)
+    Optional<UUID> deleteExternalLinkByIdAndUserId(@Param("linkId") UUID linkId,
+                                                   @Param("speakerId") UUID speakerId);
 }
