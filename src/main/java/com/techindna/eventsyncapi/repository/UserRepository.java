@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -70,4 +71,21 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             RETURNING id, first_name, last_name, bio, password, email, created_at, role, profile_picture
             """, nativeQuery = true)
     Optional<User> deleteSpeakerById(@Param("id") UUID id);
+
+    @Query(value = """
+            SELECT u.id, u.first_name, u.last_name, u.bio, u.password, u.email, u.created_at, u.role, u.profile_picture
+            FROM eventsync_app."user" u
+            WHERE u.role = 'SPEAKER'::eventsync_app.user_role
+              AND (:search IS NULL OR u.first_name ILIKE '%' || :search || '%' OR u.last_name ILIKE '%' || :search || '%')
+            ORDER BY u.first_name ASC, u.last_name ASC
+            LIMIT :size OFFSET :offset
+            """, nativeQuery = true)
+    List<User> findSpeakersByNameContaining(@Param("search") String search, int size, int offset);
+
+    @Query(value = """
+            SELECT COUNT(u.id) FROM eventsync_app."user" u
+            WHERE u.role = 'SPEAKER'::eventsync_app.user_role
+              AND (:search IS NULL OR u.first_name ILIKE '%' || :search || '%' OR u.last_name ILIKE '%' || :search || '%')
+            """, nativeQuery = true)
+    long countSpeakersByNameContaining(@Param("search") String search);
 }

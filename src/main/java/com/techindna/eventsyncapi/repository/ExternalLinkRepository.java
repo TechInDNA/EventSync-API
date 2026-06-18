@@ -15,6 +15,8 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
 
     List<ExternalLink> findByUserId(UUID userId);
 
+    List<ExternalLink> findByUserIdIn(List<UUID> userIds);
+
     @Query(value = """
             INSERT INTO eventsync_app.external_links (name, url, user_id)
             VALUES (:name, :url, :userId)
