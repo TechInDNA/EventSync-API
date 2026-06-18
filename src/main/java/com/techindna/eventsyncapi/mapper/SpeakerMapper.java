@@ -1,10 +1,12 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
-import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SessionForSpeakerDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerListResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
 import com.techindna.eventsyncapi.entity.ExternalLink;
@@ -15,7 +17,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -95,6 +100,28 @@ public class SpeakerMapper {
                 .email(user.getEmail())
                 .profilePicture(user.getProfilePicture())
                 .bio(user.getBio())
+                .build();
+    }
+
+    public SpeakerListResponseDto toListResponseDto(List<User> speakers, List<ExternalLink> allLinks, long total, int page, int size) {
+        Map<UUID, List<ExternalLink>> linksByUserId = Optional.ofNullable(allLinks)
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.groupingBy(link -> link.getUser().getId()));
+
+        List<SpeakerResponseDto> data = speakers.stream()
+                .map(speaker -> toResponseDto(speaker, linksByUserId.getOrDefault(speaker.getId(), Collections.emptyList())))
+                .toList();
+
+        MetaDto meta = MetaDto.builder()
+                .total(total)
+                .page(page)
+                .size(size)
+                .build();
+
+        return SpeakerListResponseDto.builder()
+                .data(data)
+                .meta(meta)
                 .build();
     }
 }

@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.controller;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerListResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
@@ -22,6 +23,17 @@ import java.util.UUID;
 public class SpeakerController {
 
     private final SpeakerService speakerService;
+
+    @GetMapping
+    public ResponseEntity<SpeakerListResponseDto> getAllSpeakers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(speakerService.getAllSpeakers(page, size, search, request.getRemoteAddr()));
+    }
 
     @PostMapping
     public ResponseEntity<SpeakerResponseDto> createSpeaker(@RequestBody SpeakerInputDto request) {

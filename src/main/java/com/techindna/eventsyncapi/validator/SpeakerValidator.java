@@ -30,4 +30,10 @@ public class SpeakerValidator {
         dataValidator.validateText("bio", speaker.getBio());
         dataValidator.validateUrl("profilePicture", speaker.getProfilePicture());
     }
+
+    public void validateGet(String searchString) {
+        if (searchString != null && !searchString.isBlank()) {
+            dataValidator.validateSearchString(searchString);
+        }
+    }
 }
