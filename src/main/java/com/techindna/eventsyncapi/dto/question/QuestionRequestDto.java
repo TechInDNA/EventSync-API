@@ -14,5 +14,5 @@ public class QuestionRequestDto {
     private String title;
     private String content;
     @JsonProperty("isAnonymous")
-    private boolean anonymous;
+    private Boolean anonymous;
 }
