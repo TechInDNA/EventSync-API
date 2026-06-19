@@ -9,10 +9,10 @@ import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.UserMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
-import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.QuestionService;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.QuestionValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,7 @@ class GetQuestionServiceTest {
     private final QuestionMapper questionMapper;
     private final AuthService authService;
     private final DataValidator dataValidator;
-    private final UserRepository userRepository;
+    private final QuestionValidator questionValidator;
     private final QuestionService questionService;
 
     private static final UUID SESSION_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
@@ -49,7 +49,7 @@ class GetQuestionServiceTest {
 
         authService = mock(AuthService.class);
         dataValidator = mock(DataValidator.class);
-        userRepository = mock(UserRepository.class);
+        questionValidator = mock(QuestionValidator.class);
 
         questionService = new QuestionService(
                 sessionRepository,
@@ -57,7 +57,7 @@ class GetQuestionServiceTest {
                 questionMapper,
                 authService,
                 dataValidator,
-                userRepository
+                questionValidator
         );
     }
 

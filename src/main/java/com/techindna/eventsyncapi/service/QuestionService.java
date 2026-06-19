@@ -5,14 +5,12 @@ import com.techindna.eventsyncapi.dto.question.QuestionRequestDto;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.entity.Question;
 import com.techindna.eventsyncapi.exception.NotFoundException;
-import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
-import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.validator.DataValidator;
+import com.techindna.eventsyncapi.validator.QuestionValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +28,7 @@ public class QuestionService {
     private final QuestionMapper questionMapper;
     private final AuthService authService;
     private final DataValidator dataValidator;
-    private final UserRepository userRepository;
+    private final QuestionValidator questionValidator;
 
     @Transactional(readOnly = true)
     public QuestionListResponseDto getQuestionsBySessionId(UUID sessionId, int page, int size, String sort, String title, String ipAddress) {
@@ -60,38 +58,17 @@ public class QuestionService {
     }
 
     @Transactional
-    public QuestionResponseDto createQuestion(UUID sessionId, QuestionRequestDto request, String ipAddress) {
-        authService.checkBlacklist(ipAddress);
-
-        dataValidator.validateText("content", request.getContent());
-
-        String title = request.getTitle();
-        if (title == null || title.isBlank()) {
-            title = request.getContent().length() > 50
-                    ? request.getContent().substring(0, 50).stripTrailing()
-                    : request.getContent();
-        }
-        dataValidator.validateString("title", title);
-
-        sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", sessionId)));
-
-        UUID participantId = request.getParticipantId();
-        UUID userId = participantId != null
-                ? participantId
-                : UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
-
-        userRepository.findById(userId)
-                .orElseThrow(() -> new UnprocessableEntityException(
-                        String.format("User %s not found.", userId)));
+    public QuestionResponseDto createQuestion(UUID sessionId, QuestionRequestDto request, UUID userId) {
+        questionValidator.validateUpdate(request);
 
         Question question = questionRepository.insertQuestion(
-                title.strip(),
+                request.getTitle().strip(),
                 request.getContent().strip(),
                 sessionId,
                 userId,
                 request.isAnonymous()
-        );
+        ).orElseThrow(() -> new NotFoundException(
+                String.format("Session %s not found.", sessionId)));
 
         return questionMapper.toResponseDto(question, 0);
     }

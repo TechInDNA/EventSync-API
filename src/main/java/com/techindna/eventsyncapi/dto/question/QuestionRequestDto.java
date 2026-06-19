@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,7 +13,6 @@ import java.util.UUID;
 public class QuestionRequestDto {
     private String title;
     private String content;
-    private UUID participantId;
     @JsonProperty("isAnonymous")
     private boolean anonymous;
 }
