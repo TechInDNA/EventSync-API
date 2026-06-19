@@ -586,6 +586,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
   /sessions/{id}/questions/{qid}/upvote:
@@ -1715,6 +1717,14 @@ components:
           format: uri
     Question:
       type: object
+      required:
+        - id
+        - title
+        - content
+        - participant
+        - upvotes
+        - isAnonymous
+        - createdAt
       properties:
         id:
           type: string
@@ -1807,15 +1817,13 @@ components:
     QuestionInput:
       type: object
       required:
+        - title
         - content
       properties:
         title:
           type: string
         content:
           type: string
-        participantId:
-          type: string
-          format: uuid
         isAnonymous:
           type: boolean
           default: false

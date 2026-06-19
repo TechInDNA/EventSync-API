@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -44,4 +45,16 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
            GROUP BY q.id
            """, nativeQuery = true)
     List<Object[]> countUpvotesBySessionId(@Param("sessionId") UUID sessionId, @Param("title") String title);
+
+    @Query(value = """
+           INSERT INTO eventsync_app.question (id, title, content, session_id, user_id, anonymous)
+           SELECT gen_random_uuid(), :title, :content, :sessionId, :userId, :anonymous
+           WHERE EXISTS (SELECT 1 FROM eventsync_app.session WHERE id = :sessionId)
+           RETURNING id, title, content, created_at, session_id, anonymous, user_id
+           """, nativeQuery = true)
+    Optional<Question> insertQuestion(@Param("title") String title,
+                            @Param("content") String content,
+                            @Param("sessionId") UUID sessionId,
+                            @Param("userId") UUID userId,
+                            @Param("anonymous") boolean anonymous);
 }

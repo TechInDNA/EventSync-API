@@ -1,11 +1,9 @@
 package com.techindna.eventsyncapi.validator;
 
 
-import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 @Component
@@ -17,9 +15,9 @@ public class DataValidator {
     private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z][a-zA-Z' -]+[a-zA-Z]+$");
     private static final Pattern ALLOWED_NAME_CHAR = Pattern.compile("^[a-zA-Z-' ]+$");
     private static final Pattern ALLOWED_SEARCH_STRING = Pattern.compile("^[A-Za-z0-9' -]*$");
-    private static final Pattern ALLOWED_BIO_CHARS = Pattern.compile("^[A-Za-z0-9.,;\"!' -]*$");
+    private static final Pattern ALLOWED_TEXT_CHARS = Pattern.compile("^[A-Za-z0-9.,;\"!'? -]*$");
     private final Pattern VALID_URL = Pattern.compile("^https?://[a-zA-Z0-9\\-._%&?#/]+$");
-    private final Pattern ALLOWED_STRING_CHAR = Pattern.compile("^[0-9a-zA-Z-' ]+$");
+    private final Pattern ALLOWED_STRING_CHAR = Pattern.compile("^[0-9a-zA-Z-'. ]+$");
 
     public void checkNullData(String fieldName, Object data){
         if (data == null){
@@ -84,7 +82,7 @@ public class DataValidator {
 
         lengthValidation(fieldName, TEXT_MAX_LENGTH, text);
 
-        if (!ALLOWED_BIO_CHARS.matcher(text).matches()){
+        if (!ALLOWED_TEXT_CHARS.matcher(text).matches()){
             throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\"!'- characters are allowed.");
         }
     }
