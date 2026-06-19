@@ -1,4 +1,13 @@
 -- Seed: events + sessions for testing GET /events/{id}
+
+-- Rooms referenced by sessions below
+INSERT INTO eventsync_app."room" (id, name)
+VALUES
+    ('cfca8633-9500-4d3d-822d-ef59a4d7b03e', 'Main Hall'),
+    ('e36ec732-d4f9-470b-bc66-31323afe15bf', 'Meeting Room A'),
+    ('149745a5-8045-4aaa-9a46-c77fe3941295', 'Meeting Room B')
+ON CONFLICT (name) DO NOTHING;
+
 -- Event with 3 sessions
 INSERT INTO eventsync_app.event (id, title, description, start_date, end_date, location)
 VALUES (
