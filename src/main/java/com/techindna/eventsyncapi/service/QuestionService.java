@@ -66,7 +66,7 @@ public class QuestionService {
                 request.getContent().strip(),
                 sessionId,
                 userId,
-                request.isAnonymous()
+                request.getAnonymous() != null ? request.getAnonymous() : false
         ).orElseThrow(() -> new NotFoundException(
                 String.format("Session %s not found.", sessionId)));
 
