@@ -44,6 +44,15 @@ public class EventController {
                 .body(eventService.getAllEvents(page, size, title, location, startDate, endDate, isLive, request.getRemoteAddr()));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EventDetailResponseDto> getEventById(
+            @PathVariable UUID id,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventService.getEventById(id, request.getRemoteAddr()));
+    }
+
     @PostMapping
     public ResponseEntity<EventDetailResponseDto> createEvent(@RequestBody EventInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));

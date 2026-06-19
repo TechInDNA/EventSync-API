@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.controller;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerListResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
@@ -22,6 +23,17 @@ import java.util.UUID;
 public class SpeakerController {
 
     private final SpeakerService speakerService;
+
+    @GetMapping
+    public ResponseEntity<SpeakerListResponseDto> getAllSpeakers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(speakerService.getAllSpeakers(page, size, search, request.getRemoteAddr()));
+    }
 
     @PostMapping
     public ResponseEntity<SpeakerResponseDto> createSpeaker(@RequestBody SpeakerInputDto request) {
@@ -54,5 +66,24 @@ public class SpeakerController {
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(speakerService.addExternalLink(id, request));
+    }
+
+    @PutMapping("/{id}/external-link")
+    public ResponseEntity<List<ExternalLinkDto>> updateExternalLink(
+            @PathVariable UUID id,
+            @RequestParam String urlName,
+            @RequestBody ExternalLinkDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(speakerService.updateExternalLink(id, urlName, request));
+    }
+
+    @DeleteMapping("/{id}/external-link")
+    public ResponseEntity<Void> deleteExternalLink(
+            @PathVariable UUID id,
+            @RequestParam UUID externalLinkId
+    ) {
+        speakerService.deleteExternalLink(id, externalLinkId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -15,6 +15,8 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
 
     List<ExternalLink> findByUserId(UUID userId);
 
+    List<ExternalLink> findByUserIdIn(List<UUID> userIds);
+
     @Query(value = """
             INSERT INTO eventsync_app.external_links (name, url, user_id)
             VALUES (:name, :url, :userId)
@@ -24,4 +26,23 @@ public interface ExternalLinkRepository extends JpaRepository<ExternalLink, UUID
     Optional<ExternalLink> insertExternalLink(@Param("userId") UUID userId,
                                               @Param("name") String name,
                                               @Param("url") String url);
+
+    @Query(value = """
+            UPDATE eventsync_app.external_links
+            SET name = :newName, url = :newUrl
+            WHERE name = :urlName AND user_id = :speakerId
+            RETURNING id, name, url, user_id
+            """, nativeQuery = true)
+    Optional<ExternalLink> updateExternalLinkByNameAndUserId(@Param("speakerId") UUID speakerId,
+                                                             @Param("urlName") String urlName,
+                                                             @Param("newName") String newName,
+                                                             @Param("newUrl") String newUrl);
+
+    @Query(value = """
+            DELETE FROM eventsync_app.external_links
+            WHERE id = :linkId AND user_id = :speakerId
+            RETURNING id
+            """, nativeQuery = true)
+    Optional<UUID> deleteExternalLinkByIdAndUserId(@Param("linkId") UUID linkId,
+                                                   @Param("speakerId") UUID speakerId);
 }

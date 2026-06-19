@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.dto.speaker.ExternalLinkDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerDetailResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerInputDto;
+import com.techindna.eventsyncapi.dto.speaker.SpeakerListResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerResponseDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateInputDto;
 import com.techindna.eventsyncapi.dto.speaker.SpeakerUpdateResponseDto;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +44,26 @@ public class SpeakerService {
     private final AuthService authService;
     private final SpeakerValidator speakerValidator;
     private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
+
+    @Transactional(readOnly = true)
+    public SpeakerListResponseDto getAllSpeakers(int page, int size, String search, String ipAddress) {
+        if (page < 1) page = 1;
+        if (size < 1) size = 10;
+
+        int offset = (page - 1) * size;
+
+        authService.checkBlacklist(ipAddress);
+        speakerValidator.validateGet(search);
+
+        long total = userRepository.countSpeakersByNameContaining(search);
+        List<User> speakers = userRepository.findSpeakersByNameContaining(search, size, offset);
+
+        List<ExternalLink> allLinks = speakers.isEmpty()
+                ? null
+                : externalLinkRepository.findByUserIdIn(speakers.stream().map(User::getId).toList());
+
+        return speakerMapper.toListResponseDto(speakers, allLinks, total, page, size);
+    }
 
     @Transactional
     public SpeakerResponseDto createSpeaker(SpeakerInputDto request) {
@@ -140,5 +162,37 @@ public class SpeakerService {
         return externalLinkRepository.findByUserId(speakerId).stream()
                 .map(externalLinkMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public List<ExternalLinkDto> updateExternalLink(UUID speakerId, String urlName, ExternalLinkDto request) {
+        externalLinkValidator.validateSingleLink(request);
+
+        try {
+            externalLinkRepository.updateExternalLinkByNameAndUserId(
+                    speakerId,
+                    urlName.strip(),
+                    request.getName().strip(),
+                    request.getUrl().strip()
+            ).orElseThrow(() -> new NotFoundException(
+                    String.format("Speaker %s or external link '%s' not found.", speakerId, urlName)));
+        } catch (DataIntegrityViolationException e) {
+            if (uniqueViolation(e)) {
+                throw new ConflictException(
+                        String.format("URL %s already exists.", request.getUrl()));
+            }
+            throw e;
+        }
+
+        return externalLinkRepository.findByUserId(speakerId).stream()
+                .map(externalLinkMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteExternalLink(UUID speakerId, UUID externalLinkId) {
+        externalLinkRepository.deleteExternalLinkByIdAndUserId(externalLinkId, speakerId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Speaker %s or external link %s not found.", speakerId, externalLinkId)));
     }
 }

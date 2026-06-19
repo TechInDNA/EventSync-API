@@ -14,6 +14,14 @@ import java.util.UUID;
 @Repository
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
+    @Query("""
+            SELECT DISTINCT e FROM Event e
+            LEFT JOIN FETCH e.sessions s
+            LEFT JOIN FETCH s.room
+            WHERE e.id = :id
+            """)
+    Optional<Event> findEventWithSessionsById(@Param("id") UUID id);
+
     @Query(value = """
             SELECT e.id, e.title, e.description, e.start_date, e.end_date, e.location, e.created_at
             FROM eventsync_app.event e

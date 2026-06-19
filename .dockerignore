@@ -1,0 +1,12 @@
+.env
+.git
+.gitignore
+*.md
+.DS_Store
+build/
+.gradle/
+.idea/
+*.iml
+node_modules/
+scripts/
+docs/
