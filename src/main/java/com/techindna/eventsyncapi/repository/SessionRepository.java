@@ -58,6 +58,15 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             """, nativeQuery = true)
     Optional<Session> deleteSessionById(@Param("id") UUID id);
 
+    @Query("""
+            SELECT s FROM Session s
+            JOIN FETCH s.room
+            JOIN FETCH s.event
+            LEFT JOIN FETCH s.speakers
+            WHERE s.id = :id
+            """)
+    Optional<Session> findByIdWithDetails(@Param("id") UUID id);
+
     @Query(value = """
             UPDATE eventsync_app.session
             SET

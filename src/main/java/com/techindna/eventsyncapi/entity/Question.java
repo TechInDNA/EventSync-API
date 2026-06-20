@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -40,4 +41,7 @@ public class Question {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
+
+    @Formula("(SELECT COUNT(*) FROM eventsync_app.upvote up WHERE up.question_id = id)")
+    private int upvoteCount;
 }

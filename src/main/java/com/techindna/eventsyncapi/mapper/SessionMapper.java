@@ -1,7 +1,9 @@
 package com.techindna.eventsyncapi.mapper;
 
 import com.techindna.eventsyncapi.dto.event.SessionForEventDto;
+import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.dto.session.EventRefDto;
+import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.dto.speaker.SessionForSpeakerDto;
@@ -48,6 +50,34 @@ public class SessionMapper {
                 .capacity(session.getCapacity())
                 .event(eventMapper.toRefDto(session.getEvent()))
                 .speakers(speakers.isEmpty() ? null : speakers)
+                .live(isLive)
+                .build();
+    }
+
+    public SessionDetailResponseDto toDetailResponseDto(Session session, List<QuestionResponseDto> questions) {
+        if (session == null) return null;
+
+        Instant now = Instant.now();
+        boolean isLive = session.getStartDate() != null && session.getEndDate() != null
+                && now.isAfter(session.getStartDate()) && now.isBefore(session.getEndDate());
+
+        List<SpeakerRefDto> speakers = Optional.ofNullable(session.getSpeakers())
+                .orElse(List.of())
+                .stream()
+                .map(speakerMapper::toRefDto)
+                .toList();
+
+        return SessionDetailResponseDto.builder()
+                .id(session.getId())
+                .title(session.getTitle())
+                .description(session.getDescription())
+                .startDate(session.getStartDate())
+                .endDate(session.getEndDate())
+                .room(roomMapper.toRefDto(session.getRoom()))
+                .capacity(session.getCapacity())
+                .event(eventMapper.toRefDto(session.getEvent()))
+                .speakers(speakers.isEmpty() ? null : speakers)
+                .questions(questions == null || questions.isEmpty() ? null : questions)
                 .live(isLive)
                 .build();
     }
