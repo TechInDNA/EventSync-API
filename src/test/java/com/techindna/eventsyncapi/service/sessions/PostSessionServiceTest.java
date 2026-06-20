@@ -6,9 +6,12 @@ import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
+import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
+import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.RoomEventExistence;
 import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SessionService;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import com.techindna.eventsyncapi.validator.SessionValidator;
@@ -38,7 +41,8 @@ class PostSessionServiceTest {
         sessionRepository = mock(SessionRepository.class);
         sessionMapper = mock(SessionMapper.class);
         sessionService = new SessionService(
-                sessionRepository, sessionMapper, new SessionValidator(new DataValidator())
+                sessionRepository, sessionMapper, new SessionValidator(new DataValidator()),
+                mock(AuthService.class), mock(QuestionRepository.class), mock(QuestionMapper.class)
         );
     }
 

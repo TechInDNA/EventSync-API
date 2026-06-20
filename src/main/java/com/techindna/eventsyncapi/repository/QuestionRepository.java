@@ -46,6 +46,9 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
            """, nativeQuery = true)
     List<Object[]> countUpvotesBySessionId(@Param("sessionId") UUID sessionId, @Param("title") String title);
 
+    @Query("SELECT q FROM Question q JOIN FETCH q.user WHERE q.session.id = :sessionId ORDER BY q.createdAt ASC")
+    List<Question> findBySessionId(@Param("sessionId") UUID sessionId);
+
     @Query(value = """
            INSERT INTO eventsync_app.question (id, title, content, session_id, user_id, anonymous)
            SELECT gen_random_uuid(), :title, :content, :sessionId, :userId, :anonymous

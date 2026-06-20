@@ -1,9 +1,11 @@
 package com.techindna.eventsyncapi.controller;
 
+import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.service.SessionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,15 @@ import java.util.UUID;
 public class SessionController {
 
     private final SessionService sessionService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SessionDetailResponseDto> getSessionById(
+            @PathVariable UUID id,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(sessionService.getSessionById(id, request.getRemoteAddr()));
+    }
 
     @PostMapping
     public ResponseEntity<SessionResponseDto> createSession(@RequestBody SessionInputDto request) {
