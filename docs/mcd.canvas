@@ -18,7 +18,7 @@
 		{"id":"cc549f8da5e53cf8","type":"text","text":"## HAS","x":-1860,"y":1090,"width":158,"height":50},
 		{"id":"0369ecbf9609d6a5","type":"text","text":"## HAS","x":-2480,"y":1520,"width":100,"height":50},
 		{"id":"6e78310b2adb9427","type":"text","text":"## conversation\n- `id` `uuid` `pk`\n- `title` `varchar(100)` `not null`\n- `user_id` `uuid` `fk` `references user(id)` `not null`\n- `created_at` `timestamp` `default now()`","x":-2060,"y":1415,"width":560,"height":260,"color":"#069171"},
-		{"id":"a55fbac98937331f","type":"text","text":"## message\n- `id` `uuid` `pk`\n- `content` `text not null`\n- `sender_type enum(user, agent) not null`\n- `conversation_id` `uuid` `fk` `references conversation(id)` `not null`\n- `created_at` `timestamp` `default now()`","x":-3370,"y":1428,"width":620,"height":235,"color":"#069171"}
+		{"id":"a55fbac98937331f","type":"text","text":"## chat_message\n- `id` `uuid` `pk`\n- `content` `text not null`\n- `sender_type enum(user, agent) not null`\n- `conversation_id` `uuid` `fk` `references conversation(id)` `not null`\n- `created_at` `timestamp` `default now()`","x":-3370,"y":1428,"width":620,"height":235,"color":"#069171"}
 	],
 	"edges":[
 		{"id":"467610ec40730ae7","fromNode":"f2c5fd3c1b68a5e0","fromSide":"top","toNode":"121695b295bd389e","toSide":"bottom","toEnd":"none","label":"1,N"},

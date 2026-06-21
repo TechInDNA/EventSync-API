@@ -1,7 +1,7 @@
 package com.techindna.eventsyncapi.controller;
 
-import com.techindna.eventsyncapi.dto.ai.AiMessageInputDto;
-import com.techindna.eventsyncapi.dto.ai.AiMessageResponseDto;
+import com.techindna.eventsyncapi.dto.ai.ChatMessageInputDto;
+import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
 import com.techindna.eventsyncapi.service.AiConversationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ public class AiConversationController {
     private final AiConversationService aiConversationService;
 
     @PostMapping
-    public ResponseEntity<AiMessageResponseDto> createConversation(
-            @RequestBody AiMessageInputDto request,
+    public ResponseEntity<ChatMessageResponseDto> createConversation(
+            @RequestBody ChatMessageInputDto request,
             Authentication authentication
     ) {
         UUID userId = UUID.fromString(authentication.getName());

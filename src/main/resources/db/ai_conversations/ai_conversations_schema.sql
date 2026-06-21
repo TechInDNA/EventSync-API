@@ -14,7 +14,7 @@ DO $$
     END
 $$;
 
-CREATE TABLE IF NOT EXISTS eventsync_app.message (
+CREATE TABLE IF NOT EXISTS eventsync_app.chat_message (
     id              UUID                           DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
     content         TEXT                                                            NOT NULL,
     sender_type     eventsync_app.sender_type                                      NOT NULL,

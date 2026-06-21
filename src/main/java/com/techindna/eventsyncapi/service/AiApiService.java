@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.entity.ChatMessage;
 import com.techindna.eventsyncapi.entity.enums.SenderType;
 import com.techindna.eventsyncapi.mcp.RoomMcpTools;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class AiApiService {
                 .content());
     }
 
-    public String sendMessage(String userMessage, List<com.techindna.eventsyncapi.entity.Message> history) {
+    private List<Message> getChatHistory(String userMessage, List<ChatMessage> history){
         var conversationMessages = new ArrayList<Message>();
 
         for (var msg : history) {
@@ -41,7 +42,10 @@ public class AiApiService {
         }
 
         conversationMessages.add(new UserMessage(userMessage));
+        return conversationMessages;
+    }
 
+    public String sendMessage(String userMessage, List<ChatMessage> history) {
         return chatClientBuilder.build()
                 .prompt()
                 .tools(roomMcpTools)
@@ -57,7 +61,7 @@ public class AiApiService {
                         - updateRoom(id, name) — update the name of a room
                         - deleteRoom(id) — delete a room by its UUID
                         """)
-                .messages(conversationMessages)
+                .messages(getChatHistory(userMessage, history))
                 .call()
                 .content();
     }
