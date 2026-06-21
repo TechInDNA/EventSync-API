@@ -40,11 +40,7 @@ public class AiConversationService {
         ChatMessage userMessage = chatMessageRepository.insertMessage(content, "user", conversation.getId())
                 .orElseThrow(() -> new InternalServerErrorException("Failed to save user message."));
 
-        List<ChatMessage> history = chatMessageRepository.findByConversationId(conversation.getId()).stream()
-                .filter(msg -> !msg.getId().equals(userMessage.getId()))
-                .toList();
-
-        String aiResponse = aiApiService.sendMessage(content, history);
+        String aiResponse = aiApiService.sendMessage(content, List.of());
 
         ChatMessage agentMessage = chatMessageRepository.insertMessage(aiResponse, "agent", conversation.getId())
                 .orElseThrow(() -> new InternalServerErrorException("Failed to save AI response message."));
