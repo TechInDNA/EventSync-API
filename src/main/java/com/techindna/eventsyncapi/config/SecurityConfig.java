@@ -74,6 +74,7 @@ public class SecurityConfig {
 
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/participant").permitAll()
+
                 .requestMatchers(HttpMethod.POST, "/ai/conversations/**").hasRole("ADMIN")
                 .requestMatchers("/mcp/**").permitAll()
                 .anyRequest().authenticated()

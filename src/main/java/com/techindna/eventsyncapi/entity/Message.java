@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.entity;
 
+import com.techindna.eventsyncapi.entity.enums.SenderType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,10 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Message {
-
-    public enum SenderType {
-        user, agent
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

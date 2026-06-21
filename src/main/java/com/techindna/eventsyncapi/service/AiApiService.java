@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.service;
 
-import com.techindna.eventsyncapi.entity.Message.SenderType;
+import com.techindna.eventsyncapi.entity.enums.SenderType;
 import com.techindna.eventsyncapi.mcp.RoomMcpTools;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
