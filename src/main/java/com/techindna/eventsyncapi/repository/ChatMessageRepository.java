@@ -15,7 +15,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 
     @Query(value = """
             INSERT INTO eventsync_app.chat_message (content, sender_type, conversation_id)
-            VALUES (:content, :senderType, :conversationId)
+            VALUES (:content, CAST(:senderType AS eventsync_app.sender_type), :conversationId)
             RETURNING id, content, sender_type, conversation_id, created_at
             """, nativeQuery = true)
     Optional<ChatMessage> insertMessage(
