@@ -1,6 +1,6 @@
 package com.techindna.eventsyncapi.repository;
 
-import com.techindna.eventsyncapi.entity.Message;
+import com.techindna.eventsyncapi.entity.ChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,14 +11,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface MessageRepository extends JpaRepository<Message, UUID> {
+public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> {
 
     @Query(value = """
-            INSERT INTO eventsync_app.message (content, sender_type, conversation_id)
+            INSERT INTO eventsync_app.chat_message (content, sender_type, conversation_id)
             VALUES (:content, :senderType, :conversationId)
             RETURNING id, content, sender_type, conversation_id, created_at
             """, nativeQuery = true)
-    Optional<Message> insertMessage(
+    Optional<ChatMessage> insertMessage(
             @Param("content") String content,
             @Param("senderType") String senderType,
             @Param("conversationId") UUID conversationId
@@ -26,9 +26,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query(value = """
             SELECT id, content, sender_type, conversation_id, created_at
-            FROM eventsync_app.message
+            FROM eventsync_app.chat_message
             WHERE conversation_id = :conversationId
             ORDER BY created_at ASC
             """, nativeQuery = true)
-    List<Message> findByConversationId(@Param("conversationId") UUID conversationId);
+    List<ChatMessage> findByConversationId(@Param("conversationId") UUID conversationId);
 }

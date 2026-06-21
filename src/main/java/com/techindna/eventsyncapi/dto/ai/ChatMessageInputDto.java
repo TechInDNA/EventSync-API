@@ -5,18 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiMessageResponseDto {
+public class ChatMessageInputDto {
 
-    private UUID id;
-    private UUID conversationId;
-    private String senderType;
     private String content;
-    private Instant createdAt;
 }

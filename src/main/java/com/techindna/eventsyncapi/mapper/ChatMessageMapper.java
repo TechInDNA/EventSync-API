@@ -1,15 +1,15 @@
 package com.techindna.eventsyncapi.mapper;
 
-import com.techindna.eventsyncapi.dto.ai.AiMessageResponseDto;
-import com.techindna.eventsyncapi.entity.Message;
+import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
+import com.techindna.eventsyncapi.entity.ChatMessage;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AiMessageMapper {
+public class ChatMessageMapper {
 
-    public AiMessageResponseDto toResponseDto(Message message) {
+    public ChatMessageResponseDto toResponseDto(ChatMessage message) {
         if (message == null) return null;
-        return AiMessageResponseDto.builder()
+        return ChatMessageResponseDto.builder()
                 .id(message.getId())
                 .conversationId(message.getConversationId())
                 .senderType(message.getSenderType().name())
