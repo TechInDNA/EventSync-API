@@ -10,15 +10,9 @@ public class AiConversationsValidator {
 
     private final DataValidator dataValidator;
 
-    public String validateUserRequest(String userRequest) {
-        dataValidator.checkNullData("userRequest", userRequest);
-        dataValidator.validateText("userRequest", userRequest);
-
-        String stripped = userRequest.strip();
-        if (stripped.isBlank()) {
-            throw new UnprocessableEntityException("The field userRequest cannot be blank.");
-        }
-
-        return stripped;
+    public String validateUserRequest(String content) {
+        dataValidator.checkNullData("content", content);
+        dataValidator.validateText("content", content.strip());
+        return content;
     }
 }

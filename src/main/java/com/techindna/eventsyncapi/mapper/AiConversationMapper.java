@@ -12,8 +12,6 @@ public class AiConversationMapper {
         return AiConversationResponseDto.builder()
                 .id(conversation.getId())
                 .title(conversation.getTitle())
-                .userRequest(conversation.getUserRequest())
-                .aiResponse(conversation.getAiResponse())
                 .userId(conversation.getUserId())
                 .createdAt(conversation.getCreatedAt())
                 .build();
