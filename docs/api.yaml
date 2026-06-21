@@ -1043,7 +1043,7 @@ paths:
           $ref: '#/components/responses/Unprocessable'
   /ai/conversations:
     post:
-      summary: Send a message to the AI and store the conversation
+      summary: Create a new AI conversation with the first message
       tags:
         - AI
       security:
@@ -1053,14 +1053,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AiConversationInput'
+              $ref: '#/components/schemas/AiMessageInput'
       responses:
         '201':
-          description: Conversation created with AI response
+          description: AI response message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AiConversation'
+                $ref: '#/components/schemas/AiMessage'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1104,7 +1104,7 @@ paths:
           $ref: '#/components/responses/Unprocessable'
   /ai/conversations/{id}:
     get:
-      summary: Get details of an AI conversation
+      summary: Get an AI conversation with all its messages
       tags:
         - AI
       security:
@@ -1122,7 +1122,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AiConversation'
+                $ref: '#/components/schemas/AiConversationDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1130,7 +1130,7 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
     delete:
-      summary: Delete an AI conversation
+      summary: Delete an AI conversation and all its messages
       tags:
         - AI
       security:
@@ -1145,6 +1145,69 @@ paths:
       responses:
         '204':
           description: AI conversation deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /ai/conversations/{id}/messages:
+    post:
+      summary: Send a message in an existing AI conversation
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiMessageInput'
+      responses:
+        '201':
+          description: AI response message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+    get:
+      summary: List all messages of an AI conversation
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          format: uuid
+      responses:
+        '200':
+          description: List of AI messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiMessage'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1821,14 +1884,33 @@ components:
           default: false
 
     # ────────────────── AI Conversation ──────────────────
-    AiConversationInput:
+    AiMessageInput:
       type: object
       required:
-        - userRequest
+        - content
       properties:
-        userRequest:
+        content:
           type: string
-          description: Message sent to the AI
+          description: Message content
+    AiMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conversationId:
+          type: string
+          format: uuid
+        senderType:
+          type: string
+          enum:
+            - user
+            - agent
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     AiConversation:
       type: object
       properties:
@@ -1837,9 +1919,19 @@ components:
           format: uuid
         title:
           type: string
-        userRequest:
+        userId:
           type: string
-        aiResponse:
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    AiConversationDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
           type: string
         userId:
           type: string
@@ -1847,6 +1939,10 @@ components:
         createdAt:
           type: string
           format: date-time
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiMessage'
     AiConversationList:
       type: object
       properties:
