@@ -170,7 +170,8 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `POST` | `/ai/conversations` | JWT ADMIN | Send a message to the AI assistant (room operations via natural language) |
+| `POST` | `/ai/conversations` | JWT ADMIN | Start a new AI conversation (room operations via natural language) |
+| `POST` | `/ai/conversations/{id}` | JWT ADMIN | Continue an existing AI conversation |
 | `GET` | `/ai/conversations` | JWT ADMIN | List AI conversations for the authenticated user |
 | `GET` | `/ai/conversations/{id}` | JWT ADMIN | Get AI conversation details |
 | `DELETE` | `/ai/conversations/{id}` | JWT ADMIN | Delete AI conversation |
@@ -231,7 +232,9 @@ Each script requires `curlie` (`brew install curlie` or `apt install curlie`). T
 
 ## AI / MCP Integration
 
-The API exposes an **MCP (Model Context Protocol) server** over SSE transport, allowing AI agents like [Hermes Agent](https://hermes-agent.nousresearch.com) to discover and invoke business operations via natural language.
+The API exposes an **MCP (Model Context Protocol) server** over SSE transport at `/mcp/sse`. MCP-compatible AI agents can discover and invoke business operations via natural language.
+
+The server auto-configures via `spring-ai-starter-mcp-server-webmvc` — no separate process needed. All `/mcp/**` paths use `permitAll` in `SecurityConfig`.
 
 ### Available MCP tools
 
@@ -243,42 +246,7 @@ The API exposes an **MCP (Model Context Protocol) server** over SSE transport, a
 | `updateRoom` | Update an existing room |
 | `deleteRoom` | Delete a room by UUID |
 
-Each tool wraps the existing service layer — validation, error handling, and business rules are identical to the REST API.
-
-### Configure Hermes Agent to connect
-
-1. Ensure the API is running (`./gradlew bootRun`).
-2. Add the MCP server to your Hermes `~/.hermes/config.yaml`:
-
-```yaml
-mcp_servers:
-  eventsync:
-    transport: sse
-    url: "http://localhost:8080/mcp/sse"
-    timeout: 30
-```
-
-3. Start a new Hermes session or reload existing ones with `/reload-mcp`.
-
-Hermes discovers the tools and the AI can now run operations like:
-
-> *"Create a room called Conference Hall A"* → Hermes calls `createRoom(name="Conference Hall A")` → returns success or error details.
-
-### How it works
-
-```
-User message
-    → Hermes AI (LLM decides to call a tool)
-    → SSE POST /mcp/message
-    → Spring Boot @Tool bean (e.g. RoomMcpTools.createRoom)
-    → RoomService → Database
-    → Tool result returned over SSE
-    → Hermes reports back to user
-```
-
-- The MCP server runs inside the Spring Boot process — no separate service needed.
-- The `/mcp/sse` and `/mcp/message` endpoints are auto-configured by `spring-ai-starter-mcp-server-webmvc` and are not JWT-protected (use `permitAll` in `SecurityConfig`).
-- Tools use `@ToolParam(description = ...)` so the AI knows what each parameter means.
+Each tool wraps the existing service layer — validation, error handling, and business rules are identical to the REST API. Tools use `@ToolParam(description = ...)` so the AI knows what each parameter means.
 
 ---
 
