@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiConversationInputDto {
+public class AiMessageInputDto {
 
-    private String userRequest;
+    private String content;
 }

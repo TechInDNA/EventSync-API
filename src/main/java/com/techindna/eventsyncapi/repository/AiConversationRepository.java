@@ -13,14 +13,12 @@ import java.util.UUID;
 public interface AiConversationRepository extends JpaRepository<AiConversation, UUID> {
 
     @Query(value = """
-            INSERT INTO eventsync_app.ai_conversation (title, user_request, ai_response, user_id)
-            VALUES (:title, :userRequest, :aiResponse, :userId)
-            RETURNING id, title, user_request, ai_response, user_id, created_at
+            INSERT INTO eventsync_app.conversation (title, user_id)
+            VALUES (:title, :userId)
+            RETURNING id, title, user_id, created_at
             """, nativeQuery = true)
     Optional<AiConversation> insertConversation(
             @Param("title") String title,
-            @Param("userRequest") String userRequest,
-            @Param("aiResponse") String aiResponse,
             @Param("userId") UUID userId
     );
 }

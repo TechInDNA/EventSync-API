@@ -12,10 +12,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiConversationResponseDto {
+public class AiMessageResponseDto {
 
     private UUID id;
-    private String title;
-    private UUID userId;
+    private UUID conversationId;
+    private String senderType;
+    private String content;
     private Instant createdAt;
 }

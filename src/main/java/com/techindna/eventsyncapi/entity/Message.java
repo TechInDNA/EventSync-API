@@ -8,24 +8,32 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "conversation", schema = "eventsync_app")
+@Table(name = "message", schema = "eventsync_app")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AiConversation {
+public class Message {
+
+    public enum SenderType {
+        user, agent
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "title", length = 100, nullable = false)
-    private String title;
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    private String content;
 
-    @Column(name = "user_id", nullable = false, updatable = false)
-    private UUID userId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sender_type", nullable = false)
+    private SenderType senderType;
+
+    @Column(name = "conversation_id", nullable = false, updatable = false)
+    private UUID conversationId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
