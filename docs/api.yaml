@@ -1131,29 +1131,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
-    delete:
-      summary: Delete an AI conversation and all its messages
-      tags:
-        - AI
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: AI conversation deleted
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/Unprocessable'
-  /ai/conversations/{id}/messages:
     post:
       summary: Send a message in an existing AI conversation
       tags:
@@ -1188,8 +1165,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
-    get:
-      summary: List all messages of an AI conversation
+    delete:
+      summary: Delete an AI conversation and all its messages
       tags:
         - AI
       security:
@@ -1200,16 +1177,10 @@ paths:
           required: true
           schema:
             type: string
-          format: uuid
+            format: uuid
       responses:
-        '200':
-          description: List of AI messages
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AiMessage'
+        '204':
+          description: AI conversation deleted
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
