@@ -51,6 +51,20 @@ public class EventService {
         return eventMapper.toListResponseDto(events, total, page, size);
     }
 
+    @Transactional(readOnly = true)
+    public EventDetailResponseDto getEventById(UUID id, String ipAddress) {
+        authService.checkBlacklist(ipAddress);
+
+        Event event = eventRepository.findEventWithSessionsById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Event %s not found.", id)));
+
+        var sessions = event.getSessions().stream()
+                .map(sessionMapper::toEventSessionDto)
+                .toList();
+
+        return eventMapper.toDetailResponseDto(event, sessions);
+    }
+
     @Transactional
     public EventDetailResponseDto createEvent(EventInputDto request) {
         eventValidator.validateUpdate(request);

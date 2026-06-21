@@ -50,14 +50,18 @@ psql "$DATABASE_URL" -f src/main/resources/db/externalLink/external_links_schema
 psql "$DATABASE_URL" -f src/main/resources/db/sessions/sessions_schema.sql
 psql "$DATABASE_URL" -f src/main/resources/db/sessions/session_speaker_schema.sql
 
-# 4. AI conversations (fk → "user")
+# 4. Questions and upvotes (fk → session, \"user\")
+psql "$DATABASE_URL" -f src/main/resources/db/questions/question_schema.sql
+psql "$DATABASE_URL" -f src/main/resources/db/upvote/upvote_schema.sql
+
+# 5. AI conversations (fk → \"user\")
 psql "$DATABASE_URL" -f src/main/resources/db/ai_conversations/ai_conversations_schema.sql
 ```
 
 Where `$DATABASE_URL` is a PostgreSQL connection string:
 
 ```bash
-export DATABASE_URL="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:5432/${PGDATABASE}?sslmode=${PGSSLMODE}"
+export DATABASE_URL="postgresql://${PGUSER}:***@${PGHOST}:5432/${PGDATABASE}?sslmode=${PGSSLMODE}"
 ```
 
 ### 3. Seed test data (optional)
@@ -76,6 +80,7 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 |---|---|
 | `db/events/put_event_data.sql` | Room + event for PUT /events/{id} tests |
 | `db/events/get_events_data.sql` | Sample events for GET /events |
+| `db/events/get_event_by_id_data.sql` | Room + event + session for GET /events/{id} |
 | `db/events/delete_event_data.sql` | Event + room + session for DELETE /events/{id} |
 | `db/rooms/put_room_data.sql` | Room for PUT /rooms/{id} |
 | `db/rooms/get_rooms_data.sql` | Sample rooms |
@@ -86,6 +91,10 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 | `db/speaker/put_speaker_data.sql` | Speaker user for PUT /speakers/{id} |
 | `db/speaker/get_speaker_by_id_data.sql` | Speaker + external links for GET /speakers/{id} |
 | `db/speaker/delete_speaker_data.sql` | Speaker + external links for DELETE /speakers/{id} |
+| `db/externalLink/put_speaker_external_link_data.sql` | Speaker + external link for PUT /speakers/{id}/external-link |
+| `db/externalLink/post_external_link_data.sql` | Speaker data for POST /speakers/{id}/external-link |
+| `db/externalLink/delete_external_link_data.sql` | Speaker + external link for DELETE /speakers/{id}/external-link |
+| `db/questions/post_question_data.sql` | Session + user for POST /sessions/{id}/questions |
 
 ### 4. Build and run
 
@@ -93,7 +102,7 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 # Compile only (fast)
 ./gradlew compileJava
 
-# Run all tests (218 tests; 3 pre-existing AuthServiceTest failures are unrelated)
+# Run all tests
 ./gradlew test
 
 # Full build without tests
@@ -139,18 +148,23 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 | `GET` | `/sessions` | — | List sessions (pagination, filters: `room`, `speaker`, `live`, `event`) |
 | `POST` | `/sessions` | JWT ADMIN | Create session (linked to room + event, optional speakers) |
 | `GET` | `/sessions/{id}` | — | Get session details (includes speakers and questions) |
-| `PUT` | `/sessions/{id}` | JWT ADMIN | Update session (all fields mandatory: title, description, startDate, endDate, roomId, capacity, eventId) |
+| `PUT` | `/sessions/{id}` | JWT ADMIN | Update session (all fields mandatory) |
 | `DELETE` | `/sessions/{id}` | JWT ADMIN | Delete session |
+| `GET` | `/sessions/{id}/questions` | — | List questions for a session (pagination, sort by `upvotes` or `createdAt`, filter by `title`) |
+| `POST` | `/sessions/{id}/questions` | JWT (any role) | Post a question to a session (title, content, optional `isAnonymous`) |
 
 ### Speakers
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/speakers` | — | List speakers (pagination, filter: `search`) |
+| `GET` | `/speakers` | — | List speakers (pagination, filter: `search` by name) |
 | `POST` | `/speakers` | JWT ADMIN | Create speaker (with optional external links) |
 | `GET` | `/speakers/{id}` | — | Get speaker details (includes external links and sessions) |
 | `PUT` | `/speakers/{id}` | JWT ADMIN | Update speaker (firstName, lastName, email, optional bio/profilePicture) |
 | `DELETE` | `/speakers/{id}` | JWT ADMIN | Delete speaker (cascades external links) |
+| `POST` | `/speakers/{id}/external-link` | JWT ADMIN | Add an external link to a speaker |
+| `PUT` | `/speakers/{id}/external-link` | JWT ADMIN | Update an external link by `urlName` query param |
+| `DELETE` | `/speakers/{id}/external-link` | JWT ADMIN | Delete an external link by `externalLinkId` query param |
 
 ### AI / MCP
 
@@ -173,40 +187,47 @@ Shell scripts using `curlie` are in `scripts/`. Each script is self-contained: i
 | `scripts/event/test_post_event.sh` | POST /events |
 | `scripts/event/test_put_event.sh` | PUT /events/{id} |
 | `scripts/event/test_get_events.sh` | GET /events |
+| `scripts/event/test_get_event_by_id.sh` | GET /events/{id} |
 | `scripts/event/test_delete_event.sh` | DELETE /events/{id} |
 | `scripts/room/test_post_room.sh` | POST /rooms |
 | `scripts/room/test_put_room.sh` | PUT /rooms/{id} |
+| `scripts/room/test_get_rooms.sh` | GET /rooms |
 | `scripts/room/test_get_room_by_id.sh` | GET /rooms/{id} |
 | `scripts/room/test_delete_room.sh` | DELETE /rooms/{id} |
 | `scripts/sessions/test_post_sessions.sh` | POST /sessions |
-| `scripts/sessions/test_put_sessions.sh` | PUT /sessions/{id} (29 tests: 200, 400, 401, 403, 404, 409, 422) |
+| `scripts/sessions/test_put_sessions.sh` | PUT /sessions/{id} |
 | `scripts/sessions/test_delete_session.sh` | DELETE /sessions/{id} |
 | `scripts/speaker/test_post_speaker.sh` | POST /speakers |
 | `scripts/speaker/test_put_speaker.sh` | PUT /speakers/{id} |
+| `scripts/speaker/test_get_speakers.sh` | GET /speakers |
 | `scripts/speaker/test_get_speaker_by_id.sh` | GET /speakers/{id} |
 | `scripts/speaker/test_delete_speaker.sh` | DELETE /speakers/{id} |
+| `scripts/external-link/test_post_external_link.sh` | POST /speakers/{id}/external-link |
+| `scripts/external-link/test_put_speaker_external_link.sh` | PUT /speakers/{id}/external-link |
+| `scripts/external-link/test_delete_external_link.sh` | DELETE /speakers/{id}/external-link |
+| `scripts/questions/test_post_questions.sh` | POST /sessions/{id}/questions |
 
 To run a script, start the server first (`./gradlew bootRun`), then:
 
 ```bash
-scripts/sessions/test_put_sessions.sh
+scripts/speaker/test_get_speakers.sh
 ```
 
 Each script requires `curlie` (`brew install curlie` or `apt install curlie`). They store JWT cookies in `/tmp/` and clean up on exit.
 
 ## Architecture
 
-**Validation:** Handled entirely in the service layer via `DataValidator` (and `SessionValidator` for sessions, `EventValidator` for events, `SpeakerValidator` for speakers, `ExternalLinkValidator` for external links, `AiConversationsValidator` for AI conversations). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
+**Validation:** Handled entirely in the service layer via `DataValidator` (and domain-specific validators for sessions, events, speakers, external links, AI conversations, and questions). DTOs are plain `@Data` beans — no `@NotBlank` or `@Valid` annotations. Keeps validation logic testable, exception messages precise, and error handling uniform.
 
 **Error handling:** Business exceptions (`BadRequestException`, `UnprocessableEntityException`, `UnauthorizedException`, `TooManyRequestException`, `NotFoundException`, `ConflictException`) are thrown from services and caught by `GlobalExceptionHandler`. All error responses follow `{status, error, message}`.
 
 **Authentication:** JWT extracted from `jwt` cookie (set as response cookie on login). Rate-limited to 5 failed attempts per IP via `BlacklistedIp` entity. Public GET endpoints validate IP blacklist via `AuthService.checkBlacklist()`.
 
-**Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for events, rooms, sessions, speakers) require `ROLE_ADMIN`. Read endpoints are public.
+**Authorization:** Role-based (`ADMIN` / `PARTICIPANT` / `SPEAKER`). Write endpoints (POST/PUT/DELETE for events, rooms, sessions, speakers) require `ROLE_ADMIN`. Question posting requires any authenticated role. Read endpoints are public.
 
 **Persistence:** Schema managed externally in `src/main/resources/db/` as plain SQL. Hibernate runs with `ddl-auto=validate`. Write queries use `INSERT ... RETURNING` / `UPDATE ... RETURNING` native queries with `ON CONFLICT` for idempotent inserts. Columns are always listed explicitly — no `SELECT *`.
 
-**SecurityConfig:** Every controller path needs explicit rules for all 4 HTTP methods (GET `permitAll`, POST/PUT/DELETE `hasRole("ADMIN")`). The MCP SSE endpoint (`/mcp/**`) is `permitAll` for all methods.
+**SecurityConfig:** Every controller path needs explicit rules for all 4 HTTP methods (GET `permitAll`, POST/PUT/DELETE `hasRole("ADMIN")`). The MCP SSE endpoint (`/mcp/**`) is `permitAll` for all methods. Questions follow `POST /sessions/{id}/questions` as `authenticated()` (any role can post).
 
 ## AI / MCP Integration
 

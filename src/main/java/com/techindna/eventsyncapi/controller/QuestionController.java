@@ -1,11 +1,14 @@
 package com.techindna.eventsyncapi.controller;
 
 import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
+import com.techindna.eventsyncapi.dto.question.QuestionRequestDto;
+import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.service.QuestionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -34,5 +37,16 @@ public class QuestionController {
                         title,
                         request.getRemoteAddr()
                 ));
+    }
+
+    @PostMapping("/{id}/questions")
+    public ResponseEntity<QuestionResponseDto> createQuestion(
+            @PathVariable UUID id,
+            @RequestBody QuestionRequestDto request,
+            Authentication authentication
+    ) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(questionService.createQuestion(id, request, userId));
     }
 }

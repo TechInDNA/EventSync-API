@@ -1,12 +1,16 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
+import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
+import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
+import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
 import com.techindna.eventsyncapi.validator.SessionValidator;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,7 +29,25 @@ public class SessionService {
     private final SessionRepository sessionRepository;
     private final SessionMapper sessionMapper;
     private final SessionValidator sessionValidator;
+    private final AuthService authService;
+    private final QuestionRepository questionRepository;
+    private final QuestionMapper questionMapper;
     private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
+
+    @Transactional(readOnly = true)
+    public SessionDetailResponseDto getSessionById(UUID id, String ipAddress) {
+        authService.checkBlacklist(ipAddress);
+
+        Session session = sessionRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", id)));
+
+        List<QuestionResponseDto> questionDtos = questionRepository.findBySessionId(id)
+                .stream()
+                .map(q -> questionMapper.toResponseDto(q, q.getUpvoteCount()))
+                .toList();
+
+        return sessionMapper.toDetailResponseDto(session, questionDtos.isEmpty() ? null : questionDtos);
+    }
 
     @Transactional
     public SessionResponseDto createSession(SessionInputDto request) {
