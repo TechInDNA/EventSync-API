@@ -51,7 +51,8 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── RoomListResponseDto.java
 │   │   └── RoomResponseDto.java
 │   ├── ai/
-│   │   ├── AiConversationInputDto.java
+│   │   ├── ChatMessageInputDto.java
+│   │   ├── ChatMessageResponseDto.java
 │   │   └── AiConversationResponseDto.java
 │   ├── session/
 │   │   ├── EventRefDto.java
