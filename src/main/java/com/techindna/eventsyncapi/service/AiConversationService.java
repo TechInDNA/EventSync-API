@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.service;
 
+import com.techindna.eventsyncapi.dto.ai.AiConversationDetailResponseDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageInputDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
 import com.techindna.eventsyncapi.entity.AiConversation;
@@ -7,8 +8,7 @@ import com.techindna.eventsyncapi.entity.ChatMessage;
 import com.techindna.eventsyncapi.exception.ForbiddenException;
 import com.techindna.eventsyncapi.exception.InternalServerErrorException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
-import com.techindna.eventsyncapi.exception.UnauthorizedException;
-import com.techindna.eventsyncapi.mapper.ChatMessageMapper;
+import com.techindna.eventsyncapi.mapper.AiConversationMapper;
 import com.techindna.eventsyncapi.repository.AiConversationRepository;
 import com.techindna.eventsyncapi.repository.ChatMessageRepository;
 import com.techindna.eventsyncapi.validator.AiConversationsValidator;
@@ -26,7 +26,7 @@ public class AiConversationService {
     private final AiConversationRepository aiConversationRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final AiConversationsValidator aiConversationsValidator;
-    private final ChatMessageMapper chatMessageMapper;
+    private final AiConversationMapper aiConversationMapper;
     private final AiApiService aiApiService;
 
     @Transactional
@@ -47,7 +47,7 @@ public class AiConversationService {
         ChatMessage agentMessage = chatMessageRepository.insertMessage(aiResponse, "agent", conversation.getId())
                 .orElseThrow(() -> new InternalServerErrorException("Failed to save AI response message."));
 
-        return chatMessageMapper.toResponseDto(agentMessage);
+        return aiConversationMapper.toResponseDto(agentMessage);
     }
 
     @Transactional
@@ -71,6 +71,19 @@ public class AiConversationService {
         ChatMessage agentMessage = chatMessageRepository.insertMessage(aiResponse, "agent", conversationId)
                 .orElseThrow(() -> new InternalServerErrorException("Failed to save AI response message."));
 
-        return chatMessageMapper.toResponseDto(agentMessage);
+        return aiConversationMapper.toResponseDto(agentMessage);
+    }
+
+    public AiConversationDetailResponseDto getConversation(UUID conversationId, UUID userId) {
+        AiConversation conversation = aiConversationRepository.findById(conversationId)
+                .orElseThrow(() -> new NotFoundException("Conversation not found."));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this conversation.");
+        }
+
+        List<ChatMessage> messages = chatMessageRepository.findByConversationId(conversationId);
+
+        return aiConversationMapper.toDetailResponseDto(conversation, messages);
     }
 }
