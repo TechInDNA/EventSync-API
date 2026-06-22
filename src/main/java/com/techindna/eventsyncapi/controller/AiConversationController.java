@@ -1,5 +1,6 @@
 package com.techindna.eventsyncapi.controller;
 
+import com.techindna.eventsyncapi.dto.ai.AiConversationDetailResponseDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageInputDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
 import com.techindna.eventsyncapi.service.AiConversationService;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,5 +43,15 @@ public class AiConversationController {
         UUID userId = UUID.fromString(authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(aiConversationService.continueConversation(id, userId, request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AiConversationDetailResponseDto> getConversation(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(aiConversationService.getConversation(id, userId));
     }
 }
