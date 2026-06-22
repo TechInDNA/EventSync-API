@@ -88,4 +88,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
                                         @Param("roomId") UUID roomId,
                                         @Param("capacity") int capacity,
                                         @Param("eventId") UUID eventId);
+
+    @Query(value = "SELECT * FROM eventsync_app.session WHERE id = :id", nativeQuery = true)
+    Optional<Session> findSessionById(@Param("id") UUID id);
 }

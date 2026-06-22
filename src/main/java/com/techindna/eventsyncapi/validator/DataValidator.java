@@ -1,15 +1,18 @@
 package com.techindna.eventsyncapi.validator;
 
 
+import com.techindna.eventsyncapi.exception.BadRequestException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import org.springframework.stereotype.Component;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
 public class DataValidator {
     private static final int TEXT_MAX_LENGTH = 1000;
     private static final int URL_MAX_LENGTH = 255;
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     private static final Pattern VALID_EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z]+){1,2}$");
     private static final Pattern ALLOWED_EMAIL_CHAR = Pattern.compile("^[a-zA-Z0-9.@_-]+$");
     private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z][a-zA-Z' -]+[a-zA-Z]+$");
@@ -111,6 +114,16 @@ public class DataValidator {
 
         if (!VALID_URL.matcher(url).matches()){
             throw new UnprocessableEntityException(String.format("Invalid URL format or '%s' contain forbidden characters, only a-zA-Z0-9-?._%%&# characters are allowed", url));
+        }
+    }
+    public void validateUUID(String uuid){
+        if (uuid == null || uuid.isEmpty()){
+            throw new BadRequestException("UUID path variable cannot be null or blank.");
+        }
+
+        final Matcher UUID_MATCHER = UUID_PATTERN.matcher(uuid);
+        if (!UUID_MATCHER.matches()){
+            throw new BadRequestException("Invalid UUID format.");
         }
     }
 
