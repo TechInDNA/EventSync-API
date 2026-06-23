@@ -69,7 +69,7 @@ public class EventMcpTools {
             if (result.getData().isEmpty()) {
                 return "No events found.";
             }
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.append("Events (").append(result.getMeta().getTotal()).append(" total):\n");
             for (var event : result.getData()) {
                 sb.append("- ").append(event.getTitle())
@@ -90,20 +90,26 @@ public class EventMcpTools {
     ) {
         try {
             EventDetailResponseDto event = eventService.getEventById(UUID.fromString(id), "127.0.0.1");
-            StringBuilder sb = new StringBuilder();
-            sb.append("Event details:\n")
-                    .append("- ID: ").append(event.getId()).append("\n")
-                    .append("- Title: ").append(event.getTitle()).append("\n")
-                    .append("- Description: ").append(event.getDescription()).append("\n")
-                    .append("- Location: ").append(event.getLocation()).append("\n")
-                    .append("- Start: ").append(event.getStartDate()).append("\n")
-                    .append("- End: ").append(event.getEndDate()).append("\n")
-                    .append("- Created at: ").append(event.getCreatedAt()).append("\n")
-                    .append("- Live: ").append(event.isLive()).append("\n");
+            var sb = new StringBuilder(
+                    """
+                    Event details:
+                    - ID: %s
+                    - Title: %s
+                    - Description: %s
+                    - Location: %s
+                    - Start: %s
+                    - End: %s
+                    - Created at: %s
+                    - Live: %s
+                    """.formatted(
+                    event.getId(), event.getTitle(), event.getDescription(),
+                    event.getLocation(), event.getStartDate(), event.getEndDate(),
+                    event.getCreatedAt(), event.isLive()
+            ));
             if (event.getSessions() != null && !event.getSessions().isEmpty()) {
                 sb.append("- Sessions (").append(event.getSessions().size()).append("):\n");
                 for (var session : event.getSessions()) {
-                    sb.append("  • ").append(session.getTitle())
+                    sb.append("  · ").append(session.getTitle())
                             .append(" (").append(session.getId()).append(")")
                             .append(session.isLive() ? " [LIVE]" : "")
                             .append("\n");
