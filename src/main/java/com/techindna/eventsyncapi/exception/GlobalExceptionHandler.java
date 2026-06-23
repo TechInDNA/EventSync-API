@@ -56,6 +56,11 @@ public class GlobalExceptionHandler {
         return respond(HttpStatus.FORBIDDEN, "Insufficient privileges");
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex, HttpServletRequest request) {
+        return respond(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
         return respond(HttpStatus.UNAUTHORIZED, "Authentication failed");

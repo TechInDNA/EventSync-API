@@ -86,4 +86,16 @@ public class AiConversationService {
 
         return aiConversationMapper.toDetailResponseDto(conversation, messages);
     }
+
+    @Transactional
+    public void deleteConversation(UUID conversationId, UUID userId) {
+        AiConversation conversation = aiConversationRepository.findById(conversationId)
+                .orElseThrow(() -> new NotFoundException("Conversation not found."));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this conversation.");
+        }
+
+        aiConversationRepository.deleteConversationByIdAndUserId(conversationId, userId);
+    }
 }
