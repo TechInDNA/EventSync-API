@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,5 +32,31 @@ public interface AiConversationRepository extends JpaRepository<AiConversation, 
     Optional<AiConversation> insertConversation(
             @Param("title") String title,
             @Param("userId") UUID userId
+    );
+
+    @Query(value = """
+            SELECT c.id, c.title, c.user_id, c.created_at
+            FROM eventsync_app.conversation c
+            WHERE c.user_id = :userId
+            AND (:search IS NULL OR c.title ILIKE '%' || :search || '%')
+            ORDER BY c.created_at DESC
+            LIMIT :size OFFSET :offset
+            """, nativeQuery = true)
+    List<AiConversation> findByUserIdWithSearch(
+            @Param("userId") UUID userId,
+            @Param("search") String search,
+            @Param("size") int size,
+            @Param("offset") int offset
+    );
+
+    @Query(value = """
+            SELECT COUNT(c.id)
+            FROM eventsync_app.conversation c
+            WHERE c.user_id = :userId
+            AND (:search IS NULL OR c.title ILIKE '%' || :search || '%')
+            """, nativeQuery = true)
+    long countByUserIdWithSearch(
+            @Param("userId") UUID userId,
+            @Param("search") String search
     );
 }
