@@ -1,6 +1,8 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.ai.AiConversationDetailResponseDto;
+import com.techindna.eventsyncapi.dto.ai.AiConversationListResponseDto;
 import com.techindna.eventsyncapi.dto.ai.AiConversationResponseDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
 import com.techindna.eventsyncapi.entity.AiConversation;
@@ -23,6 +25,21 @@ public class AiConversationMapper {
                 .title(conversation.getTitle())
                 .userId(conversation.getUserId())
                 .createdAt(conversation.getCreatedAt())
+                .build();
+    }
+
+    public AiConversationListResponseDto toListResponseDto(List<AiConversation> conversations, long total, int page, int size) {
+        List<AiConversationResponseDto> data = conversations == null
+                ? null
+                : conversations.stream().map(this::toResponseDto).toList();
+        MetaDto meta = MetaDto.builder()
+                .total(total)
+                .page(page)
+                .size(size)
+                .build();
+        return AiConversationListResponseDto.builder()
+                .data(data)
+                .meta(meta)
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package com.techindna.eventsyncapi.controller;
 
 import com.techindna.eventsyncapi.dto.ai.AiConversationDetailResponseDto;
+import com.techindna.eventsyncapi.dto.ai.AiConversationListResponseDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageInputDto;
 import com.techindna.eventsyncapi.dto.ai.ChatMessageResponseDto;
 import com.techindna.eventsyncapi.service.AiConversationService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -33,6 +35,18 @@ public class AiConversationController {
         UUID userId = UUID.fromString(authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(aiConversationService.createConversation(userId, request));
+    }
+
+    @GetMapping
+    public ResponseEntity<AiConversationListResponseDto> getConversations(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            Authentication authentication
+    ) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(aiConversationService.getConversations(userId, page, size, search));
     }
 
     @PostMapping("/{id}")
