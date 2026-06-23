@@ -90,7 +90,7 @@ public class AiConversationService {
     @Transactional
     public void deleteConversation(UUID conversationId, UUID userId) {
         AiConversation conversation = aiConversationRepository.findById(conversationId)
-                .orElseThrow(() -> new NotFoundException("Conversation not found."));
+                .orElseThrow(() -> new NotFoundException(String.format("Conversation %s not found.", conversationId)));
 
         if (!conversation.getUserId().equals(userId)) {
             throw new ForbiddenException("You do not have access to this conversation.");

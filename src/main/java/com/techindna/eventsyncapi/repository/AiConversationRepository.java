@@ -17,9 +17,8 @@ public interface AiConversationRepository extends JpaRepository<AiConversation, 
     @Query(value = """
             DELETE FROM eventsync_app.conversation
             WHERE id = :id AND user_id = :userId
-            RETURNING id
             """, nativeQuery = true)
-    UUID deleteConversationByIdAndUserId(
+    void deleteConversationByIdAndUserId(
             @Param("id") UUID id,
             @Param("userId") UUID userId
     );
