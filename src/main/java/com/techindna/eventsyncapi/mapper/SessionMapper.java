@@ -1,9 +1,11 @@
 package com.techindna.eventsyncapi.mapper;
 
+import com.techindna.eventsyncapi.dto.MetaDto;
 import com.techindna.eventsyncapi.dto.event.SessionForEventDto;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.dto.session.EventRefDto;
 import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
+import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.dto.speaker.SessionForSpeakerDto;
@@ -118,6 +120,21 @@ public class SessionMapper {
                 .capacity(session.getCapacity())
                 .event(eventMapper.toRefDto(session.getEvent()))
                 .live(isLive)
+                .build();
+    }
+
+    public SessionListResponseDto toListResponseDto(List<Session> sessions, long total, int page, int size) {
+        List<SessionResponseDto> data = sessions.stream()
+                .map(this::toResponseDto)
+                .toList();
+        MetaDto meta = MetaDto.builder()
+                .total(total)
+                .page(page)
+                .size(size)
+                .build();
+        return SessionListResponseDto.builder()
+                .data(data.isEmpty() ? null : data)
+                .meta(meta)
                 .build();
     }
 }

@@ -8,6 +8,7 @@ import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SpeakerRefDto;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.service.SessionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -200,5 +201,116 @@ class GetSessionsControllerTest {
                 .andExpect(status().isOk());
 
         verify(sessionService).getAllSessions(eq(1), eq(20), isNull(), isNull(), isNull(), eq(true), nullable(String.class));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with blank room forwards empty string to service")
+    void getAllSessions_withBlankRoom_forwardsEmptyString() throws Exception {
+        var response = SessionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(1).size(20).build())
+                .build();
+
+        when(sessionService.getAllSessions(anyInt(), anyInt(), eq(""), any(), any(), any(), nullable(String.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions").param("room", ""))
+                .andExpect(status().isOk());
+
+        verify(sessionService).getAllSessions(eq(1), eq(20), eq(""), isNull(), isNull(), isNull(), nullable(String.class));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with blank speaker forwards empty string to service")
+    void getAllSessions_withBlankSpeaker_forwardsEmptyString() throws Exception {
+        var response = SessionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(1).size(20).build())
+                .build();
+
+        when(sessionService.getAllSessions(anyInt(), anyInt(), any(), any(), eq(""), any(), nullable(String.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions").param("speaker", ""))
+                .andExpect(status().isOk());
+
+        verify(sessionService).getAllSessions(eq(1), eq(20), isNull(), isNull(), eq(""), isNull(), nullable(String.class));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with blank event forwards empty string to service")
+    void getAllSessions_withBlankEvent_forwardsEmptyString() throws Exception {
+        var response = SessionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(1).size(20).build())
+                .build();
+
+        when(sessionService.getAllSessions(anyInt(), anyInt(), any(), eq(""), any(), any(), nullable(String.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions").param("event", ""))
+                .andExpect(status().isOk());
+
+        verify(sessionService).getAllSessions(eq(1), eq(20), isNull(), eq(""), isNull(), isNull(), nullable(String.class));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with invalid room returns 422")
+    void getAllSessions_withInvalidRoom_returns422() throws Exception {
+        when(sessionService.getAllSessions(anyInt(), anyInt(), eq("@@invalid@@"), any(), any(), any(), nullable(String.class)))
+                .thenThrow(new UnprocessableEntityException("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+
+        mockMvc.perform(get("/sessions").param("room", "@@invalid@@"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Entity"))
+                .andExpect(jsonPath("$.message").value("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with invalid speaker returns 422")
+    void getAllSessions_withInvalidSpeaker_returns422() throws Exception {
+        when(sessionService.getAllSessions(anyInt(), anyInt(), any(), any(), eq("@@invalid@@"), any(), nullable(String.class)))
+                .thenThrow(new UnprocessableEntityException("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+
+        mockMvc.perform(get("/sessions").param("speaker", "@@invalid@@"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Entity"))
+                .andExpect(jsonPath("$.message").value("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with invalid event returns 422")
+    void getAllSessions_withInvalidEvent_returns422() throws Exception {
+        when(sessionService.getAllSessions(anyInt(), anyInt(), any(), eq("@@invalid@@"), any(), any(), nullable(String.class)))
+                .thenThrow(new UnprocessableEntityException("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+
+        mockMvc.perform(get("/sessions").param("event", "@@invalid@@"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Entity"))
+                .andExpect(jsonPath("$.message").value("Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."));
+    }
+
+    @Test
+    @DisplayName("GET /sessions with combined filters forwards all params to service")
+    void getAllSessions_withCombinedFilters_forwardsAllParams() throws Exception {
+        var response = SessionListResponseDto.builder()
+                .data(List.of())
+                .meta(MetaDto.builder().total(0).page(1).size(20).build())
+                .build();
+
+        when(sessionService.getAllSessions(anyInt(), anyInt(), eq("Room A"), eq("DevConf 2026"), eq("Jane"), eq(true), nullable(String.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/sessions")
+                        .param("room", "Room A")
+                        .param("speaker", "Jane")
+                        .param("event", "DevConf 2026")
+                        .param("live", "true"))
+                .andExpect(status().isOk());
+
+        verify(sessionService).getAllSessions(eq(1), eq(20), eq("Room A"), eq("DevConf 2026"), eq("Jane"), eq(true), nullable(String.class));
     }
 }

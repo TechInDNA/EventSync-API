@@ -2,6 +2,7 @@ package com.techindna.eventsyncapi.controller;
 
 import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
+import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.service.SessionService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -19,6 +21,20 @@ import java.util.UUID;
 public class SessionController {
 
     private final SessionService sessionService;
+
+    @GetMapping
+    public ResponseEntity<SessionListResponseDto> getAllSessions(
+            @RequestParam(required = false) String room,
+            @RequestParam(required = false) String speaker,
+            @RequestParam(required = false) Boolean live,
+            @RequestParam(required = false) String event,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(sessionService.getAllSessions(page, size, room, event, speaker, live, request.getRemoteAddr()));
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<SessionDetailResponseDto> getSessionById(

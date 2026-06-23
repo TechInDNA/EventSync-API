@@ -7,6 +7,7 @@ import com.techindna.eventsyncapi.entity.Room;
 import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.entity.User;
 import com.techindna.eventsyncapi.entity.enums.Role;
+import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
@@ -257,5 +258,64 @@ class GetSessionsServiceTest {
         assertTrue(result.getData().isEmpty());
 
         verify(sessionRepository).countByFilters(null, null, null, true);
+    }
+
+    @Test
+    @DisplayName("getAllSessions with blank room string passes validation and returns results")
+    void getAllSessions_withBlankRoom_passesValidation() {
+        var session = sampleSessionEntity();
+        when(sessionRepository.countByFilters("", null, null, null)).thenReturn(1L);
+        when(sessionRepository.findByFilters("", null, null, null, 20, 0)).thenReturn(List.of(session));
+        when(sessionRepository.findAllByIdInWithDetails(List.of(SESSION_ID))).thenReturn(List.of(session));
+        when(sessionMapper.toListResponseDto(List.of(session), 1L, 1, 20))
+                .thenReturn(SessionListResponseDto.builder()
+                        .data(List.of(sampleSessionDto()))
+                        .meta(com.techindna.eventsyncapi.dto.MetaDto.builder().total(1).page(1).size(20).build())
+                        .build());
+
+        var result = sessionService.getAllSessions(1, 20, "", null, null, null, TEST_IP);
+
+        assertNotNull(result);
+        assertEquals(1, result.getData().size());
+    }
+
+    @Test
+    @DisplayName("getAllSessions with blank speaker string passes validation and returns results")
+    void getAllSessions_withBlankSpeaker_passesValidation() {
+        var session = sampleSessionEntity();
+        when(sessionRepository.countByFilters(null, null, "", null)).thenReturn(1L);
+        when(sessionRepository.findByFilters(null, null, "", null, 20, 0)).thenReturn(List.of(session));
+        when(sessionRepository.findAllByIdInWithDetails(List.of(SESSION_ID))).thenReturn(List.of(session));
+        when(sessionMapper.toListResponseDto(List.of(session), 1L, 1, 20))
+                .thenReturn(SessionListResponseDto.builder()
+                        .data(List.of(sampleSessionDto()))
+                        .meta(com.techindna.eventsyncapi.dto.MetaDto.builder().total(1).page(1).size(20).build())
+                        .build());
+
+        var result = sessionService.getAllSessions(1, 20, null, null, "", null, TEST_IP);
+
+        assertNotNull(result);
+        assertEquals(1, result.getData().size());
+    }
+
+    @Test
+    @DisplayName("getAllSessions with invalid room string throws UnprocessableEntityException")
+    void getAllSessions_withInvalidRoom_throwsException() {
+        assertThrows(UnprocessableEntityException.class,
+                () -> sessionService.getAllSessions(1, 20, "@@invalid@@", null, null, null, TEST_IP));
+    }
+
+    @Test
+    @DisplayName("getAllSessions with invalid speaker string throws UnprocessableEntityException")
+    void getAllSessions_withInvalidSpeaker_throwsException() {
+        assertThrows(UnprocessableEntityException.class,
+                () -> sessionService.getAllSessions(1, 20, null, null, "@@invalid@@", null, TEST_IP));
+    }
+
+    @Test
+    @DisplayName("getAllSessions with invalid event string throws UnprocessableEntityException")
+    void getAllSessions_withInvalidEvent_throwsException() {
+        assertThrows(UnprocessableEntityException.class,
+                () -> sessionService.getAllSessions(1, 20, null, "@@invalid@@", null, null, TEST_IP));
     }
 }
