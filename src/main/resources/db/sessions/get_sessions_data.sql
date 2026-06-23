@@ -19,7 +19,7 @@
 --  Room
 -- ───────────────────────────────────────────────────────────────────────
 INSERT INTO eventsync_app.room (id, name)
-VALUES ('aaaaaaaa-1111-1111-1111-111111111111', 'Session Room Alpha')
+VALUES ('95c89274-3a9e-4ecd-8084-c33072a9a698', 'Session Room Alpha')
 ON CONFLICT (name) DO NOTHING;
 
 -- ───────────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ ON CONFLICT (name) DO NOTHING;
 -- ───────────────────────────────────────────────────────────────────────
 INSERT INTO eventsync_app.event (id, title, description, start_date, end_date, location)
 VALUES (
-    'bbbbbbbb-2222-2222-2222-222222222222',
+    '0fe49568-881a-406c-8657-5cb3b1d971f7',
     'Tech Summit 2026',
     'Conférence de test pour les endpoints de sessions.',
     '2025-06-01 09:00:00+03',
@@ -41,7 +41,7 @@ ON CONFLICT (title) DO NOTHING;
 -- ───────────────────────────────────────────────────────────────────────
 INSERT INTO eventsync_app."user" (id, first_name, last_name, email, bio, profile_picture, role)
 VALUES (
-    'cccccccc-3333-3333-3333-333333333333',
+    'edb0d25a-e420-4b07-8411-5ab1c15b8f5c',
     'Alice',
     'Wonder',
     'alice.wonder@getsessions.example.com',
@@ -53,7 +53,7 @@ ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO eventsync_app."user" (id, first_name, last_name, email, bio, profile_picture, role)
 VALUES (
-    'dddddddd-4444-4444-4444-444444444444',
+    'be05d2a7-ee16-486d-ae45-93625dd19b03',
     'Bob',
     'Builder',
     'bob.builder@getsessions.example.com',
@@ -65,7 +65,7 @@ ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO eventsync_app."user" (id, first_name, last_name, email, bio, profile_picture, role)
 VALUES (
-    'eeeeeeee-5555-5555-5555-555555555555',
+    '4f359ffa-5099-4651-8024-6a0033bd2e1e',
     'Carol',
     'Code',
     'carol.code@getsessions.example.com',
@@ -80,21 +80,21 @@ ON CONFLICT (email) DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f1f1f1f1-1111-1111-1111-111111111111',
+    '376cd180-7309-48a3-ae28-92fc0715dee4',
     'Kubernetes in Production',
     'Déploiement et gestion de clusters K8s à grande échelle.',
     '2025-01-01 00:00:00+00',
     '2027-12-31 23:59:59+00',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     80,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
 
 INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
 VALUES
-    ('f1f1f1f1-1111-1111-1111-111111111111', 'cccccccc-3333-3333-3333-333333333333'),
-    ('f1f1f1f1-1111-1111-1111-111111111111', 'dddddddd-4444-4444-4444-444444444444')
+    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c'),
+    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'be05d2a7-ee16-486d-ae45-93625dd19b03')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -102,19 +102,19 @@ ON CONFLICT DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f2f2f2f2-2222-2222-2222-222222222222',
+    '0e1c042c-3e8a-485b-9f73-28d4ae2ac273',
     'Spring Boot 4 Deep Dive',
     'Virtual threads, JWT, et patterns d''architecture moderne.',
     '2025-06-01 00:00:00+00',
     '2027-12-31 23:59:59+00',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     100,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
 
 INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
-VALUES ('f2f2f2f2-2222-2222-2222-222222222222', 'eeeeeeee-5555-5555-5555-555555555555')
+VALUES ('0e1c042c-3e8a-485b-9f73-28d4ae2ac273', '4f359ffa-5099-4651-8024-6a0033bd2e1e')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -122,19 +122,19 @@ ON CONFLICT DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f3f3f3f3-3333-3333-3333-333333333333',
+    '4f79e056-e929-4f00-bcc3-ebb01412198b',
     'Docker Fundamentals',
     'Containers, images, et Docker Compose.',
     '2023-01-10 09:00:00+03',
     '2023-01-10 17:00:00+03',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     50,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
 
 INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
-VALUES ('f3f3f3f3-3333-3333-3333-333333333333', 'cccccccc-3333-3333-3333-333333333333')
+VALUES ('4f79e056-e929-4f00-bcc3-ebb01412198b', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -142,14 +142,14 @@ ON CONFLICT DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f4f4f4f4-4444-4444-4444-444444444444',
+    'a26f07ce-fd82-42ab-a9a2-8460d9f79007',
     'Git Best Practices',
     'Stratégies de branching, rebase vs merge, et CI/CD.',
     '2024-03-15 10:00:00+03',
     '2024-03-15 12:00:00+03',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     30,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
 
@@ -158,21 +158,21 @@ ON CONFLICT (title) DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f5f5f5f5-5555-5555-5555-555555555555',
+    'd1d818cc-ba33-4eea-95f8-92b487d1a4b3',
     'AI-Powered Development',
     'LLMs, génération de code, et workflows assistés par IA.',
     '2028-01-15 09:00:00+03',
     '2028-01-15 17:00:00+03',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     120,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
 
 INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
 VALUES
-    ('f5f5f5f5-5555-5555-5555-555555555555', 'dddddddd-4444-4444-4444-444444444444'),
-    ('f5f5f5f5-5555-5555-5555-555555555555', 'eeeeeeee-5555-5555-5555-555555555555')
+    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', 'be05d2a7-ee16-486d-ae45-93625dd19b03'),
+    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', '4f359ffa-5099-4651-8024-6a0033bd2e1e')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -180,13 +180,13 @@ ON CONFLICT DO NOTHING;
 -- ═══════════════════════════════════════════════════════════════════════
 INSERT INTO eventsync_app.session (id, title, description, start_date, end_date, room_id, capacity, event_id)
 VALUES (
-    'f6f6f6f6-6666-6666-6666-666666666666',
+    '3c6f8187-85ca-42dd-b35a-0bcc5305c001',
     'Quantum Computing Intro',
     'Qubits, portes quantiques, et algorithmes.',
     '2029-06-01 09:00:00+03',
     '2029-06-03 18:00:00+03',
-    'aaaaaaaa-1111-1111-1111-111111111111',
+    '95c89274-3a9e-4ecd-8084-c33072a9a698',
     40,
-    'bbbbbbbb-2222-2222-2222-222222222222'
+    '0fe49568-881a-406c-8657-5cb3b1d971f7'
 )
 ON CONFLICT (title) DO NOTHING;
