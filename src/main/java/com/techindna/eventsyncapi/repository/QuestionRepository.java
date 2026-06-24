@@ -60,20 +60,4 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
                             @Param("sessionId") UUID sessionId,
                             @Param("userId") UUID userId,
                             @Param("anonymous") boolean anonymous);
-
-    @Query(value = """
-             SELECT id FROM eventsync_app.question WHERE id = :questionId AND session_id = :sessionId
-             """, nativeQuery = true)
-    Optional<UUID> findQuestionByIdAndSessionId(@Param("questionId") UUID questionId,
-                                                @Param("sessionId") UUID sessionId);
-
-
-
-    @Query(value = """
-        SELECT COUNT(*) FROM eventsync_app.upvote WHERE question_id = :questionId
-            """, nativeQuery = true)
-    int getUpvoteCount(@Param("questionId") UUID questionId);
-
-
-
 }
