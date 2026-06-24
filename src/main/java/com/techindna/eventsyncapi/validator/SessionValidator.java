@@ -1,12 +1,16 @@
 package com.techindna.eventsyncapi.validator;
 
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
+import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.OffsetTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 @Component
@@ -39,6 +43,28 @@ public class SessionValidator {
 
     public void validateUpdate(SessionUpdateInputDto session) {
         validateSession(session.getTitle(), session.getDescription(), session.getStartDate(), session.getEndDate(), session.getCapacity(), session.getRoomId(), session.getEventId());
+    }
+
+    public void validateAddSpeaker(SessionSpeakerInputDto request) {
+        dataValidator.checkNullData("startTime", request.getStartTime());
+        dataValidator.checkNullData("endTime", request.getEndTime());
+
+        OffsetTime startTime = parseTime(request.getStartTime(), "startTime");
+        OffsetTime endTime = parseTime(request.getEndTime(), "endTime");
+
+        if (!endTime.isAfter(startTime)) {
+            throw new UnprocessableEntityException("The field endTime must be after startTime.");
+        }
+    }
+
+    private static OffsetTime parseTime(String value, String fieldName) {
+        try {
+            return OffsetTime.parse(value, DateTimeFormatter.ISO_OFFSET_TIME);
+        } catch (DateTimeParseException e) {
+            throw new UnprocessableEntityException(
+                    String.format("Invalid format for %s: expected time with timezone (HH:mm:ss±HH:mm).", fieldName)
+            );
+        }
     }
 
     public void validateGet(String room, String speaker, String event) {

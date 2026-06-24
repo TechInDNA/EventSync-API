@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
+import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.exception.ConflictException;
@@ -34,6 +35,7 @@ public class SessionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
     private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
+    private static final String FOREIGN_KEY_VIOLATION = "23503";
 
     @Transactional(readOnly = true)
     public SessionListResponseDto getAllSessions(int page, int size, String room, String event,
@@ -104,6 +106,28 @@ public class SessionService {
     }
 
     @Transactional
+    public String addSpeakerToSession(UUID sessionId, UUID speakerId, SessionSpeakerInputDto request) {
+        sessionValidator.validateAddSpeaker(request);
+
+        try {
+            sessionRepository.insertSessionSpeaker(
+                    sessionId, speakerId, request.getStartTime(), request.getEndTime()
+            ).orElseThrow(() -> new ConflictException(
+                    String.format("Speaker %s is already linked to session %s.", speakerId, sessionId)
+            ));
+        } catch (DataIntegrityViolationException e) {
+            if (isForeignKeyViolation(e)) {
+                throw new NotFoundException(
+                        String.format("Session (%s) or speaker (%s) not found.", sessionId, speakerId)
+                );
+            }
+            throw e;
+        }
+
+        return "Speaker linked to session.";
+    }
+
+    @Transactional
     public void deleteSession(UUID id) {
         sessionRepository.deleteSessionById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", id)));
@@ -150,5 +174,10 @@ public class SessionService {
     private static boolean uniqueViolation(DataIntegrityViolationException e) {
         return e.getRootCause() instanceof SQLException sqlEx
                 && UNIQUE_CONSTRAINT_VIOLATION.equals(sqlEx.getSQLState());
+    }
+
+    private static boolean isForeignKeyViolation(DataIntegrityViolationException e) {
+        return e.getRootCause() instanceof SQLException sqlEx
+                && FOREIGN_KEY_VIOLATION.equals(sqlEx.getSQLState());
     }
 }

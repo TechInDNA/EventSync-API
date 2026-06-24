@@ -137,6 +137,15 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             """)
     List<Session> findAllByIdInWithDetails(@Param("ids") List<UUID> ids);
 
-    @Query(value = "SELECT * FROM eventsync_app.session WHERE id = :id", nativeQuery = true)
-    Optional<Session> findSessionById(@Param("id") UUID id);
+    @Query(value = """
+            INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
+            VALUES (:sessionId, :speakerId, cast(:startTime AS time with time zone), cast(:endTime AS time with time zone))
+            ON CONFLICT (session_id, speaker_id) DO NOTHING
+            RETURNING session_id
+            """, nativeQuery = true)
+    Optional<UUID> insertSessionSpeaker(@Param("sessionId") UUID sessionId,
+                                        @Param("speakerId") UUID speakerId,
+                                        @Param("startTime") String startTime,
+                                        @Param("endTime") String endTime);
+
 }

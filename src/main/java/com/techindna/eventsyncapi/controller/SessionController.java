@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
+import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,17 @@ public class SessionController {
     @PostMapping
     public ResponseEntity<SessionResponseDto> createSession(@RequestBody SessionInputDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(sessionService.createSession(request));
+    }
+
+    @PostMapping("/{sessionId}/speaker/{speakerId}")
+    public ResponseEntity<String> addSpeakerToSession(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID speakerId,
+            @RequestBody SessionSpeakerInputDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                sessionService.addSpeakerToSession(sessionId, speakerId, request)
+        );
     }
 
     @DeleteMapping("/{id}")
