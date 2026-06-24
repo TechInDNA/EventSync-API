@@ -590,6 +590,43 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
+  /sessions/{id}/questions/{qid}/upvote:
+    post:
+      summary: Upvote a question
+      tags:
+        - Questions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the session
+        - name: qid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the question to upvote
+      responses:
+        '200':
+          description: Question upvoted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
   /rooms:
     get:
       summary: List all rooms
