@@ -51,13 +51,17 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── RoomListResponseDto.java
 │   │   └── RoomResponseDto.java
 │   ├── ai/
+│   │   ├── AiConversationDetailResponseDto.java
+│   │   ├── AiConversationListResponseDto.java
+│   │   ├── AiConversationResponseDto.java
 │   │   ├── ChatMessageInputDto.java
-│   │   ├── ChatMessageResponseDto.java
-│   │   └── AiConversationResponseDto.java
+│   │   └── ChatMessageResponseDto.java
 │   ├── session/
 │   │   ├── EventRefDto.java
 │   │   ├── RoomRefDto.java
+│   │   ├── SessionDetailResponseDto.java
 │   │   ├── SessionInputDto.java
+│   │   ├── SessionListResponseDto.java
 │   │   ├── SessionResponseDto.java
 │   │   ├── SessionUpdateInputDto.java
 │   │   └── SpeakerRefDto.java
@@ -92,6 +96,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   └── UnprocessableEntityException.java
 ├── mapper/
 │   ├── AiConversationMapper.java
+│   ├── ChatMessageMapper.java
 │   ├── EventMapper.java
 │   ├── ExternalLinkMapper.java
 │   ├── QuestionMapper.java          # maps Question entities to DTOs
@@ -102,6 +107,7 @@ src/main/java/com/techindna/eventsyncapi/
 ├── repository/
 │   ├── AiConversationRepository.java
 │   ├── BlacklistedIpRepository.java
+│   ├── ChatMessageRepository.java
 │   ├── EventRepository.java
 │   ├── ExternalLinkRepository.java  # + insert, update, delete methods
 │   ├── QuestionRepository.java      # native queries with pagination + upvote counts
@@ -148,6 +154,8 @@ src/test/java/com/techindna/eventsyncapi/
 │   │   ├── PostRoomControllerTest.java
 │   │   └── PutRoomControllerTest.java
 │   ├── sessions/
+│   │   ├── GetSessionControllerTest.java
+│   │   ├── GetSessionsControllerTest.java
 │   │   ├── PostSessionControllerTest.java
 │   │   └── PutSessionControllerTest.java
 │   └── speakers/
@@ -175,6 +183,8 @@ src/test/java/com/techindna/eventsyncapi/
     │   ├── PostRoomServiceTest.java
     │   └── PutRoomServiceTest.java
     ├── sessions/
+    │   ├── GetSessionServiceTest.java
+    │   ├── GetSessionsServiceTest.java
     │   ├── PostSessionServiceTest.java
     │   └── PutSessionServiceTest.java
     └── speakers/
@@ -217,6 +227,8 @@ src/main/resources/
     │   └── rooms_schema.sql
     ├── sessions/
     │   ├── delete_session_data.sql
+    │   ├── get_session_by_id_data.sql
+    │   ├── get_sessions_data.sql
     │   ├── put_session_data.sql
     │   ├── session_speaker_schema.sql
     │   ├── sessions_schema.sql
@@ -253,6 +265,8 @@ scripts/
 │   └── test_put_room.sh
 ├── sessions/
 │   ├── test_delete_session.sh
+│   ├── test_get_session_by_id.sh
+│   ├── test_get_sessions.sh
 │   ├── test_post_sessions.sh
 │   └── test_put_sessions.sh
 └── speaker/

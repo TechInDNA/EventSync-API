@@ -1,4 +1,4 @@
-package com.techindna.eventsyncapi.dto.session;
+package com.techindna.eventsyncapi.dto.ai;
 
 import com.techindna.eventsyncapi.dto.MetaDto;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SessionListResponseDto {
-    private List<SessionResponseDto> data;
+public class AiConversationListResponseDto {
+    private List<AiConversationResponseDto> data;
     private MetaDto meta;
 }

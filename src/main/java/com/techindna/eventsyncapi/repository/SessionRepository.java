@@ -89,6 +89,54 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
                                         @Param("capacity") int capacity,
                                         @Param("eventId") UUID eventId);
 
+    @Query(value = """
+            SELECT s.id, s.title, s.description, s.start_date, s.end_date, s.room_id, s.capacity, s.event_id, s.created_at
+            FROM eventsync_app.session s
+            JOIN eventsync_app.room r ON r.id = s.room_id
+            JOIN eventsync_app.event e ON e.id = s.event_id
+            LEFT JOIN eventsync_app.session_speaker ss ON ss.session_id = s.id
+            LEFT JOIN eventsync_app."user" u ON u.id = ss.speaker_id
+            WHERE (CAST(:room AS text) IS NULL OR r.name ILIKE '%' || :room || '%')
+              AND (CAST(:event AS text) IS NULL OR e.title ILIKE '%' || :event || '%')
+              AND (CAST(:speaker AS text) IS NULL OR u.first_name ILIKE '%' || :speaker || '%' OR u.last_name ILIKE '%' || :speaker || '%')
+              AND (CAST(:live AS boolean) IS NULL OR CAST(:live AS boolean) = (s.start_date <= CURRENT_TIMESTAMP AND s.end_date >= CURRENT_TIMESTAMP))
+            GROUP BY s.id, s.title, s.description, s.start_date, s.end_date, s.room_id, s.capacity, s.event_id, s.created_at
+            ORDER BY s.start_date ASC
+            LIMIT :size OFFSET :offset
+            """, nativeQuery = true)
+    List<Session> findByFilters(@Param("room") String room,
+                                @Param("event") String event,
+                                @Param("speaker") String speaker,
+                                @Param("live") Boolean live,
+                                int size,
+                                int offset);
+
+    @Query(value = """
+            SELECT COUNT(DISTINCT s.id)
+            FROM eventsync_app.session s
+            JOIN eventsync_app.room r ON r.id = s.room_id
+            JOIN eventsync_app.event e ON e.id = s.event_id
+            LEFT JOIN eventsync_app.session_speaker ss ON ss.session_id = s.id
+            LEFT JOIN eventsync_app."user" u ON u.id = ss.speaker_id
+            WHERE (CAST(:room AS text) IS NULL OR r.name ILIKE '%' || :room || '%')
+              AND (CAST(:event AS text) IS NULL OR e.title ILIKE '%' || :event || '%')
+              AND (CAST(:speaker AS text) IS NULL OR u.first_name ILIKE '%' || :speaker || '%' OR u.last_name ILIKE '%' || :speaker || '%')
+              AND (CAST(:live AS boolean) IS NULL OR CAST(:live AS boolean) = (s.start_date <= CURRENT_TIMESTAMP AND s.end_date >= CURRENT_TIMESTAMP))
+            """, nativeQuery = true)
+    long countByFilters(@Param("room") String room,
+                        @Param("event") String event,
+                        @Param("speaker") String speaker,
+                        @Param("live") Boolean live);
+
+    @Query("""
+            SELECT DISTINCT s FROM Session s
+            JOIN FETCH s.room
+            JOIN FETCH s.event
+            LEFT JOIN FETCH s.speakers
+            WHERE s.id IN :ids
+            """)
+    List<Session> findAllByIdInWithDetails(@Param("ids") List<UUID> ids);
+
     @Query(value = "SELECT * FROM eventsync_app.session WHERE id = :id", nativeQuery = true)
     Optional<Session> findSessionById(@Param("id") UUID id);
 }

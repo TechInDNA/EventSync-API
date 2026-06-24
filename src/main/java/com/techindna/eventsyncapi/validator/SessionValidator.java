@@ -41,4 +41,10 @@ public class SessionValidator {
         validateSession(session.getTitle(), session.getDescription(), session.getStartDate(), session.getEndDate(), session.getCapacity(), session.getRoomId(), session.getEventId());
     }
 
+    public void validateGet(String room, String speaker, String event) {
+        dataValidator.validateSearchString(room);
+        dataValidator.validateSearchString(speaker);
+        dataValidator.validateSearchString(event);
+    }
+
 }

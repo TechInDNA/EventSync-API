@@ -2,145 +2,122 @@
 
 # ──────────────────────────────────────────────
 #  GET /sessions — Test script
+#  Prerequisite: run get_sessions_data.sql first
 # ──────────────────────────────────────────────
-# Requires seeded data: at least one room, one event, and a few sessions.
-# Run after scripts/sessions/test_post_sessions.sh and the event/room/speaker seed scripts.
 
-echo "=== [200] default pagination (page=1, size=20) ==="
-curlie GET :8080/sessions
-
-echo ""
-echo "=== [200] custom page & size (page=1, size=5) ==="
-curlie GET ':8080/sessions?page=1&size=5'
-
-echo ""
-echo "=== [200] size=100 (all sessions) ==="
-curlie GET ':8080/sessions?page=1&size=100'
-
-echo ""
-echo "=== [200] page out of range — expect: 0 sessions ==="
-curlie GET ':8080/sessions?page=999&size=20'
-
-echo ""
-echo "=== [200] room=Salle — expect: every session in 'Salle Principale' ==="
-curlie GET ':8080/sessions?room=Salle'
-
-echo ""
-echo "=== [200] room=Nonexistent — expect: 0 sessions ==="
-curlie GET ':8080/sessions?room=Nonexistent'
-
-echo ""
-echo "=== [200] event=Session Test Event — expect: only sessions tied to that event ==="
-curlie GET ':8080/sessions?event=Session%20Test%20Event'
-
-echo ""
-echo "=== [200] event=Spring — expect: any session linked to an event whose title contains Spring ==="
-curlie GET ':8080/sessions?event=Spring'
-
-echo ""
-echo "=== [200] event=Nonexistent — expect: 0 sessions ==="
-curlie GET ':8080/sessions?event=Nonexistent'
-
-echo ""
-echo "=== [200] speaker=Jane — expect: any session whose speaker first or last name contains 'Jane' ==="
-curlie GET ':8080/sessions?speaker=Jane'
-
-echo ""
-echo "=== [200] speaker=Nonexistent — expect: 0 sessions ==="
-curlie GET ':8080/sessions?speaker=Nonexistent'
-
-echo ""
-echo "=== [200] live=true — expect: only currently-live sessions ==="
-curlie GET ':8080/sessions?live=true'
-
-echo ""
-echo "=== [200] live=false — expect: every non-live session ==="
-curlie GET ':8080/sessions?live=false'
-
-echo ""
-echo "=== [200] combined filters — room + live=false ==="
-curlie GET ':8080/sessions?room=Salle&live=false'
-
-echo ""
-echo "=== [200] combined filters — event + live=false ==="
-curlie GET ':8080/sessions?event=Session%20Test%20Event&live=false'
-
-echo ""
-echo "=== [200] combined filters — room + speaker + live ==="
-curlie GET ':8080/sessions?room=Salle&speaker=Jane&live=false'
-
-echo ""
-echo "=== [200] page=2 size=10 ==="
-curlie GET ':8080/sessions?page=2&size=10'
+echo "=== AUTH SETUP — Admin login ====" && \
+curlie -s -c /tmp/eventsync_admin.txt -X POST :8080/auth/login -H 'Content-Type: application/json' -d '{"email":"admin@eventsync.com","password":"admin123"}' > /dev/null
 
 echo ""
 echo ""
-echo "=== EXCEPTION TESTS ==="
+echo "=========================================="
+echo "  GET /sessions — SUCCESS (200)"
+echo "=========================================="
+echo ""
+
+echo "=== Test #1: [200] GET /sessions — default pagination (page 1, size 20) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt :8080/sessions
 
 echo ""
-echo "=== [400] page=abc — invalid int for page ==="
-curlie GET ':8080/sessions?page=abc'
+echo "=== Test #2: [200] GET /sessions — custom pagination (page 1, size 2) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?page=1&size=2'
 
 echo ""
-echo "=== [400] size=abc — invalid int for size ==="
-curlie GET ':8080/sessions?size=abc'
+echo "=== Test #3: [200] GET /sessions — filter by live=true (expect 2) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?live=true'
 
 echo ""
-echo "=== [400] live=maybe — invalid Boolean ==="
-curlie GET ':8080/sessions?live=maybe'
+echo "=== Test #4: [200] GET /sessions — filter by live=false (expect 4) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?live=false'
 
 echo ""
-echo "=== [422] room=Salle! — invalid char ! rejected by validateSearchString ==="
-curlie GET ':8080/sessions?room=Salle%21'
+echo "=== Test #5: [200] GET /sessions — filter by room name ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?room=Session%20Room%20Alpha'
 
 echo ""
-echo "=== [422] event=Event<script> — invalid char < rejected by validateSearchString ==="
-curlie GET ':8080/sessions?event=Event%3Cscript%3E'
+echo "=== Test #6: [200] GET /sessions — filter by speaker first name ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?speaker=Alice'
 
 echo ""
-echo "=== [422] speaker=Doe@x — invalid char @ rejected by validateSearchString ==="
-curlie GET ':8080/sessions?speaker=Doe%40x'
+echo "=== Test #7: [200] GET /sessions — filter by speaker last name ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?speaker=Builder'
+
+echo ""
+echo "=== Test #8: [200] GET /sessions — filter by event title ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?event=Tech%20Summit%202026'
+
+echo ""
+echo "=== Test #9: [200] GET /sessions — combined filters (live + speaker) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?live=true&speaker=Carol'
+
+echo ""
+echo "=== Test #10: [200] GET /sessions — combined filters (all params) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?room=Session%20Room%20Alpha&event=Tech%20Summit%202026&live=false&speaker=Alice'
 
 echo ""
 echo ""
-echo "=== EDGE CASES (graceful handling) ==="
+echo "=========================================="
+echo "  GET /sessions — VALIDATION ERRORS (422)"
+echo "=========================================="
+echo ""
+
+echo "=== Test #11: [422] GET /sessions — invalid room (special chars) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?room=@@invalid@@'
 
 echo ""
-echo "=== [200] room= (empty) — treated as no filter ==="
-curlie GET ':8080/sessions?room='
+echo "=== Test #12: [422] GET /sessions — invalid speaker (special chars) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?speaker=%3Cscript%3E'
 
 echo ""
-echo "=== [200] event= (empty) — treated as no filter ==="
-curlie GET ':8080/sessions?event='
+echo "=== Test #13: [422] GET /sessions — invalid event (special chars) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?event=!!!invalid!!!'
 
 echo ""
-echo "=== [200] speaker= (empty) — treated as no filter ==="
-curlie GET ':8080/sessions?speaker='
+echo ""
+echo "=========================================="
+echo "  GET /sessions — EMPTY RESULTS"
+echo "=========================================="
+echo ""
+
+echo "=== Test #14: [200] GET /sessions — non-matching room (expect empty data) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?room=UnknownRoomName'
 
 echo ""
-echo "=== [200] page=0 — normalised to page=1 ==="
-curlie GET ':8080/sessions?page=0'
+echo "=== Test #15: [200] GET /sessions — non-matching event (expect empty data) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?event=NonExistentEvent'
 
 echo ""
-echo "=== [200] page=-5 — normalised to page=1 ==="
-curlie GET ':8080/sessions?page=-5'
+echo "=== Test #16: [200] GET /sessions — page beyond results (expect empty data) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?page=999'
 
 echo ""
-echo "=== [200] size=0 — normalised to size=20 ==="
-curlie GET ':8080/sessions?size=0'
+echo ""
+echo "=========================================="
+echo "  GAPS ADDED"
+echo "=========================================="
+echo ""
+
+echo "=== Test #17: [200] GET /sessions — no auth cookie (permitAll) ==="
+curlie -X GET :8080/sessions | jq '{meta: .meta}' 2>/dev/null || curlie -X GET :8080/sessions
 
 echo ""
-echo "=== [200] size=-1 — normalised to size=20 ==="
-curlie GET ':8080/sessions?size=-1'
+echo "=== Test #18: [200] GET /sessions — blank room filter (returns all) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?room='
 
 echo ""
-echo "=== [200] page=1&size=0 — normalised ==="
-curlie GET ':8080/sessions?page=1&size=0'
+echo "=== Test #19: [200] GET /sessions — non-matching speaker (expect empty data) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?speaker=ZzzNotFound'
 
 echo ""
-echo "=== [200] live=false + page=2 size=5 ==="
-curlie GET ':8080/sessions?live=false&page=2&size=5'
+echo "=== Test #20: [200] GET /sessions — size=0 (clamped to 20, returns all) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?size=0'
 
 echo ""
-echo "=== [200] all filters combined (room=Salle&event=Session&speaker=Jane&live=false) ==="
-curlie GET ':8080/sessions?room=Salle&event=Session%20Test%20Event&speaker=Jane&live=false'
+echo "=== Test #21: [200] GET /sessions — page=0 (clamped to 1) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?page=0'
+
+echo ""
+echo "=== Test #22: [400] GET /sessions — live=invalid (type mismatch) ==="
+curlie -X GET -b /tmp/eventsync_admin.txt ':8080/sessions?live=notabool'
+
+rm -f /tmp/eventsync_admin.txt

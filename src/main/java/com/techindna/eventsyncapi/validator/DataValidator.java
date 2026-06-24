@@ -37,7 +37,7 @@ public class DataValidator {
     }
 
     public void validateSearchString(String data){
-        if (data != null && !ALLOWED_SEARCH_STRING.matcher(data).matches()){
+        if (data != null && !data.isBlank() && !ALLOWED_SEARCH_STRING.matcher(data).matches()){
             throw new UnprocessableEntityException(
                     "Invalid input for Search field: only a-zA-Z0-9-' characters are allowed."
             );

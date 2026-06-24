@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionDetailResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionInputDto;
+import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.entity.Session;
@@ -33,6 +34,32 @@ public class SessionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
     private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
+
+    @Transactional(readOnly = true)
+    public SessionListResponseDto getAllSessions(int page, int size, String room, String event,
+                                                  String speaker, Boolean live, String ipAddress) {
+        if (page < 1) page = 1;
+        if (size < 1) size = 20;
+
+        int offset = (page - 1) * size;
+
+        authService.checkBlacklist(ipAddress);
+        sessionValidator.validateGet(room, speaker, event);
+
+        long total = sessionRepository.countByFilters(room, event, speaker, live);
+        List<Session> sessions = sessionRepository.findByFilters(room, event, speaker, live, size, offset);
+
+        if (!sessions.isEmpty()) {
+            sessions = sessionRepository.findAllByIdInWithDetails(
+                    sessions
+                            .stream()
+                            .map(Session::getId)
+                            .toList()
+            );
+        }
+
+        return sessionMapper.toListResponseDto(sessions, total, page, size);
+    }
 
     @Transactional(readOnly = true)
     public SessionDetailResponseDto getSessionById(UUID id, String ipAddress) {

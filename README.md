@@ -88,13 +88,17 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 | `db/rooms/delete_room_data.sql` | Room + linked session for DELETE /rooms/{id} |
 | `db/sessions/put_session_data.sql` | Room + event + speaker + sessions for PUT /sessions/{id} |
 | `db/sessions/delete_session_data.sql` | Room + event + session for DELETE /sessions/{id} |
+| `db/sessions/get_sessions_data.sql` | Room + event + speaker + sessions for GET /sessions |
+| `db/sessions/get_session_by_id_data.sql` | Room + event + session for GET /sessions/{id} |
 | `db/speaker/put_speaker_data.sql` | Speaker user for PUT /speakers/{id} |
 | `db/speaker/get_speaker_by_id_data.sql` | Speaker + external links for GET /speakers/{id} |
 | `db/speaker/delete_speaker_data.sql` | Speaker + external links for DELETE /speakers/{id} |
+| `db/speaker/get_speakers.sql` | Speaker data for GET /speakers |
 | `db/externalLink/put_speaker_external_link_data.sql` | Speaker + external link for PUT /speakers/{id}/external-link |
 | `db/externalLink/post_external_link_data.sql` | Speaker data for POST /speakers/{id}/external-link |
 | `db/externalLink/delete_external_link_data.sql` | Speaker + external link for DELETE /speakers/{id}/external-link |
 | `db/questions/post_question_data.sql` | Session + user for POST /sessions/{id}/questions |
+| `db/questions/test_questions_data.sql` | Session + user + questions for GET /sessions/{id}/questions |
 
 ### 4. Build and run
 
@@ -197,6 +201,8 @@ Shell scripts using `curlie` are in `scripts/`. Each script is self-contained: i
 | `scripts/sessions/test_post_sessions.sh` | POST /sessions |
 | `scripts/sessions/test_put_sessions.sh` | PUT /sessions/{id} |
 | `scripts/sessions/test_delete_session.sh` | DELETE /sessions/{id} |
+| `scripts/sessions/test_get_sessions.sh` | GET /sessions |
+| `scripts/sessions/test_get_session_by_id.sh` | GET /sessions/{id} |
 | `scripts/speaker/test_post_speaker.sh` | POST /speakers |
 | `scripts/speaker/test_put_speaker.sh` | PUT /speakers/{id} |
 | `scripts/speaker/test_get_speakers.sh` | GET /speakers |
@@ -205,6 +211,7 @@ Shell scripts using `curlie` are in `scripts/`. Each script is self-contained: i
 | `scripts/external-link/test_post_external_link.sh` | POST /speakers/{id}/external-link |
 | `scripts/external-link/test_put_speaker_external_link.sh` | PUT /speakers/{id}/external-link |
 | `scripts/external-link/test_delete_external_link.sh` | DELETE /speakers/{id}/external-link |
+| `scripts/questions/test_get_questions.sh` | GET /sessions/{id}/questions |
 | `scripts/questions/test_post_questions.sh` | POST /sessions/{id}/questions |
 
 To run a script, start the server first (`./gradlew bootRun`), then:
