@@ -136,4 +136,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
             WHERE s.id IN :ids
             """)
     List<Session> findAllByIdInWithDetails(@Param("ids") List<UUID> ids);
+
+    @Query(value = "SELECT * FROM eventsync_app.session WHERE id = :id", nativeQuery = true)
+    Optional<Session> findSessionById(@Param("id") UUID id);
 }

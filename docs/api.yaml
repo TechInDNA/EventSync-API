@@ -591,36 +591,6 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
   /sessions/{id}/questions/{qid}/upvote:
-    get:
-      summary: Get number of upvotes for a question
-      tags:
-        - Questions
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID of the session
-        - name: qid
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID of the question
-      responses:
-        '200':
-          description: Number of upvotes
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                    description: Number of upvotes
-        '422':
-          $ref: '#/components/responses/Unprocessable'
     post:
       summary: Upvote a question
       tags:
@@ -633,26 +603,28 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: ID of the session
         - name: qid
           in: path
           required: true
           schema:
             type: string
-          description: ID of the question
+            format: uuid
+          description: ID of the question to upvote
       responses:
         '200':
-          description: Question upvotée
+          description: Question upvoted
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                    description: Total number of upvotes
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
   /rooms:
