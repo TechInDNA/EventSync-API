@@ -35,7 +35,6 @@ public class SessionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
     private static final String UNIQUE_CONSTRAINT_VIOLATION = "23505";
-    private static final String FOREIGN_KEY_VIOLATION = "23503";
 
     @Transactional(readOnly = true)
     public SessionListResponseDto getAllSessions(int page, int size, String room, String event,
@@ -109,18 +108,10 @@ public class SessionService {
     public String addSpeakerToSession(UUID sessionId, UUID speakerId, SessionSpeakerInputDto request) {
         sessionValidator.validateAddSpeaker(request);
 
-        try {
-            sessionRepository.insertSessionSpeaker(
-                    sessionId, speakerId, request.getStartTime(), request.getEndTime()
-            );
-        } catch (DataIntegrityViolationException e) {
-            if (isForeignKeyViolation(e)) {
-                throw new NotFoundException(
-                        String.format("Session (%s) or speaker (%s) not found.", sessionId, speakerId)
-                );
-            }
-            throw e;
-        }
+        sessionRepository.insertSessionSpeaker(
+                sessionId, speakerId, request.getStartTime(), request.getEndTime()
+        ).orElseThrow(() -> new NotFoundException(
+                String.format("Session (%s) or speaker (%s) not found.", sessionId, speakerId)));
 
         return "Speaker linked to session.";
     }
@@ -172,10 +163,5 @@ public class SessionService {
     private static boolean uniqueViolation(DataIntegrityViolationException e) {
         return e.getRootCause() instanceof SQLException sqlEx
                 && UNIQUE_CONSTRAINT_VIOLATION.equals(sqlEx.getSQLState());
-    }
-
-    private static boolean isForeignKeyViolation(DataIntegrityViolationException e) {
-        return e.getRootCause() instanceof SQLException sqlEx
-                && FOREIGN_KEY_VIOLATION.equals(sqlEx.getSQLState());
     }
 }
