@@ -76,9 +76,13 @@ public class QuestionService {
 
     @Transactional
     public UpvoteResponseDto upvoteQuestion(UUID questionId, UUID sessionId, UUID userId) {
-        questionRepository.deleteUpvote(userId, questionId);
-        questionRepository.insertUpvote(userId, questionId).orElseThrow(() -> new NotFoundException(
-                String.format("Question %s not found.", questionId)));
+        questionRepository.findById(questionId)
+                .orElseThrow(() -> new NotFoundException(String.format("Question %s not found.", questionId)));
+
+        int deleted = questionRepository.deleteUpvote(userId, questionId);
+        if (deleted == 0) {
+            questionRepository.insertUpvote(userId, questionId);
+        }
 
         int upvoteCount = questionRepository.countUpvotesByQuestionId(questionId);
 

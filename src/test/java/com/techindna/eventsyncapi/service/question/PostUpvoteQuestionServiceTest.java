@@ -1,6 +1,7 @@
 package com.techindna.eventsyncapi.service.question;
 
 import com.techindna.eventsyncapi.dto.question.UpvoteResponseDto;
+import com.techindna.eventsyncapi.entity.Question;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.UserMapper;
@@ -52,9 +53,9 @@ class PostUpvoteQuestionServiceTest {
     @Test
     @DisplayName("upvoteQuestion deletes existing upvote, inserts new one, returns updated count")
     void upvoteQuestion_firstUpvote_addsAndReturnsCount1() {
+        when(questionRepository.findById(QUESTION_ID)).thenReturn(Optional.of(Question.builder().id(QUESTION_ID).build()));
         when(questionRepository.deleteUpvote(USER_ID, QUESTION_ID)).thenReturn(0);
-        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID)).thenReturn(1);
         when(questionRepository.countUpvotesByQuestionId(QUESTION_ID)).thenReturn(1);
 
         UpvoteResponseDto result = questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, USER_ID);
@@ -62,51 +63,54 @@ class PostUpvoteQuestionServiceTest {
         assertNotNull(result);
         assertEquals(1, result.getUpvoteCount());
 
+        verify(questionRepository).findById(QUESTION_ID);
         verify(questionRepository).deleteUpvote(USER_ID, QUESTION_ID);
         verify(questionRepository).insertUpvote(USER_ID, QUESTION_ID);
         verify(questionRepository).countUpvotesByQuestionId(QUESTION_ID);
     }
 
     @Test
-    @DisplayName("upvoteQuestion when user already upvoted re-inserts and returns same count")
-    void upvoteQuestion_reUpvote_insertsAndReturnsCount() {
+    @DisplayName("upvoteQuestion when user already upvoted toggles off and returns updated count")
+    void upvoteQuestion_reUpvote_togglesOffAndReturnsUpdatedCount() {
+        var question = Question.builder().id(QUESTION_ID).build();
+        when(questionRepository.findById(QUESTION_ID)).thenReturn(Optional.of(question));
         when(questionRepository.deleteUpvote(USER_ID, QUESTION_ID)).thenReturn(1);
-        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID))
-                .thenReturn(Optional.of(UUID.randomUUID()));
-        when(questionRepository.countUpvotesByQuestionId(QUESTION_ID)).thenReturn(3);
+        when(questionRepository.countUpvotesByQuestionId(QUESTION_ID)).thenReturn(2);
 
         UpvoteResponseDto result = questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, USER_ID);
 
         assertNotNull(result);
-        assertEquals(3, result.getUpvoteCount());
+        assertEquals(2, result.getUpvoteCount());
 
+        verify(questionRepository).findById(QUESTION_ID);
         verify(questionRepository).deleteUpvote(USER_ID, QUESTION_ID);
-        verify(questionRepository).insertUpvote(USER_ID, QUESTION_ID);
+        verify(questionRepository, never()).insertUpvote(any(), any());
+        verify(questionRepository).countUpvotesByQuestionId(QUESTION_ID);
     }
 
     @Test
     @DisplayName("upvoteQuestion called by two different users both succeed")
     void upvoteQuestion_twoUsers_bothSucceed() {
+        var question = Question.builder().id(QUESTION_ID).build();
+        when(questionRepository.findById(QUESTION_ID)).thenReturn(Optional.of(question));
         when(questionRepository.deleteUpvote(USER_ID, QUESTION_ID)).thenReturn(0);
         when(questionRepository.deleteUpvote(OTHER_USER_ID, QUESTION_ID)).thenReturn(0);
-        when(questionRepository.insertUpvote(any(), eq(QUESTION_ID)))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+        when(questionRepository.insertUpvote(any(), eq(QUESTION_ID))).thenReturn(1);
         when(questionRepository.countUpvotesByQuestionId(QUESTION_ID)).thenReturn(2);
 
         questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, USER_ID);
         questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, OTHER_USER_ID);
 
+        verify(questionRepository, times(2)).findById(QUESTION_ID);
         verify(questionRepository).insertUpvote(USER_ID, QUESTION_ID);
         verify(questionRepository).insertUpvote(OTHER_USER_ID, QUESTION_ID);
         verify(questionRepository, times(2)).countUpvotesByQuestionId(QUESTION_ID);
     }
 
     @Test
-    @DisplayName("upvoteQuestion when insert fails throws NotFoundException")
-    void upvoteQuestion_insertFails_throwsNotFoundException() {
-        when(questionRepository.deleteUpvote(USER_ID, QUESTION_ID)).thenReturn(0);
-        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID))
-                .thenReturn(Optional.empty());
+    @DisplayName("upvoteQuestion when question not found throws NotFoundException")
+    void upvoteQuestion_questionNotFound_throwsNotFoundException() {
+        when(questionRepository.findById(QUESTION_ID)).thenReturn(Optional.empty());
 
         var exception = assertThrows(NotFoundException.class,
                 () -> questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, USER_ID));
@@ -116,17 +120,19 @@ class PostUpvoteQuestionServiceTest {
                 exception.getMessage()
         );
 
-        verify(questionRepository).deleteUpvote(USER_ID, QUESTION_ID);
-        verify(questionRepository).insertUpvote(USER_ID, QUESTION_ID);
+        verify(questionRepository).findById(QUESTION_ID);
+        verify(questionRepository, never()).deleteUpvote(any(), any());
+        verify(questionRepository, never()).insertUpvote(any(), any());
         verify(questionRepository, never()).countUpvotesByQuestionId(any());
     }
 
     @Test
     @DisplayName("upvoteQuestion returns accurate count from repository")
     void upvoteQuestion_returnsAccurateCount() {
+        var question = Question.builder().id(QUESTION_ID).build();
+        when(questionRepository.findById(QUESTION_ID)).thenReturn(Optional.of(question));
         when(questionRepository.deleteUpvote(USER_ID, QUESTION_ID)).thenReturn(0);
-        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+        when(questionRepository.insertUpvote(USER_ID, QUESTION_ID)).thenReturn(1);
         when(questionRepository.countUpvotesByQuestionId(QUESTION_ID)).thenReturn(42);
 
         UpvoteResponseDto result = questionService.upvoteQuestion(QUESTION_ID, SESSION_ID, USER_ID);

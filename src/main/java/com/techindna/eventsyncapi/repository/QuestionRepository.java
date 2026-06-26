@@ -62,13 +62,14 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
                             @Param("userId") UUID userId,
                             @Param("anonymous") boolean anonymous);
 
+    @Modifying
     @Query(value = """
             INSERT INTO eventsync_app.upvote (user_id, question_id)
             VALUES (:userId, :questionId)
-            RETURNING id
             """, nativeQuery = true)
-    Optional<UUID> insertUpvote(@Param("userId") UUID userId, @Param("questionId") UUID questionId);
-    
+    int insertUpvote(@Param("userId") UUID userId, @Param("questionId") UUID questionId);
+
+    @Modifying
     @Query(value = """
             DELETE FROM eventsync_app.upvote
             WHERE user_id = :userId AND question_id = :questionId
