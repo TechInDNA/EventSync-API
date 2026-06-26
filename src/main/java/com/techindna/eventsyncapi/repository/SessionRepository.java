@@ -140,8 +140,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     @Query(value = """
             INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
             VALUES (:sessionId, :speakerId, cast(:startTime AS timestamptz), cast(:endTime AS timestamptz))
-            ON CONFLICT (session_id, speaker_id) DO NOTHING
-            RETURNING session_id
+            RETURNING id
             """, nativeQuery = true)
     Optional<UUID> insertSessionSpeaker(@Param("sessionId") UUID sessionId,
                                         @Param("speakerId") UUID speakerId,

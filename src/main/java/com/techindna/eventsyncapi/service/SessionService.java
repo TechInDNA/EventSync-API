@@ -112,9 +112,7 @@ public class SessionService {
         try {
             sessionRepository.insertSessionSpeaker(
                     sessionId, speakerId, request.getStartTime(), request.getEndTime()
-            ).orElseThrow(() -> new ConflictException(
-                    String.format("Speaker %s is already linked to session %s.", speakerId, sessionId)
-            ));
+            );
         } catch (DataIntegrityViolationException e) {
             if (isForeignKeyViolation(e)) {
                 throw new NotFoundException(
