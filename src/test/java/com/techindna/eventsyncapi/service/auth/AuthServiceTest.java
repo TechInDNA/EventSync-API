@@ -177,7 +177,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.login(validRequest, TEST_IP, TEST_UA))
                     .isInstanceOf(UnprocessableEntityException.class)
-                    .hasMessage("The field email is required and cannot be blank.");
+                    .hasMessage("The field email is required.");
         }
 
         @Test
@@ -444,7 +444,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
-                    .hasMessage("The field firstName is required and cannot be blank.");
+                    .hasMessage("The field firstName is required.");
         }
 
         @Test
@@ -454,7 +454,7 @@ class AuthServiceTest {
 
             assertThatThrownBy(() -> authService.participate(validParticipantRequest, TEST_IP))
                     .isInstanceOf(UnprocessableEntityException.class)
-                    .hasMessage("The field lastName is required and cannot be blank.");
+                    .hasMessage("The field lastName is required.");
         }
 
         @Test

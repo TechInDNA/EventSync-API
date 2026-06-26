@@ -105,7 +105,6 @@ class PutSpeakerExternalLinkServiceTest {
         assertEquals("https://twitter.com/newhandle", result.get(0).getUrl());
         assertEquals("GitHub", result.get(1).getName());
 
-        verify(userRepository).findById(SPEAKER_ID);
         verify(externalLinkRepository).updateExternalLinkByNameAndUserId(
                 eq(SPEAKER_ID), eq("Twitter"), eq("Twitter"), eq("https://twitter.com/newhandle"));
         verify(externalLinkRepository).findByUserId(SPEAKER_ID);
@@ -116,13 +115,19 @@ class PutSpeakerExternalLinkServiceTest {
     void withUnknownSpeaker_throwsNotFound() {
         var request = new ExternalLinkDto("Twitter", "https://twitter.com/newhandle");
 
-        when(userRepository.findById(SPEAKER_ID)).thenReturn(Optional.empty());
+        when(externalLinkRepository.updateExternalLinkByNameAndUserId(
+                eq(SPEAKER_ID), eq("Twitter"), eq("Twitter"), eq("https://twitter.com/newhandle")
+        )).thenReturn(Optional.empty());
 
         var exception = assertThrows(NotFoundException.class,
                 () -> speakerService.updateExternalLink(SPEAKER_ID, URL_NAME, request));
 
-        assertEquals("Speaker " + SPEAKER_ID + " not found.", exception.getMessage());
-        verify(userRepository).findById(SPEAKER_ID);
+        assertEquals(
+                String.format("Speaker %s or external link 'Twitter' not found.", SPEAKER_ID),
+                exception.getMessage()
+        );
+        verify(externalLinkRepository).updateExternalLinkByNameAndUserId(
+                eq(SPEAKER_ID), eq("Twitter"), eq("Twitter"), eq("https://twitter.com/newhandle"));
         verifyNoMoreInteractions(externalLinkRepository);
     }
 
