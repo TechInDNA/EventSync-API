@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.controller.sessions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techindna.eventsyncapi.controller.SessionController;
 import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.GlobalExceptionHandler;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
@@ -130,7 +131,7 @@ class PostSessionSpeakerControllerTest {
 
         when(sessionService.addSpeakerToSession(any(), any(), any()))
                 .thenThrow(new UnprocessableEntityException(
-                        "Invalid format for startTime: expected time with timezone (HH:mm:ss±HH:mm)."
+                        "Invalid format for startTime: expected ISO timestamp with timezone (yyyy-MM-ddTHH:mm:ss±HH:mm)."
                 ));
 
         mockMvc.perform(post("/sessions/{sessionId}/speaker/{speakerId}", SESSION_ID, SPEAKER_ID)
@@ -139,6 +140,26 @@ class PostSessionSpeakerControllerTest {
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.status").value(422))
                 .andExpect(jsonPath("$.error").value("Unprocessable Entity"));
+    }
+
+    @Test
+    @DisplayName("POST /sessions/{sessionId}/speaker/{speakerId} with busy room returns 409")
+    void addSpeakerToSession_withBusyRoom_returns409() throws Exception {
+        var request = SessionSpeakerInputDto.builder()
+                .startTime("10:00:00+03:00")
+                .endTime("11:30:00+03:00")
+                .build();
+
+        when(sessionService.addSpeakerToSession(SESSION_ID, SPEAKER_ID, request))
+                .thenThrow(new ConflictException("The room is already occupied during the requested time slot."));
+
+        mockMvc.perform(post("/sessions/{sessionId}/speaker/{speakerId}", SESSION_ID, SPEAKER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("The room is already occupied during the requested time slot."));
     }
 
     private String toJson(Object obj) {

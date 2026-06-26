@@ -1,6 +1,7 @@
 package com.techindna.eventsyncapi.service.sessions;
 
 import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
+import com.techindna.eventsyncapi.exception.ConflictException;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.exception.UnprocessableEntityException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
@@ -46,12 +47,14 @@ class PostSessionSpeakerServiceTest {
                 .endTime(END_TIME)
                 .build();
 
+        when(sessionRepository.existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME)).thenReturn(false);
         when(sessionRepository.insertSessionSpeaker(SESSION_ID, SPEAKER_ID, START_TIME, END_TIME))
                 .thenReturn(Optional.of(SESSION_ID));
 
         String result = sessionService.addSpeakerToSession(SESSION_ID, SPEAKER_ID, request);
 
         assertEquals("Speaker linked to session.", result);
+        verify(sessionRepository).existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME);
         verify(sessionRepository).insertSessionSpeaker(SESSION_ID, SPEAKER_ID, START_TIME, END_TIME);
     }
 
@@ -128,6 +131,7 @@ class PostSessionSpeakerServiceTest {
                 .endTime(END_TIME)
                 .build();
 
+        when(sessionRepository.existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME)).thenReturn(false);
         when(sessionRepository.insertSessionSpeaker(SESSION_ID, SPEAKER_ID, START_TIME, END_TIME))
                 .thenReturn(Optional.empty());
 
@@ -138,6 +142,25 @@ class PostSessionSpeakerServiceTest {
                 String.format("Session (%s) or speaker (%s) not found.", SESSION_ID, SPEAKER_ID),
                 exception.getMessage()
         );
+        verify(sessionRepository).existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME);
         verify(sessionRepository).insertSessionSpeaker(SESSION_ID, SPEAKER_ID, START_TIME, END_TIME);
+    }
+
+    @Test
+    @DisplayName("with busy room throws ConflictException")
+    void withBusyRoom_throwsConflict() {
+        var request = SessionSpeakerInputDto.builder()
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .build();
+
+        when(sessionRepository.existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME)).thenReturn(true);
+
+        var exception = assertThrows(ConflictException.class,
+                () -> sessionService.addSpeakerToSession(SESSION_ID, SPEAKER_ID, request));
+
+        assertEquals("The room is already occupied during the requested time slot.", exception.getMessage());
+        verify(sessionRepository).existsOverlappingSpeakerInRoom(SESSION_ID, START_TIME, END_TIME);
+        verifyNoMoreInteractions(sessionRepository);
     }
 }
