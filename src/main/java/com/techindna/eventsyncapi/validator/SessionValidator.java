@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.OffsetTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
@@ -49,20 +49,20 @@ public class SessionValidator {
         dataValidator.checkNullData("startTime", request.getStartTime());
         dataValidator.checkNullData("endTime", request.getEndTime());
 
-        OffsetTime startTime = parseTime(request.getStartTime(), "startTime");
-        OffsetTime endTime = parseTime(request.getEndTime(), "endTime");
+        OffsetDateTime startTime = parseTimestamp(request.getStartTime(), "startTime");
+        OffsetDateTime endTime = parseTimestamp(request.getEndTime(), "endTime");
 
         if (!endTime.isAfter(startTime)) {
             throw new UnprocessableEntityException("The field endTime must be after startTime.");
         }
     }
 
-    private static OffsetTime parseTime(String value, String fieldName) {
+    private static OffsetDateTime parseTimestamp(String value, String fieldName) {
         try {
-            return OffsetTime.parse(value, DateTimeFormatter.ISO_OFFSET_TIME);
+            return OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } catch (DateTimeParseException e) {
             throw new UnprocessableEntityException(
-                    String.format("Invalid format for %s: expected time with timezone (HH:mm:ss±HH:mm).", fieldName)
+                    String.format("Invalid format for %s: expected ISO timestamp with timezone (yyyy-MM-ddTHH:mm:ss±HH:mm).", fieldName)
             );
         }
     }

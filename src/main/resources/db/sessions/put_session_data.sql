@@ -58,10 +58,12 @@ VALUES (
 )
 ON CONFLICT (title) DO NOTHING;
 
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
 VALUES (
     'e1f2a3b4-c5d6-7e8f-9a0b-c1d2e3f4a5b0',
-    'd1e2f3a4-b5c6-7d8e-9f0a-b1c2d3e4f5a0'
+    'd1e2f3a4-b5c6-7d8e-9f0a-b1c2d3e4f5a0',
+    '2026-07-02T09:00:00+03:00',
+    '2026-07-02T12:00:00+03:00'
 )
 ON CONFLICT (session_id, speaker_id) DO NOTHING;
 

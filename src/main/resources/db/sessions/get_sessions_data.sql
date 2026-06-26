@@ -91,10 +91,10 @@ VALUES (
 )
 ON CONFLICT (title) DO NOTHING;
 
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
 VALUES
-    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c'),
-    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'be05d2a7-ee16-486d-ae45-93625dd19b03')
+    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c', '2025-01-01T00:00:00+00:00', '2026-06-30T23:59:59+00:00'),
+    ('376cd180-7309-48a3-ae28-92fc0715dee4', 'be05d2a7-ee16-486d-ae45-93625dd19b03', '2026-07-01T00:00:00+00:00', '2027-12-31T23:59:59+00:00')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -113,8 +113,8 @@ VALUES (
 )
 ON CONFLICT (title) DO NOTHING;
 
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
-VALUES ('0e1c042c-3e8a-485b-9f73-28d4ae2ac273', '4f359ffa-5099-4651-8024-6a0033bd2e1e')
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
+VALUES ('0e1c042c-3e8a-485b-9f73-28d4ae2ac273', '4f359ffa-5099-4651-8024-6a0033bd2e1e', '2025-06-01T00:00:00+00:00', '2027-12-31T23:59:59+00:00')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -133,8 +133,8 @@ VALUES (
 )
 ON CONFLICT (title) DO NOTHING;
 
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
-VALUES ('4f79e056-e929-4f00-bcc3-ebb01412198b', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c')
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
+VALUES ('4f79e056-e929-4f00-bcc3-ebb01412198b', 'edb0d25a-e420-4b07-8411-5ab1c15b8f5c', '2023-01-10T09:00:00+03:00', '2023-01-10T17:00:00+03:00')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════
@@ -169,10 +169,10 @@ VALUES (
 )
 ON CONFLICT (title) DO NOTHING;
 
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
 VALUES
-    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', 'be05d2a7-ee16-486d-ae45-93625dd19b03'),
-    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', '4f359ffa-5099-4651-8024-6a0033bd2e1e')
+    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', 'be05d2a7-ee16-486d-ae45-93625dd19b03', '2028-01-15T09:00:00+03:00', '2028-01-15T12:00:00+03:00'),
+    ('d1d818cc-ba33-4eea-95f8-92b487d1a4b3', '4f359ffa-5099-4651-8024-6a0033bd2e1e', '2028-01-15T13:00:00+03:00', '2028-01-15T17:00:00+03:00')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════

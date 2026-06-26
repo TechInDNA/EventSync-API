@@ -74,6 +74,6 @@ VALUES (
 ON CONFLICT (title) DO NOTHING;
 
 -- Link speaker 2 to the session
-INSERT INTO eventsync_app.session_speaker (session_id, speaker_id)
-VALUES ('c0c59fa0-be24-4994-bc6c-884dbb1953e0', 'c0c59fa0-be24-4994-bc6c-884dbb1953d1')
+INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
+VALUES ('c0c59fa0-be24-4994-bc6c-884dbb1953e0', 'c0c59fa0-be24-4994-bc6c-884dbb1953d1', '2026-07-02T10:00:00+03:00', '2026-07-02T12:00:00+03:00')
 ON CONFLICT DO NOTHING;
