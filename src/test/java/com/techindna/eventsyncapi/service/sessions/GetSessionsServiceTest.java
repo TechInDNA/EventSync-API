@@ -1,5 +1,9 @@
 package com.techindna.eventsyncapi.service.sessions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+
 import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.entity.Event;
@@ -12,6 +16,7 @@ import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SessionService;
 import com.techindna.eventsyncapi.validator.DataValidator;
@@ -22,9 +27,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class GetSessionsServiceTest {
 

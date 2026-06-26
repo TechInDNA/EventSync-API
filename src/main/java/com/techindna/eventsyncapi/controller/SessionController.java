@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
+import com.techindna.eventsyncapi.dto.session.SessionSpeakerTimeSlotDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -69,6 +70,15 @@ public class SessionController {
     ) {
         sessionService.deleteSpeakerFromSession(sessionId, speakerId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/{sessionId}/speaker/{speakerId}")
+    public ResponseEntity<List<SessionSpeakerTimeSlotDto>> getSessionSpeakerTimeSlots(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID speakerId,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.ok(sessionService.getSessionSpeakerTimeSlots(sessionId, speakerId, request.getRemoteAddr()));
     }
 
     @DeleteMapping("/{id}")
