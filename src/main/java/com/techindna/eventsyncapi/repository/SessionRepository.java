@@ -180,6 +180,16 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
                                             @Param("endTime") String endTime);
 
     @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM eventsync_app.session_speaker
+                WHERE id = :linkId AND session_id = :sessionId AND speaker_id = :speakerId
+            )
+            """, nativeQuery = true)
+    boolean existsSessionSpeakerLink(@Param("linkId") UUID linkId,
+                                     @Param("sessionId") UUID sessionId,
+                                     @Param("speakerId") UUID speakerId);
+
+    @Query(value = """
             SELECT CASE WHEN EXISTS (
                 SELECT 1
                 FROM eventsync_app.session_speaker ss

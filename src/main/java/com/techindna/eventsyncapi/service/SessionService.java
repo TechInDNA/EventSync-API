@@ -126,13 +126,16 @@ public class SessionService {
     public String updateSessionSpeakerLink(UUID sessionId, UUID speakerId, UUID linkId, SessionSpeakerInputDto request) {
         sessionValidator.validateAddSpeaker(request);
 
+        if (!sessionRepository.existsSessionSpeakerLink(linkId, sessionId, speakerId)) {
+            throw new NotFoundException(
+                    String.format("Session-speaker link %s not found.", linkId));
+        }
+
         if (sessionRepository.existsOverlappingSpeakerInRoomExcluding(sessionId, request.getStartTime(), request.getEndTime(), linkId)) {
             throw new ConflictException("The room is already occupied during the requested time slot.");
         }
 
-        sessionRepository.updateSessionSpeakerLink(linkId, sessionId, speakerId, request.getStartTime(), request.getEndTime())
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Session-speaker link %s not found.", linkId)));
+        sessionRepository.updateSessionSpeakerLink(linkId, sessionId, speakerId, request.getStartTime(), request.getEndTime());
 
         return "Speaker's session link updated.";
     }
