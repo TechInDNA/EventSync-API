@@ -72,6 +72,18 @@ public class SessionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PutMapping("/{sessionId}/speaker/{speakerId}")
+    public ResponseEntity<String> updateSessionSpeakerLink(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID speakerId,
+            @RequestParam UUID linkId,
+            @RequestBody SessionSpeakerInputDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                sessionService.updateSessionSpeakerLink(sessionId, speakerId, linkId, request)
+        );
+    }
+
     @GetMapping("/{sessionId}/speaker/{speakerId}")
     public ResponseEntity<List<SessionSpeakerTimeSlotDto>> getSessionSpeakerTimeSlots(
             @PathVariable UUID sessionId,
