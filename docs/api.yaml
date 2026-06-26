@@ -503,6 +503,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: linkId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the session-speaker link to update
       requestBody:
         required: true
         content:
