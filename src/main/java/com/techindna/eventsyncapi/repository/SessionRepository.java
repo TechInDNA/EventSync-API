@@ -2,6 +2,7 @@ package com.techindna.eventsyncapi.repository;
 
 import com.techindna.eventsyncapi.entity.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -162,5 +163,13 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     boolean existsOverlappingSpeakerInRoom(@Param("sessionId") UUID sessionId,
                                            @Param("startTime") String startTime,
                                            @Param("endTime") String endTime);
+
+    @Query(value = """
+            DELETE FROM eventsync_app.session_speaker
+            WHERE session_id = :sessionId AND speaker_id = :speakerId
+            RETURNING id
+            """, nativeQuery = true)
+    Optional<UUID> deleteSessionSpeaker(@Param("sessionId") UUID sessionId,
+                              @Param("speakerId") UUID speakerId);
 
 }
