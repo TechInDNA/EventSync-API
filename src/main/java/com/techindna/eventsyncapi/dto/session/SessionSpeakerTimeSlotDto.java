@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SessionSpeakerTimeSlotDto {
 
+    private String id;
     private String startTime;
     private String endTime;
 }

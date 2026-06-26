@@ -214,7 +214,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
                               @Param("speakerId") UUID speakerId);
 
     @Query(value = """
-            SELECT CAST(ss.start_time AS text) AS startTime, CAST(ss.end_time AS text) AS endTime
+            SELECT CAST(ss.id AS text) AS id, CAST(ss.start_time AS text) AS startTime, CAST(ss.end_time AS text) AS endTime
             FROM eventsync_app.session_speaker ss
             WHERE ss.session_id = :sessionId AND ss.speaker_id = :speakerId
             ORDER BY ss.start_time ASC

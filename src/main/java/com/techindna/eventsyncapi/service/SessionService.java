@@ -157,8 +157,9 @@ public class SessionService {
 
         var result = rows.stream()
                 .map(row -> SessionSpeakerTimeSlotDto.builder()
-                        .startTime((String) row[0])
-                        .endTime((String) row[1])
+                        .id((String) row[0])
+                        .startTime((String) row[1])
+                        .endTime((String) row[2])
                         .build())
                 .toList();
 
