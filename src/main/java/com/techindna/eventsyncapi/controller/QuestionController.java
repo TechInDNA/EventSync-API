@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.controller;
 import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
 import com.techindna.eventsyncapi.dto.question.QuestionRequestDto;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
+import com.techindna.eventsyncapi.dto.question.UpvoteResponseDto;
 import com.techindna.eventsyncapi.service.QuestionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,17 @@ public class QuestionController {
         UUID userId = UUID.fromString(authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(questionService.createQuestion(id, request, userId));
+    }
+
+    @PostMapping("/{id}/questions/{qid}/upvote")
+    public ResponseEntity<UpvoteResponseDto> upvoteQuestion(
+            @PathVariable UUID id,
+            @PathVariable UUID qid,
+            Authentication authentication
+    ) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(questionService.upvoteQuestion(qid, id, userId));
     }
 
 }
