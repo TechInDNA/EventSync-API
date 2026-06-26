@@ -6,6 +6,7 @@ import com.techindna.eventsyncapi.dto.session.SessionInputDto;
 import com.techindna.eventsyncapi.dto.session.SessionListResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionResponseDto;
 import com.techindna.eventsyncapi.dto.session.SessionSpeakerInputDto;
+import com.techindna.eventsyncapi.dto.session.SessionSpeakerTimeSlotDto;
 import com.techindna.eventsyncapi.dto.session.SessionUpdateInputDto;
 import com.techindna.eventsyncapi.entity.Session;
 import com.techindna.eventsyncapi.exception.ConflictException;
@@ -14,6 +15,7 @@ import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.validator.SessionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -124,6 +126,25 @@ public class SessionService {
     public void deleteSpeakerFromSession(UUID sessionId, UUID speakerId) {
         sessionRepository.deleteSessionSpeaker(sessionId, speakerId)
                 .orElseThrow(() -> new NotFoundException(String.format("Speaker %s or session %s not found.", speakerId, sessionId)));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SessionSpeakerTimeSlotDto> getSessionSpeakerTimeSlots(UUID sessionId, UUID speakerId, String ipAddress) {
+        authService.checkBlacklist(ipAddress);
+        var rows = sessionRepository.findSessionSpeakerTimeSlots(sessionId, speakerId);
+
+        if (rows.isEmpty()){
+           throw new NotFoundException(String.format("Speaker %s or session %s not found.", speakerId, sessionId));
+        }
+
+        var result = rows.stream()
+                .map(row -> SessionSpeakerTimeSlotDto.builder()
+                        .startTime((String) row[0])
+                        .endTime((String) row[1])
+                        .build())
+                .toList();
+
+        return result.isEmpty() ? null : result;
     }
 
     @Transactional

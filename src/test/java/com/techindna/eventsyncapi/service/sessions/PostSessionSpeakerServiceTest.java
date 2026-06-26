@@ -8,6 +8,7 @@ import com.techindna.eventsyncapi.mapper.QuestionMapper;
 import com.techindna.eventsyncapi.mapper.SessionMapper;
 import com.techindna.eventsyncapi.repository.QuestionRepository;
 import com.techindna.eventsyncapi.repository.SessionRepository;
+import com.techindna.eventsyncapi.repository.UserRepository;
 import com.techindna.eventsyncapi.service.AuthService;
 import com.techindna.eventsyncapi.service.SessionService;
 import com.techindna.eventsyncapi.validator.DataValidator;
