@@ -139,12 +139,28 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
 
     @Query(value = """
             INSERT INTO eventsync_app.session_speaker (session_id, speaker_id, start_time, end_time)
-            VALUES (:sessionId, :speakerId, cast(:startTime AS timestamptz), cast(:endTime AS timestamptz))
+            SELECT :sessionId, :speakerId, cast(:startTime AS timestamptz), cast(:endTime AS timestamptz)
+            WHERE EXISTS (SELECT 1 FROM eventsync_app.session WHERE id = :sessionId)
+              AND EXISTS (SELECT 1 FROM eventsync_app."user" WHERE id = :speakerId AND role = 'SPEAKER')
             RETURNING id
             """, nativeQuery = true)
     Optional<UUID> insertSessionSpeaker(@Param("sessionId") UUID sessionId,
                                         @Param("speakerId") UUID speakerId,
                                         @Param("startTime") String startTime,
                                         @Param("endTime") String endTime);
+
+    @Query(value = """
+            SELECT CASE WHEN EXISTS (
+                SELECT 1
+                FROM eventsync_app.session_speaker ss
+                JOIN eventsync_app.session s ON s.id = ss.session_id
+                WHERE s.room_id = (SELECT s2.room_id FROM eventsync_app.session s2 WHERE s2.id = :sessionId)
+                  AND ss.start_time < cast(:endTime AS timestamp with time zone)
+                  AND ss.end_time > cast(:startTime AS timestamp with time zone)
+            ) THEN TRUE ELSE FALSE END
+            """, nativeQuery = true)
+    boolean existsOverlappingSpeakerInRoom(@Param("sessionId") UUID sessionId,
+                                           @Param("startTime") String startTime,
+                                           @Param("endTime") String endTime);
 
 }

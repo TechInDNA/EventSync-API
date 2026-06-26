@@ -108,6 +108,10 @@ public class SessionService {
     public String addSpeakerToSession(UUID sessionId, UUID speakerId, SessionSpeakerInputDto request) {
         sessionValidator.validateAddSpeaker(request);
 
+        if (sessionRepository.existsOverlappingSpeakerInRoom(sessionId, request.getStartTime(), request.getEndTime())) {
+            throw new ConflictException("The room is already occupied during the requested time slot.");
+        }
+
         sessionRepository.insertSessionSpeaker(
                 sessionId, speakerId, request.getStartTime(), request.getEndTime()
         ).orElseThrow(() -> new NotFoundException(
