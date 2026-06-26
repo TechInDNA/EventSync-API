@@ -62,6 +62,15 @@ public class SessionController {
         );
     }
 
+    @DeleteMapping("/{sessionId}/speaker/{speakerId}")
+    public ResponseEntity<Void> deleteSpeakerFromSession(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID speakerId
+    ) {
+        sessionService.deleteSpeakerFromSession(sessionId, speakerId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable UUID id) {
         sessionService.deleteSession(id);

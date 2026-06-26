@@ -121,6 +121,12 @@ public class SessionService {
     }
 
     @Transactional
+    public void deleteSpeakerFromSession(UUID sessionId, UUID speakerId) {
+        sessionRepository.deleteSessionSpeaker(sessionId, speakerId)
+                .orElseThrow(() -> new NotFoundException(String.format("Speaker %s or session %s not found.", speakerId, sessionId)));
+    }
+
+    @Transactional
     public void deleteSession(UUID id) {
         sessionRepository.deleteSessionById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Session %s not found.", id)));
