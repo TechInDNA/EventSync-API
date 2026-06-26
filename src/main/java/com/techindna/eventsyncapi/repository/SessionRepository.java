@@ -165,6 +165,47 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
                                            @Param("endTime") String endTime);
 
     @Query(value = """
+            UPDATE eventsync_app.session_speaker
+            SET start_time = cast(:startTime AS timestamptz),
+                end_time = cast(:endTime AS timestamptz)
+            WHERE id = :linkId
+              AND session_id = :sessionId
+              AND speaker_id = :speakerId
+            RETURNING id
+            """, nativeQuery = true)
+    Optional<UUID> updateSessionSpeakerLink(@Param("linkId") UUID linkId,
+                                            @Param("sessionId") UUID sessionId,
+                                            @Param("speakerId") UUID speakerId,
+                                            @Param("startTime") String startTime,
+                                            @Param("endTime") String endTime);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM eventsync_app.session_speaker
+                WHERE id = :linkId AND session_id = :sessionId AND speaker_id = :speakerId
+            )
+            """, nativeQuery = true)
+    boolean existsSessionSpeakerLink(@Param("linkId") UUID linkId,
+                                     @Param("sessionId") UUID sessionId,
+                                     @Param("speakerId") UUID speakerId);
+
+    @Query(value = """
+            SELECT CASE WHEN EXISTS (
+                SELECT 1
+                FROM eventsync_app.session_speaker ss
+                JOIN eventsync_app.session s ON s.id = ss.session_id
+                WHERE s.room_id = (SELECT s2.room_id FROM eventsync_app.session s2 WHERE s2.id = :sessionId)
+                  AND ss.id != :linkId
+                  AND ss.start_time < cast(:endTime AS timestamp with time zone)
+                  AND ss.end_time > cast(:startTime AS timestamp with time zone)
+            ) THEN TRUE ELSE FALSE END
+            """, nativeQuery = true)
+    boolean existsOverlappingSpeakerInRoomExcluding(@Param("sessionId") UUID sessionId,
+                                                     @Param("startTime") String startTime,
+                                                     @Param("endTime") String endTime,
+                                                     @Param("linkId") UUID linkId);
+
+    @Query(value = """
             DELETE FROM eventsync_app.session_speaker
             WHERE session_id = :sessionId AND speaker_id = :speakerId
             RETURNING id
