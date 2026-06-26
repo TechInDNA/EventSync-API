@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.Modifying;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
@@ -60,4 +61,21 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
                             @Param("sessionId") UUID sessionId,
                             @Param("userId") UUID userId,
                             @Param("anonymous") boolean anonymous);
+
+    @Modifying
+    @Query(value = """
+            INSERT INTO eventsync_app.upvote (user_id, question_id)
+            VALUES (:userId, :questionId)
+            """, nativeQuery = true)
+    int insertUpvote(@Param("userId") UUID userId, @Param("questionId") UUID questionId);
+
+    @Modifying
+    @Query(value = """
+            DELETE FROM eventsync_app.upvote
+            WHERE user_id = :userId AND question_id = :questionId
+            """, nativeQuery = true)
+    int deleteUpvote(@Param("userId") UUID userId, @Param("questionId") UUID questionId);
+
+    @Query(value = "SELECT COUNT(id) FROM eventsync_app.upvote WHERE question_id = :questionId", nativeQuery = true)
+    int countUpvotesByQuestionId(@Param("questionId") UUID questionId);
 }

@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.dto.question.QuestionListResponseDto;
 import com.techindna.eventsyncapi.dto.question.QuestionRequestDto;
 import com.techindna.eventsyncapi.dto.question.QuestionResponseDto;
+import com.techindna.eventsyncapi.dto.question.UpvoteResponseDto;
 import com.techindna.eventsyncapi.entity.Question;
 import com.techindna.eventsyncapi.exception.NotFoundException;
 import com.techindna.eventsyncapi.mapper.QuestionMapper;
@@ -71,5 +72,22 @@ public class QuestionService {
                 String.format("Session %s not found.", sessionId)));
 
         return questionMapper.toResponseDto(question, 0);
+    }
+
+    @Transactional
+    public UpvoteResponseDto upvoteQuestion(UUID questionId, UUID sessionId, UUID userId) {
+        questionRepository.findById(questionId)
+                .orElseThrow(() -> new NotFoundException(String.format("Question %s not found.", questionId)));
+
+        int deleted = questionRepository.deleteUpvote(userId, questionId);
+        if (deleted == 0) {
+            questionRepository.insertUpvote(userId, questionId);
+        }
+
+        int upvoteCount = questionRepository.countUpvotesByQuestionId(questionId);
+
+        return UpvoteResponseDto.builder()
+                .upvoteCount(upvoteCount)
+                .build();
     }
 }
