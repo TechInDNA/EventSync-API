@@ -119,12 +119,6 @@ public class SessionService {
                         String.format("Session (%s) or speaker (%s) not found.", sessionId, speakerId)
                 );
             }
-            if (uniqueViolation(e)) {
-                throw new ConflictException(
-                        String.format("Start time and end time combination already exists: %s — %s.",
-                                request.getStartTime(), request.getEndTime())
-                );
-            }
             throw e;
         }
 
