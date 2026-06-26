@@ -472,6 +472,9 @@ paths:
                 items:
                   type: object
                   properties:
+                    id:
+                      type: string
+                      format: uuid
                     startTime:
                       type: string
                       format: time

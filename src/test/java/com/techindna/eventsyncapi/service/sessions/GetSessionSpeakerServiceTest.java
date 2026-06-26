@@ -43,12 +43,13 @@ class GetSessionSpeakerServiceTest {
     void getSessionSpeakerTimeSlots_withExistingLink_returnsTimeSlots() {
         when(sessionRepository.findSessionSpeakerTimeSlots(SESSION_ID, SPEAKER_ID))
                 .thenReturn(List.<Object[]>of(
-                        new Object[]{"2026-08-02 14:00:00+03", "2026-08-02 15:30:00+03"}
+                        new Object[]{"a1b2c3d4-e5f6-7890-abcd-ef1234567890", "2026-08-02 14:00:00+03", "2026-08-02 15:30:00+03"}
                 ));
 
         List<SessionSpeakerTimeSlotDto> result = sessionService.getSessionSpeakerTimeSlots(SESSION_ID, SPEAKER_ID, TEST_IP);
 
         assertEquals(1, result.size());
+        assertEquals("a1b2c3d4-e5f6-7890-abcd-ef1234567890", result.getFirst().getId());
         assertEquals("2026-08-02 14:00:00+03", result.getFirst().getStartTime());
         assertEquals("2026-08-02 15:30:00+03", result.getFirst().getEndTime());
         verify(sessionRepository).findSessionSpeakerTimeSlots(SESSION_ID, SPEAKER_ID);
@@ -61,14 +62,16 @@ class GetSessionSpeakerServiceTest {
     void getSessionSpeakerTimeSlots_withMultipleTimeSlots_returnsAll() {
         when(sessionRepository.findSessionSpeakerTimeSlots(SESSION_ID, SPEAKER_ID))
                 .thenReturn(List.of(
-                        new Object[]{"2026-08-02 10:00:00+03", "2026-08-02 11:00:00+03"},
-                        new Object[]{"2026-08-02 14:00:00+03", "2026-08-02 15:30:00+03"}
+                        new Object[]{"a1b2c3d4-e5f6-7890-abcd-ef1234567890", "2026-08-02 10:00:00+03", "2026-08-02 11:00:00+03"},
+                        new Object[]{"b2c3d4e5-f6a7-8901-bcde-f12345678901", "2026-08-02 14:00:00+03", "2026-08-02 15:30:00+03"}
                 ));
 
         List<SessionSpeakerTimeSlotDto> result = sessionService.getSessionSpeakerTimeSlots(SESSION_ID, SPEAKER_ID, TEST_IP);
 
         assertEquals(2, result.size());
+        assertEquals("a1b2c3d4-e5f6-7890-abcd-ef1234567890", result.get(0).getId());
         assertEquals("2026-08-02 10:00:00+03", result.get(0).getStartTime());
+        assertEquals("b2c3d4e5-f6a7-8901-bcde-f12345678901", result.get(1).getId());
         assertEquals("2026-08-02 14:00:00+03", result.get(1).getStartTime());
     }
 

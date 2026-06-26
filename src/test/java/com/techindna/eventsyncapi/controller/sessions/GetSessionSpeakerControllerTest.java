@@ -39,6 +39,7 @@ class GetSessionSpeakerControllerTest {
     void getSessionSpeakerTimeSlots_withExistingLink_returns200() throws Exception {
         var timeSlots = List.of(
                 SessionSpeakerTimeSlotDto.builder()
+                        .id("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
                         .startTime("2026-08-02 14:00:00+03")
                         .endTime("2026-08-02 15:30:00+03")
                         .build()
@@ -48,6 +49,7 @@ class GetSessionSpeakerControllerTest {
         mockMvc.perform(get("/sessions/{sessionId}/speaker/{speakerId}", SESSION_ID, SPEAKER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
                 .andExpect(jsonPath("$[0].startTime").value("2026-08-02 14:00:00+03"))
                 .andExpect(jsonPath("$[0].endTime").value("2026-08-02 15:30:00+03"));
 
@@ -59,10 +61,12 @@ class GetSessionSpeakerControllerTest {
     void getSessionSpeakerTimeSlots_withMultipleSlots_returns200() throws Exception {
         var timeSlots = List.of(
                 SessionSpeakerTimeSlotDto.builder()
+                        .id("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
                         .startTime("2026-08-02 10:00:00+03")
                         .endTime("2026-08-02 11:00:00+03")
                         .build(),
                 SessionSpeakerTimeSlotDto.builder()
+                        .id("b2c3d4e5-f6a7-8901-bcde-f12345678901")
                         .startTime("2026-08-02 14:00:00+03")
                         .endTime("2026-08-02 15:30:00+03")
                         .build()
@@ -72,7 +76,9 @@ class GetSessionSpeakerControllerTest {
         mockMvc.perform(get("/sessions/{sessionId}/speaker/{speakerId}", SESSION_ID, SPEAKER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
                 .andExpect(jsonPath("$[0].startTime").value("2026-08-02 10:00:00+03"))
+                .andExpect(jsonPath("$[1].id").value("b2c3d4e5-f6a7-8901-bcde-f12345678901"))
                 .andExpect(jsonPath("$[1].startTime").value("2026-08-02 14:00:00+03"));
     }
 
