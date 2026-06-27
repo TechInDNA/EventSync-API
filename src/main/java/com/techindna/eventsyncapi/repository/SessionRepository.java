@@ -31,7 +31,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
 
     @Query(value = """
             SELECT r.id AS room_id, e.id AS event_id
-            FROM eventsync_app.room, eventsync_app.event AS dummy
+            FROM (SELECT 1) AS anchor
             LEFT JOIN eventsync_app.room r ON r.id = :roomId
             LEFT JOIN eventsync_app.event e ON e.id = :eventId
             """, nativeQuery = true)
