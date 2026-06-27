@@ -111,10 +111,8 @@ public class AiApiService {
                             • updateSpeakerExternalLink(speakerId, urlName, name, url) — update a speaker's external link identified by current name
                             • deleteSpeakerExternalLink(speakerId, externalLinkId) — delete a speaker's external link by its UUID
 
-                            — Questions (admin scope):
-                            • createQuestion(sessionId, title, content, isAnonymous) — create a question on a session (isAnonymous optional, defaults to false)
+                            — Questions:
                             • findQuestions(sessionId, title, sort, page, size) — list questions on a session with optional title filter (sort: 'upvotes' default or 'createdAt')
-                            • upvoteQuestion(sessionId, questionId) — toggle the admin's upvote on a question
                             """)
                     .messages(getChatHistory(sanitized, history))
                     .call()
