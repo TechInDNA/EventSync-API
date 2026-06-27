@@ -16,7 +16,6 @@ import com.techindna.eventsyncapi.validator.AiConversationsValidator;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,8 +31,7 @@ public class AiConversationService {
     private final AiConversationMapper aiConversationMapper;
     private final AiApiService aiApiService;
     private final DataValidator dataValidator;
-
-    @Transactional
+    
     public ChatMessageResponseDto createConversation(UUID userId, ChatMessageInputDto request) {
         String content = aiConversationsValidator.validateUserRequest(request.getContent());
 
@@ -54,7 +52,6 @@ public class AiConversationService {
         return aiConversationMapper.toResponseDto(agentMessage);
     }
 
-    @Transactional
     public ChatMessageResponseDto continueConversation(UUID conversationId, UUID userId, ChatMessageInputDto request) {
         String content = aiConversationsValidator.validateUserRequest(request.getContent());
 
