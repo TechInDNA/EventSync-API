@@ -3,7 +3,6 @@ package com.techindna.eventsyncapi.mcp;
 import com.techindna.eventsyncapi.dto.event.EventDetailResponseDto;
 import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
-import com.techindna.eventsyncapi.exception.InternalServerErrorException;
 import com.techindna.eventsyncapi.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.annotation.Tool;
@@ -168,7 +167,7 @@ public class EventMcpTools {
     ) {
         try {
             eventService.deleteEvent(UUID.fromString(id));
-            return "Event " + id + " deleted.";
+            return String.format("Event %s deleted.", id);
         } catch (Exception e) {
             return String.format("Operation failed: %s", e.getMessage());
         }

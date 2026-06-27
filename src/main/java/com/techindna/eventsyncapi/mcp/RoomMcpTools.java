@@ -21,12 +21,12 @@ public class RoomMcpTools {
     public String createRoom(
             @ToolParam(description = "Name of the room to create (max 50 characters)") String name
     ) {
-        RoomInputDto input = RoomInputDto.builder().name(name.strip()).build();
         try {
+            RoomInputDto input = RoomInputDto.builder().name(name.strip()).build();
             RoomResponseDto room = roomService.createRoom(input);
-            return "Room id" + room.getId() + ", name: " + room.getName() + " created.";
+            return String.format("Room created:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
         } catch (Exception e) {
-            return "Failed to create room: " + e.getMessage();
+            return String.format("Operation failed: %s", e.getMessage());
         }
     }
 
@@ -37,19 +37,18 @@ public class RoomMcpTools {
             @ToolParam(description = "Items per page (default: 10)") int size
     ) {
         try {
-            String ip = "127.0.0.1";
-            RoomListResponseDto result = roomService.getAllRooms(page, size, search, ip);
+            RoomListResponseDto result = roomService.getAllRooms(page, size, search, "127.0.0.1");
             if (result.getData().isEmpty()) {
                 return "No rooms found.";
             }
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.append("Rooms (").append(result.getMeta().getTotal()).append(" total):\n");
             for (var room : result.getData()) {
                 sb.append("- ").append(room.getName()).append(" (").append(room.getId()).append(")\n");
             }
             return sb.toString();
         } catch (Exception e) {
-            return "Failed to list rooms: " + e.getMessage();
+            return String.format("Operation failed: %s", e.getMessage());
         }
     }
 
@@ -59,9 +58,9 @@ public class RoomMcpTools {
     ) {
         try {
             RoomResponseDto room = roomService.getRoomById(UUID.fromString(id), "127.0.0.1");
-            return "Room details:\n- ID: " + room.getId() + "\n- Name: " + room.getName();
+            return String.format("Room details:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
         } catch (Exception e) {
-            return "Failed to get room: " + e.getMessage();
+            return String.format("Operation failed: %s", e.getMessage());
         }
     }
 
@@ -73,9 +72,9 @@ public class RoomMcpTools {
         try {
             RoomInputDto input = RoomInputDto.builder().name(name.strip()).build();
             RoomResponseDto room = roomService.updateRoom(UUID.fromString(id), input);
-            return "Room id: " + room.getId() + "name: " + room.getName() + " updated.";
+            return String.format("Room updated:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
         } catch (Exception e) {
-            return "Failed to update room: " + e.getMessage();
+            return String.format("Operation failed: %s", e.getMessage());
         }
     }
 
@@ -85,9 +84,9 @@ public class RoomMcpTools {
     ) {
         try {
             roomService.deleteRoom(UUID.fromString(id));
-            return "Room " + id + " deleted.";
+            return String.format("Room %s deleted.", id);
         } catch (Exception e) {
-            return "Failed to delete room: " + e.getMessage();
+            return String.format("Operation failed: %s", e.getMessage());
         }
     }
 }
