@@ -3,6 +3,7 @@ package com.techindna.eventsyncapi.service;
 import com.techindna.eventsyncapi.entity.ChatMessage;
 import com.techindna.eventsyncapi.entity.enums.SenderType;
 import com.techindna.eventsyncapi.mcp.EventMcpTools;
+import com.techindna.eventsyncapi.mcp.QuestionMcpTools;
 import com.techindna.eventsyncapi.mcp.RoomMcpTools;
 import com.techindna.eventsyncapi.mcp.SessionMcpTools;
 import com.techindna.eventsyncapi.mcp.SpeakerMcpTools;
@@ -26,6 +27,7 @@ public class AiApiService {
     private final EventMcpTools eventMcpTools;
     private final SessionMcpTools sessionMcpTools;
     private final SpeakerMcpTools speakerMcpTools;
+    private final QuestionMcpTools questionMcpTools;
 
     public Optional<String> generateTitle(String userRequest) {
         return Optional.ofNullable(chatClientBuilder.build()
@@ -56,7 +58,7 @@ public class AiApiService {
         try {
             return chatClientBuilder.build()
                     .prompt()
-                    .tools(roomMcpTools, eventMcpTools, sessionMcpTools, speakerMcpTools)
+                    .tools(roomMcpTools, eventMcpTools, sessionMcpTools, speakerMcpTools, questionMcpTools)
                     .system("""
                             You are RalAI, an event management assistant for EventSync. Your role is to help users manage their events, rooms, sessions, and speakers through natural conversation.
                             
@@ -108,6 +110,11 @@ public class AiApiService {
                             • addSpeakerExternalLink(speakerId, name, url) — add an external link to a speaker
                             • updateSpeakerExternalLink(speakerId, urlName, name, url) — update a speaker's external link identified by current name
                             • deleteSpeakerExternalLink(speakerId, externalLinkId) — delete a speaker's external link by its UUID
+
+                            — Questions (admin scope):
+                            • createQuestion(sessionId, title, content, isAnonymous) — create a question on a session (isAnonymous optional, defaults to false)
+                            • findQuestions(sessionId, title, sort, page, size) — list questions on a session with optional title filter (sort: 'upvotes' default or 'createdAt')
+                            • upvoteQuestion(sessionId, questionId) — toggle the admin's upvote on a question
                             """)
                     .messages(getChatHistory(sanitized, history))
                     .call()
