@@ -90,7 +90,7 @@ public class EventMcpTools {
             EventListResponseDto result = eventService.getAllEvents(
                     pageOrDefault(page), sizeOrDefault(size),
                     title, location, null, null, null, IP);
-            if (result.getData().isEmpty()) {
+            if (result.getData() == null || result.getData().isEmpty()) {
                 return "No events found.";
             }
             var sb = new StringBuilder();

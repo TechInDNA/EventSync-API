@@ -109,7 +109,7 @@ public class SessionMcpTools {
             SessionListResponseDto result = sessionService.getAllSessions(
                     pageOrDefault(page), sizeOrDefault(size),
                     room, event, speaker, live, IP);
-            if (result.getData().isEmpty()) {
+            if (result.getData() == null || result.getData().isEmpty()) {
                 return "No sessions found.";
             }
             var sb = new StringBuilder();

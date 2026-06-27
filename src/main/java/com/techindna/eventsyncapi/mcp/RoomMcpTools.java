@@ -67,7 +67,7 @@ public class RoomMcpTools {
         return run(LOG, "listRooms", () -> {
             RoomListResponseDto result = roomService.getAllRooms(
                     pageOrDefault(page), sizeOrDefault(size), search, IP);
-            if (result.getData().isEmpty()) {
+            if (result.getData() == null || result.getData().isEmpty()) {
                 return "No rooms found.";
             }
             var sb = new StringBuilder();
