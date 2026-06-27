@@ -5,90 +5,116 @@ import com.techindna.eventsyncapi.dto.room.RoomListResponseDto;
 import com.techindna.eventsyncapi.dto.room.RoomResponseDto;
 import com.techindna.eventsyncapi.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.logger;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.pageOrDefault;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.parseUuid;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.run;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.sizeOrDefault;
+
 @Component
 @RequiredArgsConstructor
 public class RoomMcpTools {
 
+    private static final String IP = "127.0.0.1";
+    private static final Logger LOG = logger(RoomMcpTools.class);
+
     private final RoomService roomService;
 
-    @Tool(description = "Create a new room with the given name. Returns the created room id and name.")
+    @Tool(name = "createRoom",
+            description = """
+                    Create a new room with the given name.
+
+                    Returns a confirmation including the created room id and name.
+                    """)
     public String createRoom(
             @ToolParam(description = "Name of the room to create (max 50 characters)") String name
     ) {
-        try {
+        return run(LOG, "createRoom", () -> {
             RoomInputDto input = RoomInputDto.builder().name(name.strip()).build();
             RoomResponseDto room = roomService.createRoom(input);
-            return String.format("Room created:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+            return String.format("Room created:%n- ID: %s%n- Name: %s", room.getId(), room.getName());
+        });
     }
 
-    @Tool(description = "List rooms with optional search filter and pagination. Returns room names and IDs.")
+    @Tool(name = "listRooms",
+            description = """
+                    List rooms with optional search filter and pagination.
+
+                    Returns a list of room names and ids, or 'No rooms found.' if empty.
+                    """)
     public String listRooms(
             @ToolParam(description = "Optional search term to filter rooms by name") String search,
             @ToolParam(description = "Page number (optional, defaults to 1)") Integer page,
             @ToolParam(description = "Items per page (optional, defaults to 10)") Integer size
     ) {
-        try {
-            int p = page != null ? page : 1;
-            int s = size != null ? size : 10;
-            RoomListResponseDto result = roomService.getAllRooms(p, s, search, "127.0.0.1");
+        return run(LOG, "listRooms", () -> {
+            RoomListResponseDto result = roomService.getAllRooms(
+                    pageOrDefault(page), sizeOrDefault(size), search, IP);
             if (result.getData().isEmpty()) {
                 return "No rooms found.";
             }
             var sb = new StringBuilder();
             sb.append("Rooms (").append(result.getMeta().getTotal()).append(" total):\n");
             for (var room : result.getData()) {
-                sb.append("- ").append(room.getName()).append(" (").append(room.getId()).append(")\n");
+                sb.append("- ").append(room.getName())
+                        .append(" (").append(room.getId()).append(")\n");
             }
             return sb.toString();
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        });
     }
 
-    @Tool(description = "Get details of a specific room by its UUID.")
+    @Tool(name = "getRoom",
+            description = """
+                    Get details of a specific room by its UUID.
+
+                    Returns the room id and name.
+                    """)
     public String getRoom(
             @ToolParam(description = "UUID of the room") String id
     ) {
-        try {
-            RoomResponseDto room = roomService.getRoomById(UUID.fromString(id), "127.0.0.1");
-            return String.format("Room details:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        return run(LOG, "getRoom", () -> {
+            RoomResponseDto room = roomService.getRoomById(parseUuid(id), IP);
+            return String.format("Room details:%n- ID: %s%n- Name: %s", room.getId(), room.getName());
+        });
     }
 
-    @Tool(description = "Update the name of an existing room. Provide the room UUID and a new name.")
+    @Tool(name = "updateRoom",
+            description = """
+                    Update the name of an existing room.
+
+                    Returns a confirmation including the room id and the new name.
+                    """)
     public String updateRoom(
             @ToolParam(description = "UUID of the room to update") String id,
             @ToolParam(description = "New name for the room (max 50 characters)") String name
     ) {
-        try {
+        return run(LOG, "updateRoom", () -> {
             RoomInputDto input = RoomInputDto.builder().name(name.strip()).build();
-            RoomResponseDto room = roomService.updateRoom(UUID.fromString(id), input);
-            return String.format("Room updated:\n- ID: %s\n- Name: %s", room.getId(), room.getName());
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+            RoomResponseDto room = roomService.updateRoom(parseUuid(id), input);
+            return String.format("Room updated:%n- ID: %s%n- Name: %s", room.getId(), room.getName());
+        });
     }
 
-    @Tool(description = "Delete a room by its UUID.")
+    @Tool(name = "deleteRoom",
+            description = """
+                    Delete a room by its UUID.
+
+                    Returns a confirmation string.
+                    """)
     public String deleteRoom(
             @ToolParam(description = "UUID of the room to delete") String id
     ) {
-        try {
-            roomService.deleteRoom(UUID.fromString(id));
-            return String.format("Room %s deleted.", id);
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        return run(LOG, "deleteRoom", () -> {
+            UUID roomId = parseUuid(id);
+            roomService.deleteRoom(roomId);
+            return String.format("Room %s deleted.", roomId);
+        });
     }
 }

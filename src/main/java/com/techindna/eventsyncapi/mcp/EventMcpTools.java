@@ -5,27 +5,40 @@ import com.techindna.eventsyncapi.dto.event.EventInputDto;
 import com.techindna.eventsyncapi.dto.event.EventListResponseDto;
 import com.techindna.eventsyncapi.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.UUID;
+
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.logger;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.pageOrDefault;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.parseInstant;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.parseUuid;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.run;
+import static com.techindna.eventsyncapi.mcp.McpToolSupport.sizeOrDefault;
 
 @Component
 @RequiredArgsConstructor
 public class EventMcpTools {
 
+    private static final String IP = "127.0.0.1";
+    private static final Logger LOG = logger(EventMcpTools.class);
+
     private final EventService eventService;
 
-    @Tool(description = """
-            Create a new event with the given details. Returns the created event id, title, and dates.
-            
-            Example JSON for date fields (ISO-8601 instant):
-            ```json
-            {"startDate": "2026-07-15T09:00:00Z", "endDate": "2026-07-17T18:00:00Z"}
-            ```
-            """)
+    @Tool(name = "createEvent",
+            description = """
+                    Create a new event with the given details.
+
+                    Returns a confirmation including id, title, location, and dates.
+
+                    Example JSON for date fields (ISO-8601 instant):
+                    ```json
+                    {"startDate": "2026-07-15T09:00:00Z", "endDate": "2026-07-17T18:00:00Z"}
+                    ```
+                    """)
     public String createEvent(
             @ToolParam(description = "Title of the event (max 100 characters)") String title,
             @ToolParam(description = "Description of the event (max 1000 characters)") String description,
@@ -33,40 +46,35 @@ public class EventMcpTools {
             @ToolParam(description = "End date/time in ISO-8601 format, e.g. 2026-07-17T18:00:00Z") String endDate,
             @ToolParam(description = "Location of the event (max 100 characters)") String location
     ) {
-        try {
+        return run(LOG, "createEvent", () -> {
             EventInputDto input = EventInputDto.builder()
                     .title(title.strip())
                     .description(description.strip())
-                    .startDate(Instant.parse(startDate))
-                    .endDate(Instant.parse(endDate))
+                    .startDate(parseInstant(startDate))
+                    .endDate(parseInstant(endDate))
                     .location(location.strip())
                     .build();
             EventDetailResponseDto event = eventService.createEvent(input);
-            return String.format("""
-                    Event created:
-                    - ID: %s
-                    - Title: %s
-                    - Location: %s
-                    - Start: %s
-                    - End: %s
-                    """, event.getId(), event.getTitle(), event.getLocation(), event.getStartDate(), event.getEndDate());
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+            return formatEventResponse("Event created:", event);
+        });
     }
 
-    @Tool(description = "List events with optional filters and pagination. Returns event names, IDs, locations, and live status.")
+    @Tool(name = "listEvents",
+            description = """
+                    List events with optional filters and pagination.
+
+                    Returns event titles, ids, locations, and live status, or 'No events found.' if empty.
+                    """)
     public String listEvents(
             @ToolParam(description = "Optional search term to filter events by title") String title,
             @ToolParam(description = "Optional search term to filter events by location") String location,
             @ToolParam(description = "Page number (optional, defaults to 1)") Integer page,
             @ToolParam(description = "Items per page (optional, defaults to 10)") Integer size
     ) {
-        try {
-            int p = page != null ? page : 1;
-            int s = size != null ? size : 10;
-            EventListResponseDto result = eventService.getAllEvents(p, s, title, location,
-                    null, null, null, "127.0.0.1");
+        return run(LOG, "listEvents", () -> {
+            EventListResponseDto result = eventService.getAllEvents(
+                    pageOrDefault(page), sizeOrDefault(size),
+                    title, location, null, null, null, IP);
             if (result.getData().isEmpty()) {
                 return "No events found.";
             }
@@ -80,33 +88,21 @@ public class EventMcpTools {
                         .append("\n");
             }
             return sb.toString();
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        });
     }
 
-    @Tool(description = "Get details of a specific event by its UUID, including its sessions.")
+    @Tool(name = "getEvent",
+            description = """
+                    Get details of a specific event by its UUID, including its sessions.
+
+                    Returns the event details and its associated sessions (if any).
+                    """)
     public String getEvent(
             @ToolParam(description = "UUID of the event") String id
     ) {
-        try {
-            EventDetailResponseDto event = eventService.getEventById(UUID.fromString(id), "127.0.0.1");
-            var sb = new StringBuilder(
-                    """
-                    Event details:
-                    - ID: %s
-                    - Title: %s
-                    - Description: %s
-                    - Location: %s
-                    - Start: %s
-                    - End: %s
-                    - Created at: %s
-                    - Live: %s
-                    """.formatted(
-                    event.getId(), event.getTitle(), event.getDescription(),
-                    event.getLocation(), event.getStartDate(), event.getEndDate(),
-                    event.getCreatedAt(), event.isLive()
-            ));
+        return run(LOG, "getEvent", () -> {
+            EventDetailResponseDto event = eventService.getEventById(parseUuid(id), IP);
+            var sb = new StringBuilder(formatEventResponse("Event details:", event));
             if (event.getSessions() != null && !event.getSessions().isEmpty()) {
                 sb.append("- Sessions (").append(event.getSessions().size()).append("):\n");
                 for (var session : event.getSessions()) {
@@ -119,19 +115,20 @@ public class EventMcpTools {
                 sb.append("- Sessions: none\n");
             }
             return sb.toString();
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        });
     }
 
-    @Tool(description = """
-            Update an existing event. All fields are required and will replace the current values.
-            
-            Example JSON for date fields (ISO-8601 instant):
-            ```json
-            {"startDate": "2026-08-01T09:00:00Z", "endDate": "2026-08-03T18:00:00Z"}
-            ```
-            """)
+    @Tool(name = "updateEvent",
+            description = """
+                    Update an existing event. All fields are required and will replace the current values.
+
+                    Returns a confirmation including id, title, location, and dates.
+
+                    Example JSON for date fields (ISO-8601 instant):
+                    ```json
+                    {"startDate": "2026-08-01T09:00:00Z", "endDate": "2026-08-03T18:00:00Z"}
+                    ```
+                    """)
     public String updateEvent(
             @ToolParam(description = "UUID of the event to update") String id,
             @ToolParam(description = "New title of the event (max 100 characters)") String title,
@@ -140,38 +137,47 @@ public class EventMcpTools {
             @ToolParam(description = "New end date/time in ISO-8601 format, e.g. 2026-08-03T18:00:00Z") String endDate,
             @ToolParam(description = "New location of the event (max 100 characters)") String location
     ) {
-        try {
+        return run(LOG, "updateEvent", () -> {
             EventInputDto input = EventInputDto.builder()
                     .title(title.strip())
                     .description(description.strip())
-                    .startDate(Instant.parse(startDate))
-                    .endDate(Instant.parse(endDate))
+                    .startDate(parseInstant(startDate))
+                    .endDate(parseInstant(endDate))
                     .location(location.strip())
                     .build();
-            EventDetailResponseDto event = eventService.updateEvent(UUID.fromString(id), input);
-            return String.format(
-                    """
-                    Event updated:
-                    - ID: %s
-                    - Title: %s
-                    - Location: %s
-                    - Start: %s
-                    - End: %s
-                    """, event.getId(), event.getTitle(), event.getLocation(), event.getStartDate(), event.getEndDate());
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+            EventDetailResponseDto event = eventService.updateEvent(parseUuid(id), input);
+            return formatEventResponse("Event updated:", event);
+        });
     }
 
-    @Tool(description = "Delete an event by its UUID.")
+    @Tool(name = "deleteEvent",
+            description = """
+                    Delete an event by its UUID.
+
+                    Returns a confirmation string.
+                    """)
     public String deleteEvent(
             @ToolParam(description = "UUID of the event to delete") String id
     ) {
-        try {
-            eventService.deleteEvent(UUID.fromString(id));
-            return String.format("Event %s deleted.", id);
-        } catch (Exception e) {
-            return String.format("Operation failed: %s", e.getMessage());
-        }
+        return run(LOG, "deleteEvent", () -> {
+            UUID eventId = parseUuid(id);
+            eventService.deleteEvent(eventId);
+            return String.format("Event %s deleted.", eventId);
+        });
+    }
+
+    private static String formatEventResponse(String header, EventDetailResponseDto event) {
+        return String.format("""
+                        %s
+                        - ID: %s
+                        - Title: %s
+                        - Location: %s
+                        - Start: %s
+                        - End: %s
+                        - Live: %s
+                        """,
+                header, event.getId(), event.getTitle(),
+                event.getLocation(), event.getStartDate(), event.getEndDate(),
+                event.isLive());
     }
 }
