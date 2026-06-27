@@ -16,6 +16,7 @@ import com.techindna.eventsyncapi.validator.AiConversationsValidator;
 import com.techindna.eventsyncapi.validator.DataValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
