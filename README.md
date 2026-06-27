@@ -99,6 +99,11 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 | `db/externalLink/delete_external_link_data.sql` | Speaker + external link for DELETE /speakers/{id}/external-link |
 | `db/questions/post_question_data.sql` | Session + user for POST /sessions/{id}/questions |
 | `db/questions/test_questions_data.sql` | Session + user + questions for GET /sessions/{id}/questions |
+| `db/upvote/post_upvote_data.sql` | Room + event + session + user + question for POST upvote |
+| `db/sessions/post_session_speaker_data.sql` | Session + speaker for POST /sessions/{id}/speaker/{id} |
+| `db/sessions/get_session_speaker_data.sql` | Session + speaker for GET /sessions/{id}/speaker/{id} |
+| `db/sessions/put_session_speaker_data.sql` | Session + speaker for PUT /sessions/{id}/speaker/{id} |
+| `db/sessions/delete_session_speaker_data.sql` | Session + speaker for DELETE /sessions/{id}/speaker/{id} |
 
 ### 4. Build and run
 
@@ -154,8 +159,13 @@ Additional per-endpoint seed files exist under `src/main/resources/db/` for test
 | `GET` | `/sessions/{id}` | — | Get session details (includes speakers and questions) |
 | `PUT` | `/sessions/{id}` | JWT ADMIN | Update session (all fields mandatory) |
 | `DELETE` | `/sessions/{id}` | JWT ADMIN | Delete session |
+| `POST` | `/sessions/{sessionId}/speaker/{speakerId}` | JWT ADMIN | Add a speaker to a session with a time slot |
+| `GET` | `/sessions/{sessionId}/speaker/{speakerId}` | — | Get speaker time slots for a session |
+| `PUT` | `/sessions/{sessionId}/speaker/{speakerId}` | JWT ADMIN | Update speaker time slot in a session |
+| `DELETE` | `/sessions/{sessionId}/speaker/{speakerId}` | JWT ADMIN | Remove a speaker from a session |
 | `GET` | `/sessions/{id}/questions` | — | List questions for a session (pagination, sort by `upvotes` or `createdAt`, filter by `title`) |
 | `POST` | `/sessions/{id}/questions` | JWT (any role) | Post a question to a session (title, content, optional `isAnonymous`) |
+| `POST` | `/sessions/{id}/questions/{qid}/upvote` | JWT (any role) | Toggle upvote on a question |
 
 ### Speakers
 
@@ -213,6 +223,11 @@ Shell scripts using `curlie` are in `scripts/`. Each script is self-contained: i
 | `scripts/external-link/test_delete_external_link.sh` | DELETE /speakers/{id}/external-link |
 | `scripts/questions/test_get_questions.sh` | GET /sessions/{id}/questions |
 | `scripts/questions/test_post_questions.sh` | POST /sessions/{id}/questions |
+| `scripts/questions/test_post_upvote.sh` | POST /sessions/{id}/questions/{qid}/upvote |
+| `scripts/sessions/test_post_session_speaker.sh` | POST /sessions/{sessionId}/speaker/{speakerId} |
+| `scripts/sessions/test_get_session_speaker.sh` | GET /sessions/{sessionId}/speaker/{speakerId} |
+| `scripts/sessions/test_put_session_speaker.sh` | PUT /sessions/{sessionId}/speaker/{speakerId} |
+| `scripts/sessions/test_delete_session_speaker.sh` | DELETE /sessions/{sessionId}/speaker/{speakerId} |
 
 To run a script, start the server first (`./gradlew bootRun`), then:
 

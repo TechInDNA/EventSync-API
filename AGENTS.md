@@ -45,7 +45,8 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── question/
 │   │   ├── QuestionListResponseDto.java
 │   │   ├── QuestionRequestDto.java
-│   │   └── QuestionResponseDto.java
+│   │   ├── QuestionResponseDto.java
+│   │   └── UpvoteResponseDto.java          # {upvoteCount} returned by toggle upvote
 │   ├── room/
 │   │   ├── RoomInputDto.java
 │   │   ├── RoomListResponseDto.java
@@ -63,6 +64,8 @@ src/main/java/com/techindna/eventsyncapi/
 │   │   ├── SessionInputDto.java
 │   │   ├── SessionListResponseDto.java
 │   │   ├── SessionResponseDto.java
+│   │   ├── SessionSpeakerInputDto.java     # startTime/endTime for session-speaker link
+│   │   ├── SessionSpeakerTimeSlotDto.java  # id/startTime/endTime from session_speaker
 │   │   ├── SessionUpdateInputDto.java
 │   │   └── SpeakerRefDto.java
 │   └── speaker/
@@ -79,7 +82,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── BlacklistedIp.java
 │   ├── Event.java
 │   ├── ExternalLink.java
-│   ├── Question.java                # fk → session, user
+│   ├── Question.java                # fk → session, user; @Formula upvoteCount
 │   ├── Room.java
 │   ├── Session.java
 │   ├── User.java
@@ -110,7 +113,7 @@ src/main/java/com/techindna/eventsyncapi/
 │   ├── ChatMessageRepository.java
 │   ├── EventRepository.java
 │   ├── ExternalLinkRepository.java  # + insert, update, delete methods
-│   ├── QuestionRepository.java      # native queries with pagination + upvote counts
+│   ├── QuestionRepository.java      # native queries with pagination + upvote counts + toggle upvote
 │   ├── RoomEventExistence.java      # interface projection
 │   ├── RoomRepository.java
 │   ├── SessionRepository.java
@@ -146,7 +149,8 @@ src/test/java/com/techindna/eventsyncapi/
 │   │   ├── PostEventControllerTest.java
 │   │   └── PutEventControllerTest.java
 │   ├── question/
-│   │   └── GetQuestionControllerTest.java
+│   │   ├── GetQuestionControllerTest.java
+│   │   └── PostUpvoteQuestionControllerTest.java
 │   ├── rooms/
 │   │   ├── DeleteRoomControllerTest.java
 │   │   ├── GetRoomByIdControllerTest.java
@@ -154,9 +158,12 @@ src/test/java/com/techindna/eventsyncapi/
 │   │   ├── PostRoomControllerTest.java
 │   │   └── PutRoomControllerTest.java
 │   ├── sessions/
+│   │   ├── DeleteSessionSpeakerControllerTest.java
+│   │   ├── GetSessionSpeakerControllerTest.java
 │   │   ├── GetSessionControllerTest.java
 │   │   ├── GetSessionsControllerTest.java
 │   │   ├── PostSessionControllerTest.java
+│   │   ├── PostSessionSpeakerControllerTest.java
 │   │   └── PutSessionControllerTest.java
 │   └── speakers/
 │       ├── DeleteSpeakerControllerTest.java
@@ -175,7 +182,8 @@ src/test/java/com/techindna/eventsyncapi/
     │   ├── PostEventServiceTest.java
     │   └── PutEventServiceTest.java
     ├── question/
-    │   └── GetQuestionServiceTest.java
+    │   ├── GetQuestionServiceTest.java
+    │   └── PostUpvoteQuestionServiceTest.java
     ├── rooms/
     │   ├── DeleteRoomServiceTest.java
     │   ├── GetRoomByIdServiceTest.java
@@ -183,9 +191,12 @@ src/test/java/com/techindna/eventsyncapi/
     │   ├── PostRoomServiceTest.java
     │   └── PutRoomServiceTest.java
     ├── sessions/
+    │   ├── DeleteSessionSpeakerServiceTest.java
+    │   ├── GetSessionSpeakerServiceTest.java
     │   ├── GetSessionServiceTest.java
     │   ├── GetSessionsServiceTest.java
     │   ├── PostSessionServiceTest.java
+    │   ├── PostSessionSpeakerServiceTest.java
     │   └── PutSessionServiceTest.java
     └── speakers/
         ├── DeleteSpeakerServiceTest.java
@@ -227,9 +238,13 @@ src/main/resources/
     │   └── rooms_schema.sql
     ├── sessions/
     │   ├── delete_session_data.sql
+    │   ├── delete_session_speaker_data.sql
     │   ├── get_session_by_id_data.sql
+    │   ├── get_session_speaker_data.sql
     │   ├── get_sessions_data.sql
+    │   ├── post_session_speaker_data.sql
     │   ├── put_session_data.sql
+    │   ├── put_session_speaker_data.sql
     │   ├── session_speaker_schema.sql
     │   ├── sessions_schema.sql
     │   └── test_session_data.sql
@@ -238,8 +253,9 @@ src/main/resources/
     │   ├── get_speaker_by_id_data.sql
     │   ├── get_speakers.sql
     │   └── put_speaker_data.sql
-    └── upvote/
-        └── upvote_schema.sql
+    ├── upvote/
+    │   ├── post_upvote_data.sql
+    │   └── upvote_schema.sql
 
 scripts/
 ├── auth/
@@ -256,7 +272,8 @@ scripts/
 │   └── test_put_speaker_external_link.sh
 ├── questions/
 │   ├── test_get_questions.sh
-│   └── test_post_questions.sh
+│   ├── test_post_questions.sh
+│   └── test_post_upvote.sh
 ├── room/
 │   ├── test_delete_room.sh
 │   ├── test_get_room_by_id.sh
@@ -265,9 +282,13 @@ scripts/
 │   └── test_put_room.sh
 ├── sessions/
 │   ├── test_delete_session.sh
+│   ├── test_delete_session_speaker.sh
 │   ├── test_get_session_by_id.sh
+│   ├── test_get_session_speaker.sh
 │   ├── test_get_sessions.sh
+│   ├── test_post_session_speaker.sh
 │   ├── test_post_sessions.sh
+│   ├── test_put_session_speaker.sh
 │   └── test_put_sessions.sh
 └── speaker/
     ├── test_delete_speaker.sh
@@ -307,10 +328,11 @@ docs/
 - **Event** — Full CRUD via `EventRepository` native queries with `RETURNING` (`insertEvent`, `updateEventById`, `deleteEventById`). Title is unique (`ON CONFLICT (title) DO NOTHING`). `EventValidator` validates fields and date ordering (endDate after startDate). `EventMapper` computes `isLive` and provides detail responses with nested sessions. `GET /events/{id}` uses `findEventWithSessionsById()` with `LEFT JOIN FETCH` for eagerly loaded sessions (includes room). List endpoint supports filters: `title`, `location`, `startDate`, `endDate`, `isLive`.
 - **Room** — Full CRUD via `RoomRepository` native queries with `RETURNING`. Name is unique (`ON CONFLICT (name) DO NOTHING`). `RoomValidator` validates the name. `GET /rooms/{id}` fetches by UUID. `RoomMapper` maps entity to `RoomResponseDto` (id, name).
 - **Session** — Full CRUD via `SessionRepository` native queries with `RETURNING`. Title is unique (`ON CONFLICT (title) DO NOTHING`). `POST /sessions` requires `SessionInputDto` (all mandatory). `PUT /sessions/{id}` requires `SessionUpdateInputDto` (all mandatory — title, description, startDate, endDate, roomId, capacity, eventId). `DELETE /sessions/{id}` removes session and cascade-deletes `session_speaker` rows. Uses `SessionValidator.validateUpdate()` for PUT and `SessionValidator.validate()` for POST. `SessionMapper` computes `isLive` (between startDate/endDate) and resolves speaker refs from the join table. `SessionRepository.findRoomAndEventExistence()` performs a dual existence check before insert/update.
+- **Session speaker sub-resource** — Four endpoints under `/sessions/{sessionId}/speaker/{speakerId}`: POST (add speaker with time slot), GET (list time slots for a speaker in a session), PUT (update time slot by `linkId` query param), DELETE (remove speaker from session). `session_speaker` PK is a standalone `id` (gen_random_uuid) — no `UNIQUE` on `(session_id, speaker_id)`, so a speaker can occupy multiple time slots in the same session. Overlapping time-slot validation via `SessionRepository.existsOverlappingSpeakerInRoom()` and `existsOverlappingSpeakerInRoomExcluding()`. PUT/POST require ADMIN; GET is public with IP blacklist check.
 - **Speaker** — Full CRUD via `UserRepository`. Creation (`POST /speakers`) uses `insertSpeaker()` with `ON CONFLICT (email) DO NOTHING` and `ExternalLinkRepository.insertExternalLink()` per-row for nested links. Update (`PUT /speakers/{id}`) uses `updateSpeakerById()` with `RETURNING`, guarded by `SpeakerValidator.validateUpdate()` which allows optional `bio`/`profilePicture`. Detail (`GET /speakers/{id}`) fetches external links eagerly via `findByIdWithExternalLinks()` and resolves speaker sessions via `SessionRepository.findBySpeakerId()`. Deletion (`DELETE /speakers/{id}`) uses `deleteSpeakerById()` with `ON DELETE CASCADE` on external links. List (`GET /speakers`) filters by name search via `findSpeakersByNameContaining()`/`countSpeakersByNameContaining()`, eagerly loading external links via `findByUserIdIn()`. `SpeakerValidator` handles creation vs update validation separately (`validateCreation()` requires all fields, `validateUpdate()` allows optional bio/picture). `SpeakerValidator.validateGet()` validates the search string.
 - **AI Conversation** — Created via `POST /ai/conversations` (requires `ROLE_ADMIN`). Uses `AiConversationsValidator.validateUserRequest()` to strip and validate the message. `AiApiService` wraps a Spring AI `ChatClient` (OpenAI-compatible API, configurable via `base-url` and `model`) with room MCP tools injected as tool context, enabling the AI to perform room operations via natural language. `AiConversationRepository.insertConversation()` persists the exchange with an auto-generated title and `@CreationTimestamp`. Response includes `id`, `title`, `userRequest`, `aiResponse`, `userId`, `createdAt`.
-- **Question** — Sub-resource under `/sessions/{id}/questions`. GET is public (`permitAll`), POST requires any authenticated role (`authenticated()`). Uses `QuestionRepository` native queries with `LEFT JOIN upvote` for counts and `CASE WHEN :sort = 'upvotes' THEN COUNT(up.id) END DESC, CASE WHEN :sort = 'createdAt' THEN q.created_at END ASC` ordering. `QuestionMapper` hides the participant ref when `anonymous` is true. `QuestionValidator.validateUpdate()` validates title (string) and content (text). `insertQuestion()` uses `INSERT ... WHERE EXISTS (SELECT 1 FROM session WHERE id = :sessionId)` with `RETURNING` to enforce FK existence in a single query.
-- **Upvote** — Upvote entity (no Java entity class, schema-only in `db/upvote/upvote_schema.sql`). Related to questions via `upvote.question_id` with `ON DELETE CASCADE`. Upvote counts are computed inline in `QuestionRepository` queries via `COUNT(up.id)`; there is no separate upvote endpoint yet.
+- **Question** — Sub-resource under `/sessions/{id}/questions`. GET is public (`permitAll`), POST requires any authenticated role (`authenticated()`). Uses `QuestionRepository` native queries with `LEFT JOIN upvote` for counts and `CASE WHEN :sort = 'upvotes' THEN COUNT(up.id) END DESC, CASE WHEN :sort = 'createdAt' THEN q.created_at END ASC` ordering. `QuestionMapper` hides the participant ref when `anonymous` is true. `QuestionValidator.validateUpdate()` validates title (string) and content (text). `insertQuestion()` uses `INSERT ... WHERE EXISTS (SELECT 1 FROM session WHERE id = :sessionId)` with `RETURNING` to enforce FK existence in a single query. `Question` entity has a `@Formula` for `upvoteCount` (computed via `SELECT COUNT(*) FROM upvote`). `QuestionResponseDto` includes an `upvotes` field.
+- **Upvote** — Toggle endpoint `POST /sessions/{id}/questions/{qid}/upvote` (any authenticated role). Implements a toggle: attempts DELETE first, if nothing was deleted it INSERTs (this is a toggle, not a separate upvote/unupvote pair). `UNIQUE(user_id, question_id)` on the upvote table prevents duplicates. Returns `UpvoteResponseDto` with the current `upvoteCount`. `QuestionRepository` exposes `insertUpvote()`, `deleteUpvote()`, and `countUpvotesByQuestionId()`. The `Question` entity also has a `@Formula upvoteCount` for eager reads (e.g., session detail page).
 - **Speaker External Links** — Managed as a sub-resource under `/speakers/{id}/external-link`. POST adds a link (returns all links for the speaker), PUT updates by `urlName` query param, DELETE removes by `externalLinkId` query param. All require ADMIN. `ExternalLinkRepository` provides `insertExternalLink()` (with `ON CONFLICT (url) DO NOTHING`), `updateExternalLinkByNameAndUserId()`, and `deleteExternalLinkByIdAndUserId()`. Each returns the current list of links for the speaker. `ExternalLinkValidator.validateSingleLink()` validates individual link DTOs. `SpeakerService` handles the try/catch for unique constraint violations (SQLState `23505`) on update.
 - **MCP tools** — Room CRUD exposed as `@Tool` methods in `mcp/` package. Each tool wraps the existing service layer (validation included). `@ToolParam(description = ...)` is mandatory so the AI knows what to pass. Tools return user-friendly strings with success/error messages. All `/mcp/**` paths are **permitAll** in `SecurityConfig` (SSE transport is not JWT-authenticated).
 
