@@ -39,6 +39,16 @@ public class SessionMcpTools {
 
                     Returns a confirmation including id, title, dates, room, event, and live status.
 
+                    Validation rules — strict pass or call fails with 422:
+                    • title: 1–50 chars, only a-z A-Z ' - and space. Must start and end with a
+                      letter; no digits, no leading/trailing spaces.
+                    • description: non-blank, only A-Za-z0-9.,;"!'-
+                    • startDate and endDate: required, endDate MUST be strictly after startDate.
+                    • capacity: positive integer (e.g. 50). If omitted the call fails — pass an explicit value.
+                    • roomId and eventId: must reference existing rows, otherwise 404.
+
+                    Conflicts: duplicate title → 409 "Session '...' already exists.".
+
                     Example JSON for date fields (ISO-8601 instant):
                     ```json
                     {"startDate": "2026-07-15T14:00:00Z", "endDate": "2026-07-15T15:30:00Z"}
@@ -81,6 +91,11 @@ public class SessionMcpTools {
 
                     Returns a list of session titles, ids, room, event, and live status,
                     or 'No sessions found.' if empty.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • room, event, speaker filters: each must contain only letters, digits,
+                      spaces, hyphens, and apostrophes. Avoid commas, slashes, colons,
+                      or other punctuation in the filter values.
                     """)
     public String listSessions(
             @ToolParam(description = "Optional filter by room name (case-insensitive partial match)") String room,
@@ -158,6 +173,16 @@ public class SessionMcpTools {
 
                     Returns a confirmation including id, title, dates, room, event, and live status.
 
+                    Validation rules — strict pass or call fails with 422:
+                    • title: 1–50 chars, only a-z A-Z ' - and space. Must start and end with a
+                      letter; no digits, no leading/trailing spaces.
+                    • description: non-blank, only A-Za-z0-9.,;"!'-
+                    • startDate and endDate: required, endDate MUST be strictly after startDate.
+                    • capacity: positive integer. If omitted the call fails.
+                    • roomId and eventId: must reference existing rows, otherwise 404.
+
+                    Conflicts: duplicate title → 409 "Session '...' already exists.".
+
                     Example JSON for date fields (ISO-8601 instant):
                     ```json
                     {"startDate": "2026-08-01T10:00:00Z", "endDate": "2026-08-01T11:30:00Z"}
@@ -215,6 +240,13 @@ public class SessionMcpTools {
                     Add a speaker to a session with a time slot. The speaker will be linked to the session for the specified time range.
 
                     Returns a confirmation string.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • startTime and endTime: required, ISO-8601 with timezone (e.g. 2026-07-15T14:00:00Z or 2026-07-15T14:00:00+00:00).
+                    • endTime MUST be strictly after startTime.
+
+                    Conflicts: if any speaker already occupies this session's room during the requested slot → 409 "The room is already occupied during the requested time slot.".
+                    404 if the session or speaker UUID does not exist.
                     """)
     public String addSpeakerToSession(
             @ToolParam(description = "UUID of the session") String sessionId,
@@ -239,6 +271,13 @@ public class SessionMcpTools {
                     Update a speaker's time slot in a session.
 
                     Returns a confirmation string.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • startTime and endTime: required, ISO-8601 with timezone (e.g. 2026-07-15T16:00:00Z).
+                    • endTime MUST be strictly after startTime.
+
+                    404 if linkId does not exist for the given (sessionId, speakerId) pair.
+                    409 if the new slot overlaps another speaker in the same room.
                     """)
     public String updateSessionSpeakerLink(
             @ToolParam(description = "UUID of the session") String sessionId,
