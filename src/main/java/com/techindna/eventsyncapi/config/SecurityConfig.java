@@ -77,7 +77,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/auth/participant").permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/ai/conversations/**").hasRole("ADMIN")
-                .requestMatchers("/mcp/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/ai/conversations/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/ai/conversations/**").hasRole("ADMIN")
+
+                .requestMatchers("/mcp/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
