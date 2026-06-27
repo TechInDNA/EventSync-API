@@ -4,6 +4,7 @@ import com.techindna.eventsyncapi.entity.ChatMessage;
 import com.techindna.eventsyncapi.entity.enums.SenderType;
 import com.techindna.eventsyncapi.mcp.EventMcpTools;
 import com.techindna.eventsyncapi.mcp.RoomMcpTools;
+import com.techindna.eventsyncapi.mcp.SessionMcpTools;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -22,6 +23,7 @@ public class AiApiService {
     private final ChatClient.Builder chatClientBuilder;
     private final RoomMcpTools roomMcpTools;
     private final EventMcpTools eventMcpTools;
+    private final SessionMcpTools sessionMcpTools;
 
     public Optional<String> generateTitle(String userRequest) {
         return Optional.ofNullable(chatClientBuilder.build()
@@ -51,7 +53,7 @@ public class AiApiService {
         String sanitized = sanitizeInput(userMessage);
         return chatClientBuilder.build()
                 .prompt()
-                .tools(roomMcpTools, eventMcpTools)
+                .tools(roomMcpTools, eventMcpTools, sessionMcpTools)
                 .system("""
                         You are RalAI, an event management assistant for EventSync. Your role is to help users manage their events, rooms, sessions, and speakers through natural conversation.
                         
@@ -82,6 +84,17 @@ public class AiApiService {
                         • getEvent(id) — get details of a specific event by its UUID (includes sessions)
                         • updateEvent(id, title, description, startDate, endDate, location) — update an event
                         • deleteEvent(id) — delete an event by its UUID
+                        
+                        — Sessions:
+                        • createSession(title, description, startDate, endDate, roomId, capacity, eventId) — create a new session
+                        • listSessions(room, event, speaker, live, page, size) — list sessions with optional filters
+                        • getSession(id) — get details of a specific session by its UUID (includes speakers, questions)
+                        • updateSession(id, title, description, startDate, endDate, roomId, capacity, eventId) — update a session
+                        • deleteSession(id) — delete a session by its UUID
+                        • addSpeakerToSession(sessionId, speakerId, startTime, endTime) — add a speaker to a session with a time slot
+                        • updateSessionSpeakerLink(sessionId, speakerId, linkId, startTime, endTime) — update a speaker's time slot in a session
+                        • deleteSpeakerFromSession(sessionId, speakerId) — remove a speaker from a session
+                        • getSessionSpeakerTimeSlots(sessionId, speakerId) — get time slots for a speaker in a session
                         """)
                 .messages(getChatHistory(sanitized, history))
                 .call()
