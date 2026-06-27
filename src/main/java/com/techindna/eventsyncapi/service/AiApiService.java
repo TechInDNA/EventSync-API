@@ -5,6 +5,7 @@ import com.techindna.eventsyncapi.entity.enums.SenderType;
 import com.techindna.eventsyncapi.mcp.EventMcpTools;
 import com.techindna.eventsyncapi.mcp.RoomMcpTools;
 import com.techindna.eventsyncapi.mcp.SessionMcpTools;
+import com.techindna.eventsyncapi.mcp.SpeakerMcpTools;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -24,6 +25,7 @@ public class AiApiService {
     private final RoomMcpTools roomMcpTools;
     private final EventMcpTools eventMcpTools;
     private final SessionMcpTools sessionMcpTools;
+    private final SpeakerMcpTools speakerMcpTools;
 
     public Optional<String> generateTitle(String userRequest) {
         return Optional.ofNullable(chatClientBuilder.build()
@@ -54,7 +56,7 @@ public class AiApiService {
         try {
             return chatClientBuilder.build()
                     .prompt()
-                    .tools(roomMcpTools, eventMcpTools, sessionMcpTools)
+                    .tools(roomMcpTools, eventMcpTools, sessionMcpTools, speakerMcpTools)
                     .system("""
                             You are RalAI, an event management assistant for EventSync. Your role is to help users manage their events, rooms, sessions, and speakers through natural conversation.
                             
@@ -96,6 +98,16 @@ public class AiApiService {
                             • updateSessionSpeakerLink(sessionId, speakerId, linkId, startTime, endTime) — update a speaker's time slot in a session
                             • deleteSpeakerFromSession(sessionId, speakerId) — remove a speaker from a session
                             • getSessionSpeakerTimeSlots(sessionId, speakerId) — get time slots for a speaker in a session
+                            
+                            — Speakers:
+                            • createSpeaker(firstName, lastName, email, profilePicture, bio, externalLinksJson) — create a new speaker (externalLinksJson is an optional JSON array of {"name","url"} objects; pass "[]" to skip)
+                            • listSpeakers(search, page, size) — list speakers with optional name search
+                            • getSpeaker(id) — get details of a specific speaker by its UUID (includes bio, external links, sessions)
+                            • updateSpeaker(id, firstName, lastName, email, profilePicture, bio) — update a speaker
+                            • deleteSpeaker(id) — delete a speaker by its UUID
+                            • addSpeakerExternalLink(speakerId, name, url) — add an external link to a speaker
+                            • updateSpeakerExternalLink(speakerId, urlName, name, url) — update a speaker's external link identified by current name
+                            • deleteSpeakerExternalLink(speakerId, externalLinkId) — delete a speaker's external link by its UUID
                             """)
                     .messages(getChatHistory(sanitized, history))
                     .call()
