@@ -18,7 +18,9 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
     long countBySessionId(@Param("sessionId") UUID sessionId, @Param("title") String title);
 
     @Query(value = """
-           SELECT q.id, q.title, q.content, q.created_at, q.session_id, q.anonymous, q.user_id FROM eventsync_app.question q
+           SELECT q.id, q.title, q.content, q.created_at, q.session_id, q.anonymous, q.user_id,
+                  (SELECT COUNT(*) FROM eventsync_app.upvote up WHERE up.question_id = q.id) AS upvoteCount
+           FROM eventsync_app.question q
            LEFT JOIN eventsync_app.upvote up ON up.question_id = q.id
            WHERE q.session_id = :sessionId
            AND (:title IS NULL OR :title = '' OR q.title ILIKE '%' || cast(:title as text) || '%')
