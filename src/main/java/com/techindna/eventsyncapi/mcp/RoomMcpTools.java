@@ -33,11 +33,13 @@ public class RoomMcpTools {
     @Tool(description = "List rooms with optional search filter and pagination. Returns room names and IDs.")
     public String listRooms(
             @ToolParam(description = "Optional search term to filter rooms by name") String search,
-            @ToolParam(description = "Page number (default: 1)") int page,
-            @ToolParam(description = "Items per page (default: 10)") int size
+            @ToolParam(description = "Page number (optional, defaults to 1)") Integer page,
+            @ToolParam(description = "Items per page (optional, defaults to 10)") Integer size
     ) {
         try {
-            RoomListResponseDto result = roomService.getAllRooms(page, size, search, "127.0.0.1");
+            int p = page != null ? page : 1;
+            int s = size != null ? size : 10;
+            RoomListResponseDto result = roomService.getAllRooms(p, s, search, "127.0.0.1");
             if (result.getData().isEmpty()) {
                 return "No rooms found.";
             }

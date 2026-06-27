@@ -35,17 +35,18 @@ public class SessionMcpTools {
             @ToolParam(description = "Start date/time in ISO-8601 format, e.g. 2026-07-15T14:00:00Z") String startDate,
             @ToolParam(description = "End date/time in ISO-8601 format, e.g. 2026-07-15T15:30:00Z") String endDate,
             @ToolParam(description = "UUID of the room where the session takes place") String roomId,
-            @ToolParam(description = "Maximum capacity of the session") int capacity,
+            @ToolParam(description = "Maximum capacity of the session (optional, defaults to 0)") Integer capacity,
             @ToolParam(description = "UUID of the parent event") String eventId
     ) {
         try {
+            int cap = capacity != null ? capacity : 0;
             SessionInputDto input = SessionInputDto.builder()
                     .title(title.strip())
                     .description(description.strip())
                     .startDate(Instant.parse(startDate))
                     .endDate(Instant.parse(endDate))
                     .roomId(UUID.fromString(roomId))
-                    .capacity(capacity)
+                    .capacity(cap)
                     .eventId(UUID.fromString(eventId))
                     .build();
             SessionResponseDto session = sessionService.createSession(input);
@@ -64,11 +65,13 @@ public class SessionMcpTools {
             @ToolParam(description = "Optional filter by event title (case-insensitive partial match)") String event,
             @ToolParam(description = "Optional filter by speaker name (case-insensitive partial match)") String speaker,
             @ToolParam(description = "Optional filter: true for currently live sessions only") Boolean live,
-            @ToolParam(description = "Page number (default: 1)") int page,
-            @ToolParam(description = "Items per page (default: 10)") int size
+            @ToolParam(description = "Page number (optional, defaults to 1)") Integer page,
+            @ToolParam(description = "Items per page (optional, defaults to 10)") Integer size
     ) {
         try {
-            SessionListResponseDto result = sessionService.getAllSessions(page, size, room, event,
+            int p = page != null ? page : 1;
+            int s = size != null ? size : 10;
+            SessionListResponseDto result = sessionService.getAllSessions(p, s, room, event,
                     speaker, live, "127.0.0.1");
             if (result.getData().isEmpty()) {
                 return "No sessions found.";
@@ -158,17 +161,18 @@ public class SessionMcpTools {
             @ToolParam(description = "New start date/time in ISO-8601 format, e.g. 2026-08-01T10:00:00Z") String startDate,
             @ToolParam(description = "New end date/time in ISO-8601 format, e.g. 2026-08-01T11:30:00Z") String endDate,
             @ToolParam(description = "New UUID of the room") String roomId,
-            @ToolParam(description = "New maximum capacity of the session") int capacity,
+            @ToolParam(description = "New maximum capacity of the session (optional, defaults to 0)") Integer capacity,
             @ToolParam(description = "New UUID of the parent event") String eventId
     ) {
         try {
+            int cap = capacity != null ? capacity : 0;
             SessionUpdateInputDto input = SessionUpdateInputDto.builder()
                     .title(title.strip())
                     .description(description.strip())
                     .startDate(Instant.parse(startDate))
                     .endDate(Instant.parse(endDate))
                     .roomId(UUID.fromString(roomId))
-                    .capacity(capacity)
+                    .capacity(cap)
                     .eventId(UUID.fromString(eventId))
                     .build();
             SessionResponseDto session = sessionService.updateSession(UUID.fromString(id), input);
@@ -184,7 +188,7 @@ public class SessionMcpTools {
     ) {
         try {
             sessionService.deleteSession(UUID.fromString(id));
-            return "Session " + id + " deleted.";
+            return String.format("Session %s deleted.", id);
         } catch (Exception e) {
             return String.format("Operation failed: %s", e.getMessage());
         }
@@ -244,7 +248,7 @@ public class SessionMcpTools {
     ) {
         try {
             sessionService.deleteSpeakerFromSession(UUID.fromString(sessionId), UUID.fromString(speakerId));
-            return "Speaker " + speakerId + " removed from session " + sessionId + ".";
+            return String.format("Speaker %s removed from session %s.", speakerId, sessionId);
         } catch (Exception e) {
             return String.format("Operation failed: %s", e.getMessage());
         }
@@ -259,7 +263,7 @@ public class SessionMcpTools {
             var slots = sessionService.getSessionSpeakerTimeSlots(
                     UUID.fromString(sessionId), UUID.fromString(speakerId), "127.0.0.1");
             if (slots == null || slots.isEmpty()) {
-                return "No time slots found for speaker " + speakerId + " in session " + sessionId + ".";
+                return String.format("No time slots found for speaker %s in session %s.", speakerId, sessionId);
             }
             var sb = new StringBuilder();
             sb.append("Time slots for speaker ").append(speakerId)

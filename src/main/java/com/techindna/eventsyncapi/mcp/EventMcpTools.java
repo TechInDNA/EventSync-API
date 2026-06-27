@@ -59,11 +59,13 @@ public class EventMcpTools {
     public String listEvents(
             @ToolParam(description = "Optional search term to filter events by title") String title,
             @ToolParam(description = "Optional search term to filter events by location") String location,
-            @ToolParam(description = "Page number (default: 1)") int page,
-            @ToolParam(description = "Items per page (default: 10)") int size
+            @ToolParam(description = "Page number (optional, defaults to 1)") Integer page,
+            @ToolParam(description = "Items per page (optional, defaults to 10)") Integer size
     ) {
         try {
-            EventListResponseDto result = eventService.getAllEvents(page, size, title, location,
+            int p = page != null ? page : 1;
+            int s = size != null ? size : 10;
+            EventListResponseDto result = eventService.getAllEvents(p, s, title, location,
                     null, null, null, "127.0.0.1");
             if (result.getData().isEmpty()) {
                 return "No events found.";
