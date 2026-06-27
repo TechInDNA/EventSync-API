@@ -34,6 +34,16 @@ public class EventMcpTools {
 
                     Returns a confirmation including id, title, location, and dates.
 
+                    Validation rules — strict pass or call fails with 422:
+                    • title: 1–50 chars, only a-z A-Z 0-9 - ' . and space. No commas,
+                      slashes, or other punctuation; no leading/trailing spaces.
+                    • description: non-blank, only A-Za-z0-9.,;"!'-
+                    • startDate and endDate: required, endDate MUST be strictly after startDate.
+                    • location: 1–50 chars, only a-z A-Z ' - and space. Must start and end with
+                      a letter; no digits, no dots, no underscores.
+
+                    Conflicts: duplicate title → 409 "Event '...' already exists.".
+
                     Example JSON for date fields (ISO-8601 instant):
                     ```json
                     {"startDate": "2026-07-15T09:00:00Z", "endDate": "2026-07-17T18:00:00Z"}
@@ -64,6 +74,11 @@ public class EventMcpTools {
                     List events with optional filters and pagination.
 
                     Returns event titles, ids, locations, and live status, or 'No events found.' if empty.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • title and location filters: each must contain only letters, digits,
+                      spaces, hyphens, and apostrophes. Avoid commas, slashes, colons,
+                      or other punctuation in the filter values.
                     """)
     public String listEvents(
             @ToolParam(description = "Optional search term to filter events by title") String title,
@@ -123,6 +138,16 @@ public class EventMcpTools {
                     Update an existing event. All fields are required and will replace the current values.
 
                     Returns a confirmation including id, title, location, and dates.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • title: 1–50 chars, only a-z A-Z 0-9 - ' . and space. No commas, slashes,
+                      or other punctuation; no leading/trailing spaces.
+                    • description: non-blank, only A-Za-z0-9.,;"!'-
+                    • startDate and endDate: required, endDate MUST be strictly after startDate.
+                    • location: 1–50 chars, only a-z A-Z ' - and space. Must start and end with
+                      a letter; no digits, no dots, no underscores.
+
+                    Conflicts: duplicate title → 409 "Event '...' already exists.".
 
                     Example JSON for date fields (ISO-8601 instant):
                     ```json

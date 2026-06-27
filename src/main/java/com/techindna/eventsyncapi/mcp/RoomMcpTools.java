@@ -32,6 +32,12 @@ public class RoomMcpTools {
                     Create a new room with the given name.
 
                     Returns a confirmation including the created room id and name.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • name: 1–50 chars, only a-z A-Z ' - and space. Must start and end with a
+                      letter; no digits, no leading/trailing spaces.
+
+                    Conflicts: duplicate name → 409 "Room ... already exists.".
                     """)
     public String createRoom(
             @ToolParam(description = "Name of the room to create (max 50 characters)") String name
@@ -48,6 +54,10 @@ public class RoomMcpTools {
                     List rooms with optional search filter and pagination.
 
                     Returns a list of room names and ids, or 'No rooms found.' if empty.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • search: must contain only letters, digits, spaces, hyphens,
+                      and apostrophes. Avoid commas, slashes, colons, or other punctuation.
                     """)
     public String listRooms(
             @ToolParam(description = "Optional search term to filter rooms by name") String search,
@@ -90,6 +100,10 @@ public class RoomMcpTools {
                     Update the name of an existing room.
 
                     Returns a confirmation including the room id and the new name.
+
+                    Validation rules — strict pass or call fails with 422:
+                    • name: 1–50 chars, only a-z A-Z ' - and space. Must start and end with a
+                      letter; no digits, no leading/trailing spaces.
                     """)
     public String updateRoom(
             @ToolParam(description = "UUID of the room to update") String id,
