@@ -101,6 +101,12 @@ public class GlobalExceptionHandler {
         return respond(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<ErrorResponse> handleInternalServerError(InternalServerErrorException ex, HttpServletRequest request) {
+        log.error("Internal server error at {} {}", request.getMethod(), request.getRequestURI(), ex);
+        return respond(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleFallback(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception at {} {}", request.getMethod(), request.getRequestURI(), ex);

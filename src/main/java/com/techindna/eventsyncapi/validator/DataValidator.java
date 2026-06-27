@@ -116,15 +116,5 @@ public class DataValidator {
             throw new UnprocessableEntityException(String.format("Invalid URL format or '%s' contain forbidden characters, only a-zA-Z0-9-?._%%&# characters are allowed", url));
         }
     }
-    public void validateUUID(String uuid){
-        if (uuid == null || uuid.isEmpty()){
-            throw new BadRequestException("UUID path variable cannot be null or blank.");
-        }
-
-        final Matcher UUID_MATCHER = UUID_PATTERN.matcher(uuid);
-        if (!UUID_MATCHER.matches()){
-            throw new BadRequestException("Invalid UUID format.");
-        }
-    }
 
 }
