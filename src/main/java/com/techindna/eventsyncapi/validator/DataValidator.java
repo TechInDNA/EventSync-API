@@ -18,7 +18,7 @@ public class DataValidator {
     private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z][a-zA-Z' -]+[a-zA-Z]+$");
     private static final Pattern ALLOWED_NAME_CHAR = Pattern.compile("^[a-zA-Z-' ]+$");
     private static final Pattern ALLOWED_SEARCH_STRING = Pattern.compile("^[A-Za-z0-9' -]*$");
-    private static final Pattern ALLOWED_TEXT_CHARS = Pattern.compile("^[A-Za-z0-9.,;\"!'? -]*$");
+    private static final Pattern ALLOWED_TEXT_CHARS = Pattern.compile("^[A-Za-z0-9.,@:/;\"!'? -]*$");
     private final Pattern VALID_URL = Pattern.compile("^https?://[a-zA-Z0-9\\-._%&?#/]+$");
     private final Pattern ALLOWED_STRING_CHAR = Pattern.compile("^[0-9a-zA-Z-'. ]+$");
 
@@ -86,7 +86,7 @@ public class DataValidator {
         lengthValidation(fieldName, TEXT_MAX_LENGTH, text);
 
         if (!ALLOWED_TEXT_CHARS.matcher(text).matches()){
-            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.,;\"!'- characters are allowed.");
+            throw new UnprocessableEntityException("Invalid input for bio field: only A-Za-z0-9.:@,;\"!'- characters are allowed.");
         }
     }
 
