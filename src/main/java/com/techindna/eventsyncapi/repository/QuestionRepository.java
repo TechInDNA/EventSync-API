@@ -19,7 +19,7 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
 
     @Query(value = """
            SELECT q.id, q.title, q.content, q.created_at, q.session_id, q.anonymous, q.user_id,
-                  (SELECT COUNT(*) FROM eventsync_app.upvote up WHERE up.question_id = q.id) AS upvoteCount
+                  (SELECT COUNT(*) FROM eventsync_app.upvote up WHERE up.question_id = q.id) AS "upvoteCount"
            FROM eventsync_app.question q
            LEFT JOIN eventsync_app.upvote up ON up.question_id = q.id
            WHERE q.session_id = :sessionId
@@ -53,10 +53,14 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
     List<Question> findBySessionId(@Param("sessionId") UUID sessionId);
 
     @Query(value = """
-           INSERT INTO eventsync_app.question (id, title, content, session_id, user_id, anonymous)
-           SELECT gen_random_uuid(), :title, :content, :sessionId, :userId, :anonymous
-           WHERE EXISTS (SELECT 1 FROM eventsync_app.session WHERE id = :sessionId)
-           RETURNING id, title, content, created_at, session_id, anonymous, user_id
+           WITH inserted AS (
+               INSERT INTO eventsync_app.question (id, title, content, session_id, user_id, anonymous)
+               SELECT gen_random_uuid(), :title, :content, :sessionId, :userId, :anonymous
+               WHERE EXISTS (SELECT 1 FROM eventsync_app.session WHERE id = :sessionId)
+               RETURNING id, title, content, created_at, session_id, anonymous, user_id
+           )
+           SELECT i.*, CAST(0 AS INTEGER) AS "upvoteCount"
+           FROM inserted i
            """, nativeQuery = true)
     Optional<Question> insertQuestion(@Param("title") String title,
                             @Param("content") String content,
